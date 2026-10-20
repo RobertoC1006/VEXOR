@@ -76,6 +76,15 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **Un artículo todavía no registrado se vende fuera de VEXOR.** El usuario eligió esta opción sobre venta rápida o creación obligatoria del producto antes de vender. No introducir por defecto una venta libre para cambiar esa decisión.
 - **Dos modos de ubicación configurables:** por defecto, total por puesto con ubicaciones de referencia; el negocio puede activar cantidades exactas por ubicación.
 
+### Clientes frecuentes y descuentos
+
+- La venta sigue sin exigir identificar al comprador. Se quiere una ficha opcional para clientes recurrentes, con nombre y teléfono, sin exigir DNI; este puede añadirse si el cliente lo brinda voluntariamente. Los campos mínimos exactos quedan por definir.
+- Vincular compras a ese cliente permitirá consultar su historial y conocer qué productos suele llevar. Falta precisar si lo consulta solo el personal o también el cliente mediante un acceso propio.
+- Los descuentos deben poder aplicarse a cualquier comprador, nuevo o frecuente, sin obligarlo a registrarse.
+- El propietario configura las políticas y límites de descuento.
+- En la venta se debe poder negociar indicando el total final o el descuento en soles: tres productos de S/18 suman S/54; cobrar S/50 equivale a descontar S/4. La interfaz concreta queda por diseñar y debe ser amigable.
+- Las recomendaciones de productos a partir del historial, especialmente mediante IA, quedan como idea para explorar después. No se ha aprobado su implementación ni elegido proveedor o modelo para esta función; esto no revoca la ayuda básica con IA ya solicitada.
+
 ### Equipo, control e IA
 
 - El propietario administra trabajadores y les concede acceso mediante roles y permisos. Ejemplos solicitados: vendedor, encargado y administrador del negocio.
@@ -124,6 +133,15 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - Separar reportes (“cuánto vendí”) y auditoría (“quién cambió el precio”).
 - Propuesta: IA con conexión y ayuda básica local disponible offline. La IA no debe ser indispensable para vender o registrar mercadería.
 
+### Clientes frecuentes y negociación
+
+- En la venta, ofrecer “Agregar cliente” como acción opcional, con búsqueda de fichas existentes antes de crear otra. Considerar nombre o apodo y teléfono opcional; no asumir que el nombre identifica de forma única ni que un teléfono no pueda compartirse.
+- Para empezar, consultar el historial desde la ficha del cliente dentro del negocio; un acceso del comprador requiere definir identificación y privacidad por separado.
+- Mostrar una acción “Aplicar descuento” con dos entradas alternativas: “Dejar total en” y “Descontar S/”. Calcular ambas sobre el mismo descuento y mostrar subtotal, descuento y total final, sin acumular dos rebajas por usar las dos entradas.
+- Empezar por descuento sobre el total de la venta; el descuento por producto, porcentajes y promociones automáticas aún no están definidos.
+- Conservar precios originales, descuento, total cobrado y trabajador responsable en el registro de venta. Proponer permisos de descuento por rol, límites por venta y autorización del propietario para excepciones; el comportamiento offline requiere definición.
+- Mostrar productos comprados anteriormente o con mayor frecuencia sin necesitar IA. No conceder descuentos automáticos por ser cliente frecuente ni interpretar el historial como autorización para enviar mensajes.
+
 ## Mapa de módulos propuesto
 
 Este mapa organiza la conversación; todavía no constituye un alcance completo aprobado para la primera versión.
@@ -156,7 +174,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 2. Precisar cuándo un producto queda disponible para vender en el sistema y cómo se corrige un conteo confirmado.
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
-5. Definir precios por puesto/presentación, negociación, descuentos, pagos combinados, cambios, devoluciones y anulaciones.
+5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, pagos combinados, cambios, devoluciones y anulaciones. Están confirmados el descuento en soles o mediante total final y la configuración por el propietario.
 6. Completar la matriz de permisos y la política de auditoría, incluidos uso offline y cambios de acceso.
 7. Definir activación/desactivación de puestos, conservación de historial y ampliación del plan. Solo el límite de un puesto activo está confirmado.
 8. Delimitar funciones y límites comerciales del plan básico: trabajadores, dispositivos, productos e IA, además de suscripción y cobro del servicio.
@@ -164,6 +182,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 10. Definir alcance offline, preparación inicial del celular, sincronización, conflictos y recuperación de datos.
 11. Precisar qué necesidades de otros rubros entran en la primera versión, como cantidades fraccionarias, venta por peso, lotes o vencimientos.
 12. Elegir stack, arquitectura, almacenamiento, seguridad entre tenants y criterios de aceptación cuando los flujos estén suficientemente definidos.
+13. Precisar campos mínimos y búsqueda de clientes frecuentes, corrección de fichas duplicadas, acceso al historial y si el comprador tendrá acceso propio. Las sugerencias personalizadas con IA quedan para después.
 
 ## Persistencia
 
