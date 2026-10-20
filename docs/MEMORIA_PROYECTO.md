@@ -18,7 +18,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 
 ## Mantenimiento y consumo de contexto — confirmado
 
-- Guardar cada decisión confirmada al tomarla, sin esperar a que el usuario vuelva a pedirlo.
+- Usar el contexto disponible; consultar la memoria solo cuando falte información necesaria, no ante cada pregunta. Editarla únicamente cuando el usuario indique expresamente que algo quedó decidido o definido, o pida actualizarla. Las preguntas, ideas y recomendaciones no autorizan por sí solas una edición.
 - Mantener `AGENTS.md` breve y por debajo de 32 000 bytes en UTF-8; el límite es un techo, no un objetivo de tamaño.
 - Conservar aquí el contexto útil del producto; en `AGENTS.md`, solo instrucciones operativas y referencias.
 - Limpiar ambos documentos: consolidar duplicados, reemplazar acuerdos obsoletos y retirar pendientes resueltos o información que ya no aporte. Preservar las decisiones vigentes.
@@ -37,8 +37,16 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - La imagen aportada muestra mercadería distribuida en vitrinas, estantes, exhibidores y bolsas. El usuario explica que la atención se realiza hacia el pasillo del mercado. Encontrar físicamente los productos es una necesidad importante.
 - El efectivo se guarda donde resulte práctico: cajón, bolsa, canguro, etc. El usuario descartó apertura, cierre y arqueo de caja.
 - En Navidad y Año Nuevo hay unos tres días de gran aglomeración. Participan entre cinco y siete vendedores temporales y aun así se pierden ventas por falta de capacidad de atención. El espacio de campaña es reducido, hacia el pasadizo o la calle; las prendas mostradas pueden quedar fuera de sus bolsas, mezclarse y perder su ubicación. También ocurren hurtos de exhibición pese a la vigilancia.
+- En esas campañas el efectivo de los vendedores se reúne en dos bolsos, de la madre y la hermana del usuario, y se cuenta después en casa. El total vendido del día incluye efectivo, Yape y Plin; no representa solo el efectivo reunido ni la ganancia.
 
 ## Decisiones confirmadas
+
+### Primera entrega y validación
+
+- Antes de empezar las pruebas y el uso real en el puesto, debe estar completo el alcance funcional acordado para la primera versión. Se permiten desarrollo y pruebas iterativas previas; el orden de construcción es flexible. Esto no convierte propuestas ni funciones futuras en alcance aprobado.
+- Se acepta realizar un recorrido de pantallas o demo para revisar y mejorar los flujos antes del uso real.
+- **Orden de trabajo confirmado:** definir primero el stack tecnológico; después elaborar el modelo inicial de datos y el modelo entidad-relación; luego empezar el demo. Todavía no se ha elegido el stack.
+- **Alcance del modelo inicial:** presentar la cantidad de tablas propuestas, su listado, la finalidad y el uso de cada una, sus relaciones y el diagrama entidad-relación. Debe contemplar el carácter multitenant del producto. Por ahora se posponen índices, restricciones y optimizaciones; el esquema concreto aún no está aprobado.
 
 ### Servicio, negocio y puestos
 
@@ -57,15 +65,38 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 
 - Se elige una PWA con funcionamiento offline como dirección del producto.
 - La interfaz debe ser intuitiva y rápida. El uso del sistema debe encajar con la atención real del puesto.
-- **Campañas de alta afluencia:** el sistema debe ayudar también durante estos picos, contemplando personal temporal, espacio reducido y desorden, sin convertir el registro en una demora que haga perder ventas. El flujo concreto aún no está decidido.
+- **Campañas de alta afluencia:** el sistema debe ayudar durante estos picos sin convertir el registro en una demora que haga perder ventas. Su uso y configuración se adaptan al negocio, rubro y forma real de trabajo; una fecha o rubro no obliga a cambiar la venta habitual.
 - La vendedora no tiene que registrar cada producto que muestra al cliente. Registra lo que se decide comprar.
 - Habrá venta directa y carritos en espera para atender simultáneamente a varios clientes.
+- Agregar un producto a un carrito no descuenta existencias. El descuento ocurre al completar la venta y registrar su pago; falta precisar el tratamiento de cobros parciales.
 - La venta habitual no debe exigir identificar al comprador.
 - Debe permitir seleccionar productos y escanear códigos. Comprar un lector externo no será obligatorio.
 - Los productos sin código deben poder registrarse y encontrarse con nombres que reconozcan los comerciantes.
-- Se registran efectivo, Yape o Plin. No se requiere identificar al dueño o cuenta receptora.
-- En efectivo, debe mostrar el total y permitir calcular el vuelto a partir del importe entregado.
+- Se registran efectivo, Yape o Plin, permitiendo pagos mixtos en una misma venta y mostrando cuánto falta cubrir. Ejemplo: S/50 pagados con S/40 en Yape y S/10 en efectivo. No se requiere identificar al dueño o cuenta receptora.
+- En efectivo, incluso dentro de un pago mixto, debe mostrar el total y calcular el vuelto a partir del importe entregado y la parte pendiente de cubrir.
 - Se descartan apertura, cierre y arqueo de caja. Esto no elimina el registro de pagos, gastos ni reportes.
+
+### Disponibilidad, carritos y venta offline
+
+- Vender sin internet es un requisito confirmado. El alcance offline de las demás operaciones sigue pendiente.
+- Con conexión, advertir sobre stock limitado, agotado o insuficiente y cuando las cantidades de los carritos compartidos superen lo disponible. Los carritos no descuentan ni reservan existencias; al completar una venta se vuelve a comprobar la disponibilidad.
+- Sin conexión, mostrar que el stock puede haber cambiado y advertir según la información local. No afirmar que se detectó otro carrito o una venta de otro celular si no existe comunicación para conocerlos.
+- Al recuperar conexión, sincronizar las ventas sin duplicarlas y señalar diferencias de inventario para revisión. Si dos ventas ya se cobraron, conservar ambas y mostrar la diferencia; no borrar una para cuadrar existencias. El procedimiento concreto de conciliación sigue pendiente.
+
+### Postventa, cambios y devoluciones
+
+- Las políticas de cambios y devoluciones deben configurarse según el negocio; no imponer la política del piloto a otros rubros. Distinguir devoluciones voluntarias de casos por fallas del producto.
+- En el negocio familiar no se devuelve dinero por cambios voluntarios; sí se aceptan ciertos cambios, como otra talla. En ese cambio se reincorpora la existencia recibida y se descuenta la entregada. No generalizar esta reincorporación a productos defectuosos sin definir su tratamiento.
+- Las correcciones de cobros, cambios y devoluciones requieren el permiso correspondiente del trabajador o autorización del propietario. Falta detallar sus flujos y diferencias de importe.
+- Las anulaciones de ventas quedan pendientes de definición; no se ha decidido eliminarlas ni aplicar una devolución automática al inventario.
+
+### Campañas configurables y etiquetas — confirmado
+
+- El modo campaña es opcional y configurable. El flujo de etiquetas del puesto del usuario es una modalidad, no una obligación para todos los negocios o rubros. Una florería puede seguir vendiendo normalmente el 24 de diciembre; tampoco se presupone que todas las florerías trabajen igual.
+- Se acepta el flujo de preparar e imprimir etiquetas desprendibles desde VEXOR, recogerlas al completar las compras y registrar después los productos vendidos, sin exigir el uso del sistema durante la aglomeración. El punto de venta sigue disponible como opción rápida.
+- El total diario incluye efectivo, Yape y Plin, además de las ventas ya registradas en el punto de venta. El procesamiento posterior de etiquetas no vuelve a sumar ingresos ni a descontar productos ya registrados.
+- El usuario aceptó las cinco mejoras: identificación legible, separación de etiquetas por estado, registro por tandas reanudable, identificación individual opcional para detectar repeticiones al escanear y reposición de etiquetas sin aumentar existencias.
+- Flujo, reglas y decisiones pendientes en [Campañas y etiquetas](memoria/CAMPANAS.md). Allí se conservan los detalles para no imponerlos a toda venta ni duplicarlos aquí.
 
 ### Productos, inventario y compras
 
@@ -77,7 +108,8 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - Se incluyen desde la primera versión compras y ventas por unidad, paquete, docena u otras presentaciones configuradas según el producto.
 - El usuario aceptó como recorrido recomendado elegir puesto, preparar ubicaciones, registrar productos, asociar códigos, definir presentaciones y contar existencias iniciales. Debe adaptarse a la incorporación gradual y al rubro.
 - **Inventario inicial por etapas:** cada producto empieza a descontar existencias cuando se confirma su conteo, sin esperar a terminar todo el puesto.
-- **Un artículo todavía no registrado se vende fuera de VEXOR.** El usuario eligió esta opción sobre venta rápida o creación obligatoria del producto antes de vender. No introducir por defecto una venta libre para cambiar esa decisión.
+- **Un artículo sin registrar o con ficha creada pero conteo inicial sin confirmar se vende fuera de VEXOR, sin registrar esa venta en el sistema.** No se exige contar primero para realizar la venta física. El usuario lo trata igual que un producto aún no creado; no introducir una venta libre ni inventar existencias para registrarlo.
+- **Existencia confirmada en cero con una unidad física disponible:** venderla en VEXOR o corregir esa diferencia requiere autorización del propietario o de un rol con los permisos correspondientes. El flujo concreto de corrección queda por detallar.
 - **Dos modos de ubicación configurables:** por defecto, total por puesto con ubicaciones de referencia; el negocio puede activar cantidades exactas por ubicación.
 
 ### Almacenes y traslados
@@ -98,19 +130,12 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 ### Equipo, control e IA
 
 - El propietario administra trabajadores y les concede acceso mediante roles y permisos. Ejemplos solicitados: vendedor, encargado y administrador del negocio.
+- Consultar costos, cambiar precios y otras acciones dependen de los roles, permisos y políticas del negocio. El usuario señala al propietario para consultar costos y al propietario o encargado para cambiar precios; la matriz detallada y las excepciones siguen pendientes.
 - Debe haber reportes y una bitácora de auditoría.
 - El usuario quiere ayuda básica con IA en el plan inicial: asistencia para registrar productos, orientación sobre el sistema y preguntas sencillas en lenguaje natural sobre el negocio.
 - Se contemplan capacidades de IA adicionales en planes futuros. No se ha elegido proveedor ni modelo.
 
 ## Propuestas de diseño aún no cerradas
-
-### Operación en campaña
-
-- Evaluar un modo de campaña preparado antes del pico: accesos visuales a productos registrados, precios claros, cantidades rápidas y acceso limitado y sencillo para temporales. Validar con una simulación de varias ventas simultáneas antes de adoptarlo.
-- No registrar cada prenda mostrada ni exigir actualizar su ubicación cada vez que un cliente la deja en la mesa. Evaluar ubicaciones de referencia y un espacio físico pequeño para prendas pendientes de reordenar; el sistema no conoce automáticamente dónde quedó una prenda.
-- Evaluar apoyo flexible para reponer, reordenar y vigilar la exhibición. No imponer una única persona de cobro ni asumir que todos los temporales disponen de celular; falta conocer cómo cobran actualmente.
-- Si el registro por producto sigue frenando la venta, definir una contingencia con el usuario. No están aprobados el cobro de solo importes, el registro posterior ni la suspensión del registro de productos ya incorporados. Sigue vigente que los artículos no registrados se venden fuera de VEXOR.
-- Recontar después del pico y conciliar ventas y movimientos pendientes antes de ajustar existencias. Si faltan registros de ventas, una diferencia física no permite atribuir automáticamente el faltante a hurto ni reconstruir ventas o ganancias exactas. Mostrar los límites de los datos.
 
 ### Catálogo e inventario
 
@@ -124,7 +149,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 ### Identificación y presentaciones
 
 - Reutilizar códigos del fabricante, permitir códigos internos y ofrecer etiquetas imprimibles opcionales.
-- Un código puede identificar producto, variante o presentación. Varias unidades iguales pueden compartir código; no se propone serializar cada prenda.
+- Un código puede identificar producto, variante o presentación. Varias unidades iguales pueden compartir código; no se exige serializar cada prenda. La identificación individual opcional de etiquetas de campaña es un control de etiquetas, no una obligación de serializar todo el inventario.
 - Si el código solo identifica el modelo, pedir la variante. Si identifica una variante concreta, agregarla directamente.
 - Escanear un código desconocido no proporciona automáticamente nombre, precio o una ficha universal.
 - Ofrecer búsqueda por nombre o alias, fotos y favoritos, además de cámara o lector compatible. La compatibilidad y el rendimiento requieren validación en dispositivos reales.
@@ -187,28 +212,29 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 
 - Si se confirman 100 unidades y luego se registra una venta de una, quedan 99; no descontar también editando el conteo.
 - Si la venta ocurre antes de confirmar y fuera del sistema, confirmar la cantidad física restante; no descontarla después otra vez.
-- Una existencia desconocida no equivale a cero. Falta definir la venta de productos con ficha creada pero conteo pendiente.
-- Dos celulares desconectados no conocen inmediatamente las ventas del otro. Hay que definir sincronización, prevención de duplicados y conciliación.
+- Una existencia desconocida no equivale a cero. Los artículos pendientes de conteo se venden fuera de VEXOR; el conteo confirmado debe reflejar lo que queda físicamente, sin volver a descontar esas ventas.
+- Dos celulares sin comunicación entre sí no conocen inmediatamente las ventas del otro. El comportamiento esperado está confirmado en la sección de venta offline; falta diseñar los mecanismos de sincronización, prevención de duplicados y conciliación.
 - La confirmación del inventario inicial debe coordinar conteo, ventas y movimientos pendientes de los dispositivos; no está diseñado aún ese procedimiento.
 - En ubicación orientativa no se conoce cuántas unidades hay en cada espacio. En modo exacto deben registrarse movimientos internos.
 - Los reportes y ganancias no deben presentar datos incompletos o costos desconocidos como cifras completas.
 
 ## Pendientes para próximas conversaciones
 
-1. Cerrar los flujos de alta, configuración, inventario inicial, venta, compra y recepción antes de elegir arquitectura.
-2. Precisar cuándo un producto queda disponible para vender en el sistema y cómo se corrige un conteo confirmado.
+1. Completar los detalles de los flujos de alta, configuración, inventario inicial, venta, compra y recepción, respetando el orden de trabajo confirmado: stack, modelo de datos y demo.
+2. Detallar cómo se corrige un conteo confirmado y se resuelve una diferencia entre stock registrado y físico, con autorización del propietario o de un rol habilitado. La venta de productos con conteo pendiente ya está resuelta: se realiza fuera de VEXOR.
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
-5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, pagos combinados, cambios, devoluciones y anulaciones. Están confirmados el descuento en soles o mediante total final y la configuración por el propietario.
+5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, cobros parciales y flujos de postventa y anulaciones. Están confirmados los pagos mixtos con vuelto, el descuento en soles o mediante total final y las políticas configurables por el propietario; faltan diferencias de precio en cambios, reembolsos y tratamiento de productos defectuosos.
 6. Completar la matriz de permisos y la política de auditoría, incluidos uso offline y cambios de acceso.
 7. Definir activación/desactivación y cambio de uso de puestos y almacenes, conservación de historial y ampliación del plan. El básico incluye un puesto activo para venta y al menos un almacén pequeño; el plan intermedio sigue como posibilidad sin límites ni precio cerrados.
 8. Delimitar funciones y límites comerciales del plan básico: trabajadores, dispositivos, productos e IA, además de suscripción y cobro del servicio.
 9. Delimitar las preguntas y acciones del asistente, revisión de propuestas, consumo y comportamiento sin conexión.
-10. Definir alcance offline, preparación inicial del celular, sincronización, conflictos y recuperación de datos.
+10. Detallar preparación inicial del celular, mecanismos de sincronización, conciliación y recuperación de datos, además del alcance offline de otras operaciones. Ya están aceptados la venta offline, las advertencias según la información disponible, la sincronización sin duplicados y la conservación de ventas cobradas ante diferencias.
 11. Precisar qué necesidades de otros rubros entran en la primera versión, como cantidades fraccionarias, venta por peso, lotes o vencimientos.
-12. Elegir stack, arquitectura, almacenamiento, seguridad entre tenants y criterios de aceptación cuando los flujos estén suficientemente definidos.
+12. Como siguiente etapa, elegir el stack tecnológico. Después presentar tablas propuestas, cantidad, finalidad, usos, relaciones y modelo entidad-relación, antes del demo. Posponer índices y restricciones en esa presentación inicial; el diseño detallado, la seguridad entre tenants y la validación de capacidad deberán abordarse posteriormente.
 13. Precisar campos mínimos y búsqueda de clientes frecuentes, corrección de fichas duplicadas y permisos del personal para consultar el historial. Los compradores no tendrán acceso al sistema. Las sugerencias personalizadas con IA quedan para después.
 14. Detallar traslados: cantidades disponibles y en tránsito, recepción parcial, diferencias, cancelación, corrección y sincronización. Salida y recepción separadas ya están confirmadas.
+15. Precisar la configuración de campañas, impresión, venta rápida y conciliación según los pendientes de [Campañas y etiquetas](memoria/CAMPANAS.md). El flujo base y las cinco mejoras ya están aceptados; estos detalles no deben tratarse como resueltos.
 
 ## Persistencia
 
