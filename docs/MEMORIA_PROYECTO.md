@@ -45,8 +45,26 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 
 - Antes de empezar las pruebas y el uso real en el puesto, debe estar completo el alcance funcional acordado para la primera versión. Se permiten desarrollo y pruebas iterativas previas; el orden de construcción es flexible. Esto no convierte propuestas ni funciones futuras en alcance aprobado.
 - Se acepta realizar un recorrido de pantallas o demo para revisar y mejorar los flujos antes del uso real.
-- **Orden de trabajo confirmado:** definir primero el stack tecnológico; después elaborar el modelo inicial de datos y el modelo entidad-relación; luego empezar el demo. Todavía no se ha elegido el stack.
+- **Orden de trabajo confirmado:** definir primero el stack tecnológico; después elaborar el modelo inicial de datos y el modelo entidad-relación; luego empezar el demo. El stack base ya está elegido; quedan detalles técnicos por precisar.
 - **Alcance del modelo inicial:** presentar la cantidad de tablas propuestas, su listado, la finalidad y el uso de cada una, sus relaciones y el diagrama entidad-relación. Debe contemplar el carácter multitenant del producto. Por ahora se posponen índices, restricciones y optimizaciones; el esquema concreto aún no está aprobado.
+
+### Stack tecnológico y alojamiento para pruebas
+
+- **Base de datos:** PostgreSQL, alojado inicialmente en Supabase para desarrollo y pruebas.
+- **Backend:** NestJS sobre Node.js, con TypeScript, alojado inicialmente en Render.
+- **Frontend:** React con TypeScript y Vite, como PWA, alojado inicialmente en Vercel.
+- **Datos en el celular:** IndexedDB mediante Dexie.js para los datos necesarios para vender y las ventas pendientes de sincronización.
+- **Carga offline:** service worker y caché de los recursos de la aplicación. La sincronización con el backend requiere implementación propia; estas herramientas no la resuelven automáticamente.
+- **Autenticación:** Supabase Auth. El stack base queda cerrado; el ORM y los detalles de despliegue siguen pendientes.
+- La elección inicial de alojamiento es para desarrollo y pruebas personales, usando mayormente planes gratuitos. No se han elegido planes de pago ni cerrado el alojamiento para producción.
+
+### Autenticación y aislamiento entre negocios
+
+- **Aislamiento obligatorio:** un negocio no puede consultar ni modificar datos de otro tenant. Esta protección debe abarcar el backend, la base de datos y los datos locales y operaciones pendientes de sincronización del celular.
+- **Supabase Auth identifica al usuario.** NestJS valida su token y comprueba su pertenencia al negocio y los roles y permisos necesarios para cada operación.
+- **El `tenant_id` enviado desde el celular no concede acceso por sí solo.** NestJS debe validar ese contexto frente a la pertenencia y los permisos del usuario; cambiar el identificador nunca debe permitir acceder a otro negocio ni operar sobre sus datos.
+- **PostgreSQL refuerza el aislamiento con políticas RLS (Row Level Security)** para limitar las filas accesibles según el negocio autorizado. Configurar el contexto de tenant y los permisos de la conexión usada por NestJS para que las políticas se apliquen; ciertos roles privilegiados pueden omitirlas. Usar Supabase no garantiza este aislamiento automáticamente.
+- Estas decisiones están confirmadas; faltan el diseño detallado y la implementación de las políticas, el contexto de conexión y la separación local. También quedan pendientes la continuidad del acceso de un dispositivo previamente autenticado sin conexión, la caducidad de sesión y la revalidación de permisos al sincronizar.
 
 ### Servicio, negocio y puestos
 
@@ -225,13 +243,13 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
 5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, cobros parciales y flujos de postventa y anulaciones. Están confirmados los pagos mixtos con vuelto, el descuento en soles o mediante total final y las políticas configurables por el propietario; faltan diferencias de precio en cambios, reembolsos y tratamiento de productos defectuosos.
-6. Completar la matriz de permisos y la política de auditoría, incluidos uso offline y cambios de acceso.
+6. Completar la matriz de permisos y la política de auditoría, incluidos uso offline y cambios de acceso. Concretar la integración acordada de Supabase Auth, NestJS y RLS, la continuidad local de una sesión, su caducidad y la revalidación al sincronizar.
 7. Definir activación/desactivación y cambio de uso de puestos y almacenes, conservación de historial y ampliación del plan. El básico incluye un puesto activo para venta y al menos un almacén pequeño; el plan intermedio sigue como posibilidad sin límites ni precio cerrados.
 8. Delimitar funciones y límites comerciales del plan básico: trabajadores, dispositivos, productos e IA, además de suscripción y cobro del servicio.
 9. Delimitar las preguntas y acciones del asistente, revisión de propuestas, consumo y comportamiento sin conexión.
 10. Detallar preparación inicial del celular, mecanismos de sincronización, conciliación y recuperación de datos, además del alcance offline de otras operaciones. Ya están aceptados la venta offline, las advertencias según la información disponible, la sincronización sin duplicados y la conservación de ventas cobradas ante diferencias.
 11. Precisar qué necesidades de otros rubros entran en la primera versión, como cantidades fraccionarias, venta por peso, lotes o vencimientos.
-12. Como siguiente etapa, elegir el stack tecnológico. Después presentar tablas propuestas, cantidad, finalidad, usos, relaciones y modelo entidad-relación, antes del demo. Posponer índices y restricciones en esa presentación inicial; el diseño detallado, la seguridad entre tenants y la validación de capacidad deberán abordarse posteriormente.
+12. Con el stack base elegido, presentar tablas propuestas, cantidad, finalidad, usos, relaciones y modelo entidad-relación, antes del demo. Contemplar desde ese modelo la pertenencia de los datos a cada tenant y la relación entre usuarios y negocios. Posponer índices, restricciones y optimizaciones en esa presentación inicial; desarrollar y verificar los mecanismos de aislamiento antes de usar datos reales. Quedan por precisar el ORM, los detalles de despliegue y la validación de capacidad.
 13. Precisar campos mínimos y búsqueda de clientes frecuentes, corrección de fichas duplicadas y permisos del personal para consultar el historial. Los compradores no tendrán acceso al sistema. Las sugerencias personalizadas con IA quedan para después.
 14. Detallar traslados: cantidades disponibles y en tránsito, recepción parcial, diferencias, cancelación, corrección y sincronización. Salida y recepción separadas ya están confirmadas.
 15. Precisar la configuración de campañas, impresión, venta rápida y conciliación según los pendientes de [Campañas y etiquetas](memoria/CAMPANAS.md). El flujo base y las cinco mejoras ya están aceptados; estos detalles no deben tratarse como resueltos.
