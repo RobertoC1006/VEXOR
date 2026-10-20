@@ -6,7 +6,9 @@
 
 VEXOR será un SaaS multitenant para ayudar a comerciantes de mercados peruanos a gestionar sus negocios de forma sencilla y rápida desde el celular. El primer piloto será el negocio familiar de lencería del usuario. El diseño debe contemplar otros rubros desde su base: ropa, zapatos, abarrotes, juguetes, flores y otros.
 
-Estamos definiendo necesidades, módulos y flujos con el usuario, paso a paso. Todavía no se ha aprobado una especificación completa de implementación. Al crear esta memoria, el repositorio solo contenía `.git`; no había aplicación, stack ni pruebas implementadas.
+Se acordó comenzar el desarrollo por módulos. Ya están elegidos el stack base y la arquitectura monolítica; existe una propuesta lógica de 60 tablas, aún no aprobada como esquema físico definitivo. El repositorio contiene documentación de diseño; todavía no hay aplicación ni migraciones implementadas. La siguiente tarea es diseñar e implementar la base de datos del núcleo: negocios, usuarios, permisos y locales.
+
+Documentación para continuar: [modelo inicial de datos](diseno/MODELO_DATOS_INICIAL.md), [arquitectura propuesta](diseno/ARQUITECTURA_MONOLITO.md) y [preparación para implementar](diseno/PREPARACION_IMPLEMENTACION.md). Consultar solo el documento y las secciones necesarios.
 
 ## Cómo interpretar esta memoria
 
@@ -45,8 +47,15 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 
 - Antes de empezar las pruebas y el uso real en el puesto, debe estar completo el alcance funcional acordado para la primera versión. Se permiten desarrollo y pruebas iterativas previas; el orden de construcción es flexible. Esto no convierte propuestas ni funciones futuras en alcance aprobado.
 - Se acepta realizar un recorrido de pantallas o demo para revisar y mejorar los flujos antes del uso real.
-- **Orden de trabajo confirmado:** definir primero el stack tecnológico; después elaborar el modelo inicial de datos y el modelo entidad-relación; luego empezar el demo. El stack base ya está elegido; quedan detalles técnicos por precisar.
-- **Alcance del modelo inicial:** presentar la cantidad de tablas propuestas, su listado, la finalidad y el uso de cada una, sus relaciones y el diagrama entidad-relación. Debe contemplar el carácter multitenant del producto. Por ahora se posponen índices, restricciones y optimizaciones; el esquema concreto aún no está aprobado.
+- **Modelo inicial disponible:** se presentaron 60 tablas propuestas, con finalidad, usos, relaciones y diagramas entidad-relación multitenant; dos son condicionales a la identificación individual de etiquetas. Es una base de revisión, no aprobación de todos sus campos o funciones. El diseño físico del primer bloque debe concretar columnas, tipos, claves, restricciones, índices necesarios y políticas de aislamiento antes de sus migraciones.
+
+### Inicio del desarrollo y responsabilidades — confirmado
+
+- **El usuario define las reglas de negocio y las funcionalidades. El asistente se encarga del trabajo técnico:** diseño e implementación de base de datos, backend, frontend, pruebas y despliegue, respetando el alcance acordado. No trasladar al usuario decisiones rutinarias de programación.
+- Comenzar el desarrollo por módulos; no esperar a definir todo el sistema ni abrir otra ronda general de planificación. Resolver con el usuario las reglas pendientes antes de implementar la función que las necesita. Presentar casos concretos y opciones cuando haga falta una decisión de negocio.
+- **Primera secuencia:** base de datos del núcleo de negocios, usuarios, roles/permisos y locales —diseño físico, herramienta de persistencia, migraciones y comprobación de aislamiento—; después backend de autenticación, pertenencia y permisos; luego acceso y primeras pantallas del frontend/demo.
+- Empezar por la base de datos significa el primer bloque, no crear las 60 tablas de una sola vez. La elección del ORM y demás detalles técnicos corresponde al asistente dentro del stack acordado; todavía no se ha elegido una herramienta concreta.
+- Después se continúa con productos, inventario y ventas, contemplando la operación offline desde el diseño. Las reglas aún abiertas se resuelven por módulo; no se convierten en requisitos por estar incluidas en una propuesta. Se mantiene completar el alcance acordado antes del uso real en el puesto.
 
 ### Arquitectura — confirmado
 
@@ -245,7 +254,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 
 ## Pendientes para próximas conversaciones
 
-1. Completar los detalles de los flujos de alta, configuración, inventario inicial, venta, compra y recepción, respetando el orden de trabajo confirmado: stack, modelo de datos y demo.
+1. Iniciar el bloque de base de datos de negocios, usuarios, roles/permisos y locales: diccionario físico, herramienta de persistencia, migraciones y pruebas de aislamiento. Completar los detalles de los demás flujos antes de implementar cada módulo.
 2. Detallar cómo se corrige un conteo confirmado y se resuelve una diferencia entre stock registrado y físico, con autorización del propietario o de un rol habilitado. La venta de productos con conteo pendiente ya está resuelta: se realiza fuera de VEXOR.
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
@@ -256,7 +265,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 9. Delimitar las preguntas y acciones del asistente, revisión de propuestas, consumo y comportamiento sin conexión.
 10. Detallar preparación inicial del celular, mecanismos de sincronización, conciliación y recuperación de datos, además del alcance offline de otras operaciones. Ya están aceptados la venta offline, las advertencias según la información disponible, la sincronización sin duplicados y la conservación de ventas cobradas ante diferencias.
 11. Precisar qué necesidades de otros rubros entran en la primera versión, como cantidades fraccionarias, venta por peso, lotes o vencimientos.
-12. Con el stack base elegido, presentar tablas propuestas, cantidad, finalidad, usos, relaciones y modelo entidad-relación, antes del demo. Contemplar desde ese modelo la pertenencia de los datos a cada tenant y la relación entre usuarios y negocios. Posponer índices, restricciones y optimizaciones en esa presentación inicial; desarrollar y verificar los mecanismos de aislamiento antes de usar datos reales. Quedan por precisar el ORM, los detalles de despliegue y la validación de capacidad.
+12. Revisar y concretar por módulo la propuesta lógica existente de 60 tablas, sin tratarla como esquema definitivo. Resolver los detalles técnicos de persistencia, despliegue y capacidad; desarrollar y verificar el aislamiento antes de usar datos reales. El siguiente paso y el reparto de responsabilidades constan en «Inicio del desarrollo y responsabilidades».
 13. Precisar campos mínimos y búsqueda de clientes frecuentes, corrección de fichas duplicadas y permisos del personal para consultar el historial. Los compradores no tendrán acceso al sistema. Las sugerencias personalizadas con IA quedan para después.
 14. Detallar traslados: cantidades disponibles y en tránsito, recepción parcial, diferencias, cancelación, corrección y sincronización. Salida y recepción separadas ya están confirmadas.
 15. Precisar la configuración de campañas, impresión, venta rápida y conciliación según los pendientes de [Campañas y etiquetas](memoria/CAMPANAS.md). El flujo base y las cinco mejoras ya están aceptados; estos detalles no deben tratarse como resueltos.

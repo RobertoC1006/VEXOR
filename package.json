@@ -1,0 +1,23 @@
+{
+  "name": "vexor",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "db:test": "node --import tsx scripts/test-db.ts",
+    "db:test:remote": "node --import tsx scripts/test-remote.ts",
+    "db:test:postgres": "node --import tsx scripts/test-postgres.ts",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "kysely": "^0.28.8", "pg": "^8.16.3" },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "@types/node": "^22.18.0",
+    "@types/pg": "^8.15.5",
+    "supabase": "^2.54.11",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

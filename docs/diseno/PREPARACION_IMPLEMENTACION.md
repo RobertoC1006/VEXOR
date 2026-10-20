@@ -37,14 +37,23 @@ Las restricciones `NOT NULL`, `UNIQUE`, claves primarias y foráneas expresan in
 
 No hace falta resolver el proveedor de IA, comprar impresora, contratar alojamiento de producción o diseñar todas las pantallas para migrar el núcleo. Esas decisiones se completan antes de implementar/validar la función que las necesite.
 
-## Orden de desarrollo propuesto
+## Inicio del desarrollo confirmado
 
-1. Convertir el núcleo negocio/identidad/permisos/locales en un diccionario físico, elegir persistencia y crear sus migraciones con pruebas de aislamiento.
-2. Definir y migrar catálogo, variantes, presentaciones y códigos; resolver antes las necesidades de otros rubros que alteren ese esquema.
-3. Definir y migrar conteos, saldos y movimientos, con sus invariantes y correcciones.
-4. Definir venta/pagos y el contrato de sincronización como un recorrido integrado; verificar última unidad, reintentos y ventas offline cobradas. La sincronización no se agrega como parche después de diseñar ventas.
-5. Completar compras, traslados, gastos, postventa, campañas y reportes con las reglas correspondientes.
-6. Desarrollar el demo después de revisar el modelo inicial, como se acordó. Iterar implementación y pruebas internas; terminar el alcance acordado antes del uso real en el puesto.
+El usuario define reglas y funcionalidades; el asistente resuelve y desarrolla la parte técnica, incluidas base de datos, backend, frontend, pruebas y despliegue. No es necesario cerrar todo el producto antes de comenzar. El ORM y los detalles técnicos se elegirán dentro del stack acordado; no hay una herramienta concreta elegida todavía.
+
+1. **Base de datos del núcleo:** convertir negocio/identidad/roles/permisos/locales en un diccionario físico, elegir persistencia y crear sus migraciones con pruebas de aislamiento.
+2. **Backend del núcleo:** implementar autenticación, pertenencia a negocios y permisos.
+3. **Frontend/demo inicial:** preparar acceso y primeras pantallas para revisar el funcionamiento del bloque.
+
+Empezar por la base de datos no implica crear las 60 tablas a la vez. Resolver con el usuario únicamente las reglas de negocio pendientes que afecten al bloque que se construye.
+
+## Continuación propuesta por módulos
+
+1. Definir y migrar catálogo, variantes, presentaciones y códigos; resolver antes las necesidades de otros rubros que alteren ese esquema. Completar backend y pantallas del módulo.
+2. Definir y migrar conteos, saldos y movimientos, con sus invariantes y correcciones, y construir sus flujos.
+3. Definir venta/pagos y el contrato de sincronización como un recorrido integrado; verificar última unidad, reintentos y ventas offline cobradas. La sincronización no se agrega como parche después de diseñar ventas.
+4. Completar compras, traslados, gastos, postventa, campañas y reportes con las reglas correspondientes.
+5. Iterar implementación y pruebas internas; terminar el alcance acordado antes del uso real en el puesto.
 
 La numeración organiza dependencias y no restringe pruebas o desarrollo iterativo interno. Un cambio posterior se introduce mediante una nueva migración; no se reescribe una migración que ya se aplicó en un entorno compartido.
 

@@ -1,0 +1,10 @@
+project_id = "vexor"
+
+[api]
+enabled = false
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = false
