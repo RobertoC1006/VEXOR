@@ -48,6 +48,10 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **Orden de trabajo confirmado:** definir primero el stack tecnológico; después elaborar el modelo inicial de datos y el modelo entidad-relación; luego empezar el demo. El stack base ya está elegido; quedan detalles técnicos por precisar.
 - **Alcance del modelo inicial:** presentar la cantidad de tablas propuestas, su listado, la finalidad y el uso de cada una, sus relaciones y el diagrama entidad-relación. Debe contemplar el carácter multitenant del producto. Por ahora se posponen índices, restricciones y optimizaciones; el esquema concreto aún no está aprobado.
 
+### Arquitectura — confirmado
+
+- El sistema tendrá arquitectura monolítica, según indicación expresa del usuario. La organización modular y el esquema concreto de datos se revisan como propuestas técnicas; no quedan aprobados por elegir monolito.
+
 ### Stack tecnológico y alojamiento para pruebas
 
 - **Base de datos:** PostgreSQL, alojado inicialmente en Supabase para desarrollo y pruebas.
@@ -142,12 +146,15 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - Vincular compras a ese cliente permitirá al personal autorizado consultar su historial y conocer qué productos suele llevar. El comprador no tiene acceso al sistema.
 - Los descuentos deben poder aplicarse a cualquier comprador, nuevo o frecuente, sin obligarlo a registrarse.
 - El propietario configura las políticas y límites de descuento.
+- Una excepción de descuento se aplica únicamente a la venta concreta; no concede al vendedor permiso para cambiar el límite general de descuentos.
 - En la venta se debe poder negociar indicando el total final o el descuento en soles: tres productos de S/18 suman S/54; cobrar S/50 equivale a descontar S/4. La interfaz concreta queda por diseñar y debe ser amigable.
 - Las recomendaciones de productos a partir del historial, especialmente mediante IA, quedan como idea para explorar después. No se ha aprobado su implementación ni elegido proveedor o modelo para esta función; esto no revoca la ayuda básica con IA ya solicitada.
 
 ### Equipo, control e IA
 
 - El propietario administra trabajadores y les concede acceso mediante roles y permisos. Ejemplos solicitados: vendedor, encargado y administrador del negocio.
+- Dos trabajadores con el mismo rol pueden tener permisos individuales distintos, configurados por el propietario; por ejemplo, permitir a uno gestionar inventario y al otro solo vender.
+- El propietario puede conceder permisos temporales con vencimiento editable, como habilitar un ajuste por mercadería encontrada. No se exige un flujo de solicitudes y aprobaciones dentro del sistema. La matriz exacta y el comportamiento offline siguen pendientes; el consumo único propuesto para excepciones de venta aún no está confirmado.
 - Consultar costos, cambiar precios y otras acciones dependen de los roles, permisos y políticas del negocio. El usuario señala al propietario para consultar costos y al propietario o encargado para cambiar precios; la matriz detallada y las excepciones siguen pendientes.
 - Debe haber reportes y una bitácora de auditoría.
 - El usuario quiere ayuda básica con IA en el plan inicial: asistencia para registrar productos, orientación sobre el sistema y preguntas sencillas en lenguaje natural sobre el negocio.
