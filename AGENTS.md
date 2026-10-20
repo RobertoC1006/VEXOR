@@ -11,4 +11,12 @@ Usa el contexto disponible de la conversación. Consulta [docs/MEMORIA_PROYECTO.
 - Desarrolla el alcance solicitado en cada tarea; la memoria del producto no es una instrucción para implementar todas sus funciones de una vez.
 - Diseña para comerciantes de mercados peruanos, uso rápido desde celulares y conectividad intermitente. El piloto de lencería no limita el sistema a ese rubro.
 
+## Calidad y organización del código
+
+- Antes de añadir código, revisa las soluciones existentes y reutilízalas cuando corresponda. Evita métodos redundantes y variantes de una misma lógica que puedan divergir.
+- En frontend, comparte layouts, navegación, botones, campos y otros componentes o fragmentos repetidos. Separa la presentación de la lógica reutilizable de interacción y acceso a datos.
+- En backend, concentra cada regla de negocio en el módulo responsable y reutiliza servicios, validaciones y utilidades comunes. El frontend puede validar para ayudar al usuario, pero la autorización y las reglas de negocio se aplican en el servidor; las restricciones y RLS de la base siguen como protección adicional.
+- Mantén archivos cohesionados, nombres claros y responsabilidades delimitadas. Al acercarse a unas 500 líneas, revisa si hay responsabilidades separables o duplicación. Es una referencia, no un límite rígido: conserva el código necesario y no lo fragmentes artificialmente para cumplir una cifra.
+- Extrae abstracciones cuando haya una responsabilidad o reutilización clara; evita tanto copiar lógica como crear capas o componentes innecesarios. Al modificar código, comprueba que la lógica compartida conserve el comportamiento de sus consumidores.
+
 Esta es memoria local y revisable del proyecto. No implica que se haya activado o modificado la memoria global de Codex.

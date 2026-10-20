@@ -10,6 +10,8 @@ await client.connect();
 try {
   const results = await client.query(await readFile('tests/db/nucleo.sql', 'utf8'));
   console.log((Array.isArray(results) ? results : [results]).flatMap(r => r.rows).filter(r => r.resultado));
+  const invitations=await client.query(await readFile('tests/db/backend_acceso.sql','utf8'));
+  console.log((Array.isArray(invitations)?invitations:[invitations]).flatMap(r=>r.rows).filter(r=>r.resultado));
 } finally {
   await client.query('rollback');
   await client.end();

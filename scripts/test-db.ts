@@ -13,6 +13,8 @@ try {
   }
   const results = await db.exec(await readFile('tests/db/nucleo.sql', 'utf8'));
   const rows = results.flatMap(r => r.rows).filter((r: any) => r.resultado);
+  const invitations = await db.exec(await readFile('tests/db/backend_acceso.sql','utf8'));
+  rows.push(...invitations.flatMap(r=>r.rows).filter((r:any)=>r.resultado));
   await mkdir('test-results', { recursive: true });
   await writeFile('test-results/nucleo-local.json', JSON.stringify({ engine: 'PGlite PostgreSQL', at: new Date().toISOString(), rows }, null, 2));
   console.log(rows);

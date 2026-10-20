@@ -1,6 +1,6 @@
 # Núcleo de base de datos — bloque 1
 
-Fecha: 20 de octubre de 2026. Alcance: base de datos; el backend HTTP y la PWA continúan en el siguiente bloque.
+Fecha: 20 de octubre de 2026. Documento del primer bloque de base de datos. El [backend HTTP del núcleo](BACKEND_NUCLEO.md) se implementó después; la PWA está pendiente.
 
 ## Reglas del usuario y decisiones técnicas
 
@@ -20,7 +20,7 @@ Se conserva el monolito NestJS/TypeScript, PostgreSQL en Supabase y Supabase Aut
 
 `20261020000200_runtime_migraciones.sql` permite a `postgres` asumir `vexor_runtime` para probar RLS en Supabase. Es necesario porque el administrador de Supabase tiene BYPASSRLS pero no es superusuario, y crear el rol no garantiza el permiso SET ROLE. La relación no concede acceso administrativo al runtime y no crea un login nuevo.
 
-Kysely se eligió por su acceso directo a transacciones y SQL PostgreSQL sin duplicar el esquema de migraciones en un ORM. El adaptador está en `src/database/database.ts`; todavía no es un módulo HTTP de NestJS.
+Kysely se eligió por su acceso directo a transacciones y SQL PostgreSQL sin duplicar el esquema de migraciones en un ORM. El adaptador está en `src/database/database.ts` y se integró posteriormente en `DatabaseService` de NestJS.
 
 Fuentes técnicas: [RLS de PostgreSQL 17](https://www.postgresql.org/docs/17/ddl-rowsecurity.html), [migraciones de Supabase](https://supabase.com/docs/guides/deployment/database-migrations), [API de Kysely](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html).
 
@@ -100,7 +100,7 @@ npm run db:test
 npm run db:test:postgres
 ```
 
-`db:test` crea PostgreSQL embebido desechable con PGlite y aplica las migraciones desde cero. `db:test:postgres` crea un contenedor propio PostgreSQL 17 con puerto aleatorio solo en `127.0.0.1`, contraseña aleatoria y sin volúmenes; lo retira al terminar. Necesita Docker activo. El archivo `tests/db/bootstrap.sql` simula exclusivamente las dependencias Auth/roles en estas bases vacías; **no debe ejecutarse en Supabase**, que ya las administra.
+`db:test` crea PostgreSQL embebido desechable con PGlite y aplica las migraciones desde cero. `db:test:postgres` utiliza PostgreSQL portátil en Windows o un contenedor PostgreSQL 17 en otros sistemas; escucha solo en loopback con contraseña aleatoria y retira la base al terminar. El archivo `tests/db/bootstrap.sql` simula exclusivamente las dependencias Auth/roles en estas bases vacías; **no debe ejecutarse en Supabase**, que ya las administra.
 
 `tests/db/nucleo.sql` ejecuta 71 comprobaciones de FKs, unicidad, vigencias, concesiones/denegaciones, copropiedad, RLS, escalada de privilegios, estado de acceso y auditoría. Termina en ROLLBACK y comprueba además que el contexto no queda en una conexión reutilizada. La misma suite sirve en Supabase desarrollo; los datos Auth ficticios también se revierten.
 
@@ -129,4 +129,4 @@ Cuando la única autorización disponible es la sesión del Dashboard, `scripts/
 
 Para repetir únicamente la suite remota desde terminal, establecer `MIGRATION_DATABASE_URL` y `VEXOR_TEST_TARGET=development`, y ejecutar `npm run db:test:remote`. También puede ejecutarse el archivo de pruebas en el SQL Editor de este proyecto. No ejecutar el bootstrap de pruebas en remoto.
 
-Siguiente bloque: integrar NestJS con JWT validado, listado/selección de membresías, aprovisionamiento de negocios e identidades, cuenta SQL restringida, servicios y endpoints de equipo/locales/permisos, y pruebas HTTP. Después, acceso y primeras pantallas del demo. La caducidad offline, excepciones de venta, retención comercial y matriz de roles de otros módulos se resolverán antes de activar sus funciones.
+El [bloque de backend](BACKEND_NUCLEO.md) implementa JWT validado, listado/selección de membresías, alta por invitación y endpoints de equipo/locales/permisos con pruebas HTTP. Continúan la configuración de conexión/alojamiento y las primeras pantallas del demo. La caducidad offline, excepciones de venta, retención comercial y matriz de roles de otros módulos se resolverán antes de activar sus funciones.
