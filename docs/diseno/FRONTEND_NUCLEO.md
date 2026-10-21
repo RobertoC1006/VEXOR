@@ -61,7 +61,7 @@ npm run test:hosting
 node --env-file=.env --env-file=.env.runtime --import tsx scripts/test-client-build.ts
 ```
 
-`test:hosting` solo comprueba el adaptador local con la conexión existente. Para repetir pruebas manuales sin alterar vexor-dev: `npm run demo:browser`; abre `http://localhost:5174`. El comando crea PostgreSQL desechable, Auth local con JWT firmados, el Nest real y otra instancia de Vite. Imprime credenciales **ficticias y exclusivamente locales**. Ctrl+C cierra esos procesos y la base de prueba. Nunca usar esas credenciales en Supabase.
+`test:hosting` comprueba por HTTP un servidor ya iniciado; `VEXOR_SMOKE_ORIGIN` permite elegir el destino remoto sin mutaciones. Para repetir pruebas manuales sin alterar vexor-dev: `npm run demo:browser`; abre `http://localhost:5174`. El comando crea PostgreSQL desechable, Auth local con JWT firmados, el Nest real y otra instancia de Vite. Imprime credenciales **ficticias y exclusivamente locales**. Ctrl+C cierra esos procesos y la base de prueba. Nunca usar esas credenciales en Supabase.
 
 ## Configuración Auth y demo real
 
@@ -71,18 +71,18 @@ En vexor-dev quedaron configurados Site URL `http://localhost:5173` y redirect e
 
 SMTP personalizado está desactivado. El primer correo fue aceptado por el proveedor y el usuario completó el acceso; la notificación posterior de la invitación comercial devolvió `auth_rechazada`. La solicitud durable pudo aceptarse desde la sesión vigente. No se atribuye una causa más específica ni se afirma entrega SMTP general. Antes de invitar clientes externos hay que configurar un proveedor SMTP y validar entrega, recuperación y reenvíos.
 
-## Vercel
+## Vercel y Render
 
-La instrucción actual del usuario sustituye Render: un proyecto Vercel para la PWA estática y el monolito Nest. El repositorio incluye configuración, no un despliegue activo.
+La instrucción actual del usuario separa el alojamiento: PWA estática en Vercel y monolito Nest en Render. La [guía de despliegue](DESPLIEGUE_DEMO.md) contiene la configuración vigente.
 
 - Framework preset: Other; raíz: este repositorio; Node 22 o posterior compatible.
-- Build: `npm run build`; salida pública: `dist/web`.
-- `/api/v1/*` se enruta a `api/index.ts`; el resto de rutas de aplicación vuelve a `index.html`. Los archivos estáticos existentes se sirven directamente.
-- La función reutiliza una instancia Nest por proceso caliente y mantiene RLS/autorización. No inicia un puerto de escucha. Incluye la CA pública de Supabase y los módulos compilados del servidor.
+- Build Vercel: `npm run build:web`; salida pública: `dist/web`. Solo recibe las dos variables públicas de Auth.
+- `/api/v1/*` se dirige mediante rewrite externo a Render; el resto de rutas de aplicación vuelve a `index.html`. Los archivos estáticos existentes se sirven directamente.
+- Render compila `build:api` y ejecuta `npm start` con `HOST=0.0.0.0` y su `PORT`. Conserva RLS/autorización y la CA pública de Supabase. Se retiró el adaptador serverless de Vercel.
 - Variables del servidor: `NODE_ENV=production`, `DATABASE_URL` de la cuenta restringida existente, `DATABASE_POOL_MAX` inicial bajo (por ejemplo 2), URL/clave pública Auth, `SUPABASE_SECRET_KEY`, `APP_ORIGINS` con el origen HTTPS exacto y `INVITATION_REDIRECT_URL` terminado en `/auth/callback`.
 - Nunca subir `MIGRATION_DATABASE_URL`, `.env`, `.env.runtime`, claves SQL o contraseñas a la configuración pública. `.vercelignore` excluye secretos y resultados locales; el build se revisa buscando sus valores sin imprimirlos.
 - Registrar el origen y callback definitivos en Supabase Auth al conocer el dominio. No abrir comodines para previews de terceros. La publicación del alojamiento corresponde al siguiente paso, después de la demo.
 
-La prueba local del adaptador no certifica el enrutamiento, límites, concurrencia de conexiones o funcionamiento de la plataforma Vercel. Estos puntos deben comprobarse en el primer preview HTTPS antes de publicar. No se contrató ningún servicio ni se volvió a aprovisionar la cuenta SQL.
+Las pruebas locales no certifican el enrutamiento, límites o funcionamiento de los alojamientos. Se verifica HTTP contra ambos destinos y el recorrido en navegador HTTPS. No se vuelve a aprovisionar la cuenta SQL.
 
 Referencias técnicas: [Supabase Auth](https://supabase.com/docs/guides/auth/passwords), [redirects](https://supabase.com/docs/guides/auth/redirect-urls), [SMTP](https://supabase.com/docs/guides/auth/auth-smtp) y [funciones Node de Vercel](https://vercel.com/docs/functions/runtimes/node-js).

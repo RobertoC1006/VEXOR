@@ -1,17 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:web",
   "outputDirectory": "dist/web",
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 60,
-      "includeFiles": "{dist/**,supabase/certs/**}",
-      "excludeFiles": "{.env*,test-results/**}"
-    }
-  },
   "rewrites": [
-    { "source": "/api/v1/:path*", "destination": "/api/index" },
+    { "source": "/api/v1/:path*", "destination": "https://vexor-api-robertoc1006.onrender.com/api/v1/:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [

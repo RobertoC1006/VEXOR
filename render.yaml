@@ -1,0 +1,30 @@
+# El servicio se configura con secretos privados en Render, nunca con credenciales SQL de migración.
+services:
+  - type: web
+    name: vexor-api-robertoc1006
+    runtime: node
+    plan: free
+    region: oregon
+    branch: codex/demo-vercel
+    buildCommand: npm ci --include=dev && npm run build:api
+    startCommand: npm start
+    healthCheckPath: /api/v1/health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_POOL_MAX
+        value: "2"
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: APP_ORIGINS
+        sync: false
+      - key: INVITATION_REDIRECT_URL
+        sync: false
