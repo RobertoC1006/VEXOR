@@ -2,33 +2,25 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Building2, Mail, Send } from 'lucide-react';
 import { Button, Field, Notice } from '../../../compartido/componentes/ui';
-import { api, ApiError } from '../../../compartido/api/api';
+import { ApiError } from '../../../compartido/api/api';
 import { platformPath } from '../platform';
 import type { PlatformInvitation } from '../types';
 import { useWorkspace } from '../../../compartido/acceso/workspace';
 import { usePlatform } from '../../estado/platform';
+import { useInvitationRequest } from '../../../compartido/invitaciones/use-invitation-request';
 interface Draft {
   email: string;
   nombre: string;
   negocio_nombre: string;
   zona_horaria: string;
 }
-interface Pending {
-  key: string;
-  body: Draft;
-}
 export function NewBusinessInvitationPage() {
   const { data } = useWorkspace(),
     { reload } = usePlatform(),
     navigate = useNavigate();
   const storageKey = `vexor:platform-invitation:${data!.me.auth_user_id}`;
-  const [pending, setPending] = useState<Pending | null>(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem(storageKey) ?? 'null');
-    } catch {
-      return null;
-    }
-  });
+  const request = useInvitationRequest<Draft>(storageKey);
+  const { pending } = request;
   const [draft, setDraft] = useState<Draft>(
       pending?.body ?? { email: '', nombre: '', negocio_nombre: '', zona_horaria: 'America/Lima' },
     ),
@@ -56,24 +48,10 @@ export function NewBusinessInvitationPage() {
     setBusy(true);
     setError('');
     try {
-      const request = pending ?? { key: crypto.randomUUID(), body: draft };
-      // Keep the original request until its response is known, including across a reload.
-      sessionStorage.setItem(storageKey, JSON.stringify(request));
-      setPending(request);
-      const invitation = await api<PlatformInvitation>(platformPath, {
-        method: 'POST',
-        headers: { 'Idempotency-Key': request.key },
-        body: JSON.stringify(request.body),
-      });
-      sessionStorage.removeItem(storageKey);
-      setPending(null);
+      const invitation = await request.send<PlatformInvitation>(platformPath, draft);
       setResult(invitation);
       void reload(true);
     } catch (e) {
-      if (e instanceof ApiError && [400, 403, 404].includes(e.status)) {
-        sessionStorage.removeItem(storageKey);
-        setPending(null);
-      }
       setError(
         e instanceof ApiError && e.status === 409
           ? 'Esta solicitud entra en conflicto con otra o cambió su estado. Revisa las invitaciones antes de crear una nueva.'

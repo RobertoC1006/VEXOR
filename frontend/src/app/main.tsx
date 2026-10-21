@@ -31,6 +31,14 @@ import { PlatformDashboardPage } from '../proveedor/inicio/paginas/dashboard-pag
 import { PlatformBusinessesPage } from '../proveedor/negocios/paginas/businesses-page';
 import { PlatformInvitationsPage } from '../proveedor/invitaciones/paginas/invitations-page';
 import { NewBusinessInvitationPage } from '../proveedor/invitaciones/paginas/invitation-form';
+import { BusinessArea } from '../comerciante/area';
+import { BusinessSettingsPage } from '../comerciante/negocio/paginas/business-settings-page';
+import { LocalsPage } from '../comerciante/locales/paginas/locals-page';
+import { TeamLayout } from '../comerciante/equipo/layout';
+import { TeamPage } from '../comerciante/equipo/paginas/team-page';
+import { RolesPage } from '../comerciante/equipo/paginas/roles-page';
+import { MemberPage } from '../comerciante/equipo/paginas/member-page';
+import { TeamInvitationsPage } from '../comerciante/equipo/paginas/team-invitations-page';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -103,8 +111,18 @@ function App() {
                 <Route path="/" element={<WorkspaceHome />} />
                 <Route element={<AppLayout />}>
                   <Route path="/negocios" element={<BusinessesPage />} />
-                  <Route path="/negocios/:negocioId" element={<DashboardPage />} />
                   <Route path="/invitaciones" element={<InvitationsPage />} />
+                </Route>
+                <Route path="/negocios/:negocioId" element={<BusinessArea />}>
+                  <Route index element={<DashboardPage />} />
+                  <Route path="configuracion" element={<BusinessSettingsPage />} />
+                  <Route path="locales" element={<LocalsPage />} />
+                  <Route path="equipo" element={<TeamLayout />}>
+                    <Route index element={<TeamPage />} />
+                    <Route path="roles" element={<RolesPage />} />
+                    <Route path="invitaciones" element={<TeamInvitationsPage />} />
+                    <Route path="miembros/:miembroId" element={<MemberPage />} />
+                  </Route>
                 </Route>
                 <Route element={<PlatformArea />}>
                   <Route path="/plataforma" element={<PlatformDashboardPage />} />

@@ -19,7 +19,8 @@ const Context = createContext<{
   error: Error | null;
   loading: boolean;
   reload: () => Promise<void>;
-}>({ data: null, error: null, loading: true, reload: async () => {} });
+  updateBusiness: (id: string, nombre: string) => void;
+}>({ data: null, error: null, loading: true, reload: async () => {}, updateBusiness: () => {} });
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Workspace | null>(null),
     [error, setError] = useState<Error | null>(null),
@@ -51,6 +52,21 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     void reload();
     return () => request.current?.abort();
   }, [reload]);
-  return <Context.Provider value={{ data, error, loading, reload }}>{children}</Context.Provider>;
+  const updateBusiness = (id: string, nombre: string) =>
+    setData((previous) =>
+      previous
+        ? {
+            ...previous,
+            businesses: previous.businesses.map((b) =>
+              b.negocio_id === id ? { ...b, nombre } : b,
+            ),
+          }
+        : previous,
+    );
+  return (
+    <Context.Provider value={{ data, error, loading, reload, updateBusiness }}>
+      {children}
+    </Context.Provider>
+  );
 }
 export const useWorkspace = () => useContext(Context);

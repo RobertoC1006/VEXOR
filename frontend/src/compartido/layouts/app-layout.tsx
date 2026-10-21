@@ -9,9 +9,11 @@ import { InstallButton } from '../componentes/install-button';
 export function AppLayout({
   area = 'business',
   children,
+  navigation,
 }: {
   area?: 'business' | 'platform';
   children?: ReactNode;
+  navigation?: ReactNode;
 }) {
   const { data } = useWorkspace(),
     { signOut } = useSession(),
@@ -58,38 +60,40 @@ export function AppLayout({
       <ArrowLeftRight size={16} />
     </Link>
   ) : null;
-  const links = platform ? (
-    <>
-      <NavLink to="/plataforma" end>
-        <House size={19} /> Inicio
-      </NavLink>
-      <NavLink to="/plataforma/negocios">
-        <Building2 size={19} /> Negocios
-      </NavLink>
-      <NavLink to="/plataforma/invitaciones">
-        <Mail size={19} /> Invitaciones
-      </NavLink>
-    </>
-  ) : (
-    <>
-      {selected ? (
-        <NavLink to={`/negocios/${selected.negocio_id}`} end>
+  const links =
+    navigation ??
+    (platform ? (
+      <>
+        <NavLink to="/plataforma" end>
           <House size={19} /> Inicio
         </NavLink>
-      ) : (
-        <Link to="/negocios">
-          <House size={19} /> Inicio
-        </Link>
-      )}
-      <NavLink to="/negocios" end>
-        <Building2 size={19} /> Mis negocios
-      </NavLink>
-      <NavLink to="/invitaciones">
-        <Mail size={19} /> Invitaciones{' '}
-        {!!data?.invitations.length && <span className="count">{data.invitations.length}</span>}
-      </NavLink>
-    </>
-  );
+        <NavLink to="/plataforma/negocios">
+          <Building2 size={19} /> Negocios
+        </NavLink>
+        <NavLink to="/plataforma/invitaciones">
+          <Mail size={19} /> Invitaciones
+        </NavLink>
+      </>
+    ) : (
+      <>
+        {selected ? (
+          <NavLink to={`/negocios/${selected.negocio_id}`} end>
+            <House size={19} /> Inicio
+          </NavLink>
+        ) : (
+          <Link to="/negocios">
+            <House size={19} /> Inicio
+          </Link>
+        )}
+        <NavLink to="/negocios" end>
+          <Building2 size={19} /> Mis negocios
+        </NavLink>
+        <NavLink to="/invitaciones">
+          <Mail size={19} /> Invitaciones{' '}
+          {!!data?.invitations.length && <span className="count">{data.invitations.length}</span>}
+        </NavLink>
+      </>
+    ));
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
@@ -179,7 +183,10 @@ export function AppLayout({
           <span>Perú</span>
         </footer>
       </div>
-      <nav className="bottom-nav" aria-label="Navegación móvil">
+      <nav
+        className={`bottom-nav ${navigation ? 'business-nav' : ''}`}
+        aria-label="Navegación móvil"
+      >
         {links}
       </nav>
       {open && (

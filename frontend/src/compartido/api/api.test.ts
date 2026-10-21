@@ -67,4 +67,31 @@ describe('API y aislamiento de sesión', () => {
       expect.anything(),
     );
   });
+  it('respeta has_more=false aunque la última página tenga exactamente 100 filas', async () => {
+    const fetcher = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ items: Array.from({ length: 100 }, (_, i) => i), has_more: false }),
+        ),
+      );
+    fetcher.mockClear();
+    expect(await listAll('/negocios/A/locales')).toHaveLength(100);
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+  it('explica conflictos conocidos sin mostrar mensajes arbitrarios del servidor', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: { code: 'LIMITE_PUESTOS_ACTIVOS', message: 'interno' },
+          requestId: 'local-test',
+        }),
+        { status: 409 },
+      ),
+    );
+    await expect(api('/negocios/A/locales')).rejects.toMatchObject({
+      code: 'LIMITE_PUESTOS_ACTIVOS',
+      message: 'El plan básico permite un solo puesto activo para venta.',
+    });
+  });
 });

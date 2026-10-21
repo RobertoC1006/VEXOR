@@ -6,3 +6,5 @@
 @import '../compartido/estilos/app.css';
 @import '../compartido/estilos/responsive.css';
 @import '../proveedor/estilos/platform.css';
+@import '../compartido/componentes/forms.css';
+@import '../comerciante/estilos/settings.css';

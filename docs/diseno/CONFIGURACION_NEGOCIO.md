@@ -25,7 +25,8 @@ Fuentes ejecutables: `backend/supabase/migrations/20261020000100_nucleo.sql` y `
 ## Reglas que requieren definición antes de su función
 
 - Matriz inicial de permisos y quién puede asignarlos. Actualmente la gestión de equipo, roles, asignaciones e invitaciones está reservada al propietario; no hay una matriz comercial predefinida aprobada.
-- Activación/desactivación y cambio de uso de locales. Ya existe soporte técnico de estados y conservación de registros; falta concretar el comportamiento de negocio que se ofrecerá en la interfaz. No suponer reglas sobre existencias o movimientos de módulos futuros.
+
+El usuario confirmó incluir ahora pausar/reactivar locales y cambiar su habilitación de venta. La interfaz conserva los registros y respeta el límite existente de un puesto activo habilitado para vender. Pausar/reactivar queda reservado al propietario; la edición delegada requiere el permiso y acceso al local. Este bloque no define efectos sobre existencias ni movimientos de módulos futuros.
 
 ## Backend de configuración
 
@@ -56,11 +57,20 @@ Las listas de negocios propios, locales, miembros, roles, asignaciones, permisos
 - Se conservan los nombres libres, roles propios de cada negocio y asignaciones configurables. No se incorporan campos obligatorios del piloto ni una clasificación rígida de rubros. Atributos de productos y variantes corresponden al bloque de catálogo.
 - Un segundo puesto activo de venta responde 409 con `LIMITE_PUESTOS_ACTIVOS`; un nombre de rol duplicado, 409 con `NOMBRE_ROL_DUPLICADO`. Son traducciones acotadas de las restricciones existentes, sin exponer nombres internos ni SQL.
 
-Las reglas pendientes de la sección anterior siguen abiertas: esta revisión conserva el comportamiento del núcleo, sin aprobar una matriz comercial predefinida ni una política nueva de cambios de uso de locales.
+La matriz comercial predefinida sigue pendiente: cada propietario puede configurar sus propios roles y permisos usando el catálogo existente.
 
-### Frontend pendiente
+### Frontend de configuración
 
-El frontend comercial actual muestra información del negocio y acceso, selección de negocio y aceptación de invitaciones. Las pantallas de edición y gestión de este bloque siguen pendientes. Deben consumir las operaciones existentes y nuevas sin duplicar la autorización ni las reglas en la interfaz. El contrato OpenAPI actualizado se genera en `docs/api/openapi.json`; detalla rutas y entradas, y esta sección complementa la semántica de las respuestas.
+Implementado en la rama de trabajo, pendiente de revisión del usuario y publicación:
+
+- **Mi negocio:** nombre y zona horaria; consulta sin edición cuando falta permiso. El nombre actualizado se refleja también en la navegación compartida.
+- **Puestos y almacenes:** creación, edición, habilitación de venta y pausa/reactivación con confirmación; errores de límite conservan el formulario.
+- **Equipo:** personas, propiedad y acceso activo, asignación explícita de locales, roles personalizados y sus acciones, asignación de roles por negocio/local y permisos individuales para permitir/denegar con vigencia, edición y revocación conservando el registro.
+- **Invitaciones de equipo:** solicitud, estado, reenvío y revocación. Los reintentos conservan cuerpo y clave de idempotencia en la sesión, también al volver a abrir la pantalla. La aceptación del correo para envío se distingue de la incorporación efectiva de la persona.
+
+Se reutilizan layout, navegación, campos, avisos, confirmaciones, carga de recursos y acciones. El contexto compartido del negocio evita consultas redundantes; las respuestas antiguas se descartan al cambiar de negocio. Las operaciones consumen la API existente y mantienen autorización del servidor y RLS. El contrato OpenAPI está en `docs/api/openapi.json`.
+
+La interfaz sigue las reglas existentes de conectividad: estas operaciones requieren conexión; no se presenta una escritura local como guardada en el servidor.
 
 ## Verificación local
 
@@ -72,3 +82,11 @@ El frontend comercial actual muestra información del negocio y acceso, selecci�
 - Reorganización: las mismas pruebas vuelven a pasar desde `backend/` y `frontend/`; la suite HTTP alcanza 216 comprobaciones al añadir la compatibilidad de ruta del certificado. Compilación de ambas salidas y comprobación del paquete público correctas.
 
 Las pruebas usan bases locales desechables. El backend revisado no requiere migraciones nuevas y no modifica Supabase ni publica cambios en Vercel o Render. Los resultados locales de `test-results/` no se versionan. La entrega/recuperación de correo para clientes externos sigue necesitando la configuración y verificación SMTP pendientes del proyecto.
+
+### Verificación de las pantallas (21 de octubre de 2026)
+
+- `npm run typecheck`, `npm run build` y `npm run test:client-build`: correctos. Paquete público comprobado sin secretos locales.
+- `npm run test:web`: 31 pruebas en ocho archivos. Incluyen cancelación de respuestas de otro negocio, lectura sin permiso de edición, actualización del nombre compartido, confirmación/cancelación de pausa, conflicto de locales, protección del último propietario, edición de vigencia sin modificar identidad/alcance e idempotencia de invitación al remontar.
+- Navegador con `npm run demo:browser`: negocio, locales, rol de flores/regalos y asignaciones/permisos individuales; invitación ficticia creada y revocada, cuenta de trabajador con datos de negocio de solo lectura y ruta directa de equipo bloqueada sin permiso. Auth y PostgreSQL son locales; no se envían correos reales.
+- Vista móvil de 390 × 844: navegación inferior y lista de locales verificadas visualmente, sin desbordamiento horizontal. Evidencia local en `test-results/configuracion-movil.png`.
+- El backend no cambió en esta entrega de pantallas; las 216 comprobaciones HTTP corresponden a la revisión anterior descrita arriba. No se ejecutaron migraciones ni despliegues.
