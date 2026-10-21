@@ -11,6 +11,12 @@ Usa el contexto disponible de la conversación. Consulta [docs/MEMORIA_PROYECTO.
 - Desarrolla el alcance solicitado en cada tarea; la memoria del producto no es una instrucción para implementar todas sus funciones de una vez.
 - Diseña para comerciantes de mercados peruanos, uso rápido desde celulares y conectividad intermitente. El piloto de lencería no limita el sistema a ese rubro.
 
+## Aprobación de bloques y flujo Git
+
+- Cuando el usuario confirme que un bloque quedó aprobado (por ejemplo, «listo, queda ese cambio»), realizar las verificaciones pertinentes, crear un commit con los cambios de ese bloque y hacer push a la rama actual, sin solicitar otra confirmación para esos pasos. Una idea, pregunta o cambio aún en revisión no activa este cierre.
+- No incluir credenciales, secretos, resultados locales ni cambios ajenos al bloque aprobado. Informar el commit, la rama y el resultado del push; no darlo por completado si falla.
+- Trabajar por funcionalidades o fases. Cuando se defina el siguiente bloque, crear su rama con prefijo `codex/` desde el estado aprobado y publicado. No inventar la siguiente fase ni crear otra rama solo por terminar la actual.
+
 ## Calidad y organización del código
 
 - Antes de añadir código, revisa las soluciones existentes y reutilízalas cuando corresponda. Evita métodos redundantes y variantes de una misma lógica que puedan divergir.
