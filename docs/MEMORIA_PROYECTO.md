@@ -6,9 +6,29 @@
 
 VEXOR será un SaaS multitenant para ayudar a comerciantes de mercados peruanos a gestionar sus negocios de forma sencilla y rápida desde el celular. El primer piloto será el negocio familiar de lencería del usuario. El diseño debe contemplar otros rubros desde su base: ropa, zapatos, abarrotes, juguetes, flores y otros.
 
-Se acordó comenzar el desarrollo por módulos. Ya están elegidos el stack base y la arquitectura monolítica; existe una propuesta lógica de 60 tablas, aún no aprobada como esquema físico definitivo. El repositorio contiene documentación de diseño; todavía no hay aplicación ni migraciones implementadas. La siguiente tarea es diseñar e implementar la base de datos del núcleo: negocios, usuarios, permisos y locales.
+El núcleo ya está implementado y publicado como demo: migraciones PostgreSQL, aislamiento RLS, backend NestJS y frontend React/TypeScript/Vite. Incluye inicio de sesión, callback Auth, establecimiento de contraseña, invitaciones, selección de negocio y dos áreas separadas: administración de VEXOR y área comercial. La aplicación consulta datos reales de `vexor-dev`; no simula ventas. La propuesta lógica de 60 tablas sigue siendo una referencia para los módulos restantes, no el esquema físico completo aprobado.
 
-Documentación para continuar: [modelo inicial de datos](diseno/MODELO_DATOS_INICIAL.md), [arquitectura propuesta](diseno/ARQUITECTURA_MONOLITO.md) y [preparación para implementar](diseno/PREPARACION_IMPLEMENTACION.md). Consultar solo el documento y las secciones necesarios.
+Para retomar, consultar según la tarea: [alojamiento y publicación](#alojamiento-y-publicación-vigentes--confirmado), [base de datos del núcleo](diseno/NUCLEO_BASE_DATOS.md), [backend](diseno/BACKEND_NUCLEO.md), [frontend y dos áreas](diseno/FRONTEND_NUCLEO.md), [configuración del despliegue](diseno/DESPLIEGUE_DEMO.md) y [verificación pública](verificacion/DESPLIEGUE_2026-10-20.md). El [modelo inicial de datos](diseno/MODELO_DATOS_INICIAL.md) sirve para revisar funciones posteriores; no usar los antiguos documentos de preparación como evidencia del estado implementado.
+
+### Alojamiento y publicación vigentes — confirmado
+
+| Componente | Destino actual |
+| --- | --- |
+| Frontend PWA | Vercel, proyecto `vexor-robertoc1006`, plan Hobby: https://vexor-robertoc1006.vercel.app |
+| Backend monolítico | Render, servicio `vexor-api-robertoc1006`, plan Free, Oregon: https://vexor-api-robertoc1006.onrender.com/api/v1 |
+| PostgreSQL y Auth | Supabase, proyecto `vexor-dev`, referencia `xlkuqntkxzwayyxovoxy` |
+| Código y rama de publicación | GitHub `RobertoC1006/VEXOR`, rama `main` |
+
+- `main` contiene el backend, frontend y despliegue, incluidas las ramas `codex/backend-nucleo`, `codex/frontend-nucleo` y `codex/demo-vercel`. La transición quedó publicada en el commit `6460247`, con Vercel Ready/Production y Render Live. La rama temporal de preparación se eliminó; `codex/demo-vercel` se conserva en `0cf850e` como referencia anterior. Una vuelta de código no revierte cambios de base de datos.
+- El alojamiento vigente es frontend en Vercel y backend en Render. La alternativa anterior de alojar ambos en Vercel quedó sustituida. `vexor.vercel.app` no pudo asignarse porque ya pertenecía a otro proyecto; cambiar mayúsculas no crea otro dominio. No hay un dominio propio contratado/configurado.
+- GitHub activa despliegues independientes al actualizar `main`. Vercel compila `npm run build:web` y publica `dist/web`; Render instala dependencias, compila `build:api` y ejecuta `npm start`, con Node 22 y health check `/api/v1/health/ready`. Vercel reenvía `/api/v1/*` a Render mediante `vercel.json`. El servicio Render fue creado desde Dashboard; `render.yaml` documenta sus ajustes y no es un Blueprint activo.
+- Las nuevas funcionalidades se trabajan en ramas `codex/` desde `main`; se prueban y revisan antes de integrar su publicación aprobada. Las instrucciones operativas de commit, push y merge están en `AGENTS.md`. Un preview de frontend no crea un backend ni una base aislados. Aún no hay pruebas completas automáticas que bloqueen ambos despliegues ni promoción coordinada.
+- Auth tiene Site URL `https://vexor-robertoc1006.vercel.app` y callback exacto `https://vexor-robertoc1006.vercel.app/auth/callback`; se conserva `http://localhost:5173/auth/callback` para desarrollo. No autorizar comodines de previews. El backend usa ese origen público y callback.
+- Los secretos SQL y Auth se guardan solo en las variables privadas de Render. Vercel recibe únicamente la URL y clave pública de Supabase. Conservar `.env` y `.env.runtime` locales sin mostrarlos ni versionarlos; no transferir la conexión de migración a Render ni volver a aprovisionar la cuenta SQL restringida. Los despliegues no ejecutan aprovisionamiento, migraciones ni altas de administrador.
+- El primer administrador es Roberto Risco, con acceso SaaS y membresía propia de propietario en «Negocio demo VEXOR». Usa una sola cuenta y contraseña para las dos áreas; la administración SaaS no concede acceso comercial implícito. `/` lo dirige a `/plataforma`; el cambio de área conduce a `/negocios` y al dashboard autorizado.
+- Verificado en HTTPS: salud/SQL, rechazo 401 sin sesión, API sin caché, CORS con origen exacto, ausencia de secretos en assets, sesión real, ambas áreas y conservación de sesión al recargar. La transición a `main` pasó tipos, build y los 20 tests de frontend; el código de aplicación coincide con la demo anterior. Se comprobó presentación móvil, no instalación en teléfono físico.
+- **Pendientes de alojamiento:** SMTP personalizado y validación de entrega/recuperación para clientes externos; planes y capacidad para lanzamiento comercial; CI y entornos de prueba aislados. Son pendientes, no tareas autorizadas automáticamente. Render Free puede suspenderse por inactividad y el arranque puede superar el timeout actual de 20 segundos del frontend. No se contrató ningún plan pagado.
+- **Fuera del bloque implementado:** ventas, catálogo/inventario, sincronización offline y gestión de locales/equipo por interfaz. La PWA tiene manifest, iconos y aviso público sin conexión; no almacena datos comerciales ni escrituras pendientes. Dexie y la sincronización siguen siendo dirección acordada, no funcionalidad terminada.
 
 ## Cómo interpretar esta memoria
 
@@ -54,7 +74,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **El usuario define las reglas de negocio y las funcionalidades. El asistente se encarga del trabajo técnico:** diseño e implementación de base de datos, backend, frontend, pruebas y despliegue, respetando el alcance acordado. No trasladar al usuario decisiones rutinarias de programación.
 - Comenzar el desarrollo por módulos; no esperar a definir todo el sistema ni abrir otra ronda general de planificación. Resolver con el usuario las reglas pendientes antes de implementar la función que las necesita. Presentar casos concretos y opciones cuando haga falta una decisión de negocio.
 - **Primera secuencia:** base de datos del núcleo de negocios, usuarios, roles/permisos y locales —diseño físico, herramienta de persistencia, migraciones y comprobación de aislamiento—; después backend de autenticación, pertenencia y permisos; luego acceso y primeras pantallas del frontend/demo.
-- Empezar por la base de datos significa el primer bloque, no crear las 60 tablas de una sola vez. La elección del ORM y demás detalles técnicos corresponde al asistente dentro del stack acordado; todavía no se ha elegido una herramienta concreta.
+- Empezar por la base de datos significa el primer bloque, no crear las 60 tablas de una sola vez. La persistencia implementada utiliza Kysely y `pg`, con migraciones SQL versionadas; los detalles técnicos corresponden al asistente dentro del stack acordado.
 - Después se continúa con productos, inventario y ventas, contemplando la operación offline desde el diseño. Las reglas aún abiertas se resuelven por módulo; no se convierten en requisitos por estar incluidas en una propuesta. Se mantiene completar el alcance acordado antes del uso real en el puesto.
 
 ### Arquitectura — confirmado
@@ -66,9 +86,9 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **Base de datos:** PostgreSQL, alojado inicialmente en Supabase para desarrollo y pruebas.
 - **Backend:** NestJS sobre Node.js, con TypeScript, alojado inicialmente en Render.
 - **Frontend:** React con TypeScript y Vite, como PWA, alojado inicialmente en Vercel.
-- **Datos en el celular:** IndexedDB mediante Dexie.js para los datos necesarios para vender y las ventas pendientes de sincronización.
-- **Carga offline:** service worker y caché de los recursos de la aplicación. La sincronización con el backend requiere implementación propia; estas herramientas no la resuelven automáticamente.
-- **Autenticación:** Supabase Auth. El stack base queda cerrado; el ORM y los detalles de despliegue siguen pendientes.
+- **Datos en el celular — dirección pendiente de implementar:** IndexedDB mediante Dexie.js para los datos necesarios para vender y las ventas pendientes de sincronización.
+- **Carga offline — dirección del producto:** service worker y caché de recursos. Actualmente solo se guarda un aviso público sin conexión; la sincronización comercial requiere implementación propia y sigue pendiente.
+- **Autenticación:** Supabase Auth. Persistencia del núcleo con Kysely/`pg`; alojamiento de la demo y endpoints definidos en «Alojamiento y publicación vigentes».
 - La elección inicial de alojamiento es para desarrollo y pruebas personales, usando mayormente planes gratuitos. No se han elegido planes de pago ni cerrado el alojamiento para producción.
 
 ### Autenticación y aislamiento entre negocios
@@ -77,7 +97,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **Supabase Auth identifica al usuario.** NestJS valida su token y comprueba su pertenencia al negocio y los roles y permisos necesarios para cada operación.
 - **El `tenant_id` enviado desde el celular no concede acceso por sí solo.** NestJS debe validar ese contexto frente a la pertenencia y los permisos del usuario; cambiar el identificador nunca debe permitir acceder a otro negocio ni operar sobre sus datos.
 - **PostgreSQL refuerza el aislamiento con políticas RLS (Row Level Security)** para limitar las filas accesibles según el negocio autorizado. Configurar el contexto de tenant y los permisos de la conexión usada por NestJS para que las políticas se apliquen; ciertos roles privilegiados pueden omitirlas. Usar Supabase no garantiza este aislamiento automáticamente.
-- Estas decisiones están confirmadas; faltan el diseño detallado y la implementación de las políticas, el contexto de conexión y la separación local. También quedan pendientes la continuidad del acceso de un dispositivo previamente autenticado sin conexión, la caducidad de sesión y la revalidación de permisos al sincronizar.
+- El núcleo ya implementa políticas RLS, contexto por transacción y conexión SQL restringida, con verificación de pertenencia y permisos en NestJS. La interfaz trata sesión vencida y acceso denegado. Quedan pendientes la separación local de datos, continuidad del acceso sin conexión y revalidación de permisos al sincronizar; no confundir los controles HTTP existentes con una solución offline terminada.
 
 ### Servicio, negocio y puestos
 
@@ -254,18 +274,18 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 
 ## Pendientes para próximas conversaciones
 
-1. Iniciar el bloque de base de datos de negocios, usuarios, roles/permisos y locales: diccionario físico, herramienta de persistencia, migraciones y pruebas de aislamiento. Completar los detalles de los demás flujos antes de implementar cada módulo.
+1. Definir el siguiente bloque funcional desde el núcleo y la demo ya implementados; concretar las reglas abiertas del módulo elegido antes de desarrollarlo. No repetir el aprovisionamiento SQL ni rehacer el acceso. Consultar los pendientes de alojamiento sin asumir que estén autorizados para ejecución inmediata.
 2. Detallar cómo se corrige un conteo confirmado y se resuelve una diferencia entre stock registrado y físico, con autorización del propietario o de un rol habilitado. La venta de productos con conteo pendiente ya está resuelta: se realiza fuera de VEXOR.
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
 5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, cobros parciales y flujos de postventa y anulaciones. Están confirmados los pagos mixtos con vuelto, el descuento en soles o mediante total final y las políticas configurables por el propietario; faltan diferencias de precio en cambios, reembolsos y tratamiento de productos defectuosos.
-6. Completar la matriz de permisos y la política de auditoría, incluidos uso offline y cambios de acceso. Concretar la integración acordada de Supabase Auth, NestJS y RLS, la continuidad local de una sesión, su caducidad y la revalidación al sincronizar.
+6. Extender permisos y auditoría al implementar cada módulo posterior. La integración online Supabase Auth/NestJS/RLS y el manejo de sesión vencida ya existen; definir continuidad local, caducidad offline y revalidación al sincronizar.
 7. Definir activación/desactivación y cambio de uso de puestos y almacenes, conservación de historial y ampliación del plan. El básico incluye un puesto activo para venta y al menos un almacén pequeño; el plan intermedio sigue como posibilidad sin límites ni precio cerrados.
 8. Delimitar funciones y límites comerciales del plan básico: trabajadores, dispositivos, productos e IA, además de suscripción y cobro del servicio.
 9. Delimitar las preguntas y acciones del asistente, revisión de propuestas, consumo y comportamiento sin conexión.
 10. Detallar preparación inicial del celular, mecanismos de sincronización, conciliación y recuperación de datos, además del alcance offline de otras operaciones. Ya están aceptados la venta offline, las advertencias según la información disponible, la sincronización sin duplicados y la conservación de ventas cobradas ante diferencias.
 11. Precisar qué necesidades de otros rubros entran en la primera versión, como cantidades fraccionarias, venta por peso, lotes o vencimientos.
-12. Revisar y concretar por módulo la propuesta lógica existente de 60 tablas, sin tratarla como esquema definitivo. Resolver los detalles técnicos de persistencia, despliegue y capacidad; desarrollar y verificar el aislamiento antes de usar datos reales. El siguiente paso y el reparto de responsabilidades constan en «Inicio del desarrollo y responsabilidades».
+12. Revisar por módulo la propuesta lógica de 60 tablas, sin tratarla como esquema definitivo. Respetar las migraciones y el aislamiento del núcleo ya implementados; diseñar y verificar los cambios adicionales. La demo pública sigue usando vexor-dev; el lanzamiento comercial requiere sus propias comprobaciones de capacidad y operación.
 13. Precisar campos mínimos y búsqueda de clientes frecuentes, corrección de fichas duplicadas y permisos del personal para consultar el historial. Los compradores no tendrán acceso al sistema. Las sugerencias personalizadas con IA quedan para después.
 14. Detallar traslados: cantidades disponibles y en tránsito, recepción parcial, diferencias, cancelación, corrección y sincronización. Salida y recepción separadas ya están confirmadas.
 15. Precisar la configuración de campañas, impresión, venta rápida y conciliación según los pendientes de [Campañas y etiquetas](memoria/CAMPANAS.md). El flujo base y las cinco mejoras ya están aceptados; estos detalles no deben tratarse como resueltos.
