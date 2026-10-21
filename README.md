@@ -7,6 +7,7 @@ Implementados: base de datos, backend del núcleo y primer frontend de acceso. L
 - [Frontend, recorrido local y configuración de Vercel](docs/diseno/FRONTEND_NUCLEO.md).
 - [Verificación del frontend y recorrido real](docs/verificacion/FRONTEND_2026-10-20.md).
 - [Dos áreas y verificación de la administración de VEXOR](docs/verificacion/ADMINISTRACION_2026-10-20.md).
+- [Demo pública en Vercel y Render: verificación y pendientes](docs/verificacion/DESPLIEGUE_2026-10-20.md).
 
 - [Diseño físico, seguridad, ejecución y pruebas](docs/diseno/NUCLEO_BASE_DATOS.md).
 - [Migración inicial](supabase/migrations/20261020000100_nucleo.sql).
