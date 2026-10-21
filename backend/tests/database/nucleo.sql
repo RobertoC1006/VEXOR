@@ -48,7 +48,9 @@ insert into app.miembros_locales(negocio_id,miembro_id,local_id) values
 set constraints all immediate;
 set constraints all deferred;
 
-select pg_temp.ok((select count(*)=11 from pg_tables where schemaname='app'), 'Solo once tablas del núcleo');
+select pg_temp.ok((select count(*)=11 from pg_tables where schemaname='app' and tablename = any(array[
+  'usuarios','negocios','miembros_negocio','locales','roles','permisos','roles_permisos',
+  'miembros_roles','miembros_locales','permisos_otorgados','auditoria_acceso'])), 'Se conservan las once tablas del núcleo');
 select pg_temp.ok((select bool_and(relrowsecurity and relforcerowsecurity) from pg_class join pg_namespace ns on ns.oid=relnamespace where ns.nspname='app' and relkind='r'), 'RLS habilitado y forzado en todas las tablas');
 select pg_temp.ok((select not rolbypassrls and not rolsuper and not rolcanlogin and not rolcreaterole from pg_roles where rolname='vexor_runtime'), 'Runtime sin login, superusuario ni BYPASSRLS');
 select pg_temp.ok(not has_schema_privilege('anon','app','USAGE') and not has_schema_privilege('authenticated','app','USAGE') and not has_schema_privilege('service_role','app','USAGE'), 'Roles de la API sin acceso al esquema');

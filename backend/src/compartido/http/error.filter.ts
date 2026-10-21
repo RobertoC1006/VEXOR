@@ -11,6 +11,24 @@ import type { AuthenticatedRequest } from '../autenticacion/auth.guard.js';
 import type { Response } from 'express';
 
 const uniqueConflicts: Record<string, { code: string; message: string }> = {
+  producto_con_conteo: {
+    code: 'PRODUCTO_CON_CONTEO',
+    message:
+      'Este producto ya tiene un conteo. Cambiar su desglose requiere una distribución explícita de existencias.',
+  },
+  producto_con_variantes: {
+    code: 'PRODUCTO_CON_VARIANTES',
+    message:
+      'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
+  },
+  variantes_combinacion: {
+    code: 'VARIANTE_DUPLICADA',
+    message: 'Ya existe una variante con esas características',
+  },
+  productos_codigo: {
+    code: 'CODIGO_PRODUCTO_DUPLICADO',
+    message: 'Ese código ya identifica un producto de este negocio',
+  },
   un_puesto_activo_basico: {
     code: 'LIMITE_PUESTOS_ACTIVOS',
     message: 'El plan básico permite un solo puesto activo para venta',
@@ -49,7 +67,9 @@ export class ErrorFilter implements ExceptionFilter {
     } else {
       const pg = error as { code?: string; type?: string; constraint?: string };
       const conflict =
-        pg?.code === '23505' && pg.constraint ? uniqueConflicts[pg.constraint] : undefined;
+        ['23505', '23514'].includes(pg?.code ?? '') && pg.constraint
+          ? uniqueConflicts[pg.constraint]
+          : undefined;
       if (pg?.code === '42501') {
         status = 403;
         code = 'ACCESO_DENEGADO';

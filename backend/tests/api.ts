@@ -12,6 +12,8 @@ import type { INestApplication } from '@nestjs/common';
 import { startTestDatabase } from './support/postgres.ts';
 import { startAuthServer, type TestUser } from './support/auth-server.ts';
 import { testConfiguration } from './support/configuration.ts';
+import { testProducts } from './support/products.ts';
+import { testProductLevels } from './support/product-levels.ts';
 import { secureDatabaseUrl } from '../src/compartido/database/database.ts';
 
 const id=(n:number)=>`bc000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -174,6 +176,8 @@ try {
   await request('patch',`${A}/miembros/${id(301)}`,5,200,{activo:true});
 
   await testConfiguration(request,id);
+  await testProducts(request,id,database.admin);
+  await testProductLevels(request,id);
 
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','https://malicioso.example').expect(403);results.push('CORS rechaza origen ajeno');
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','http://localhost:5173').expect('Access-Control-Allow-Origin','http://localhost:5173').expect(200);results.push('CORS acepta origen configurado');
@@ -213,7 +217,7 @@ try {
   await writeFile('test-results/backend-api.json',JSON.stringify({at:new Date().toISOString(),database:(await database.admin.query('select version()')).rows[0].version,
     total:results.length,results,auth:'Servidor Auth local controlado; JWT RS256 reales; ningún correo real enviado'},null,2));
   console.log(`${results.length} comprobaciones HTTP/integración correctas. PostgreSQL real, cuenta restringida, pool de una conexión y Auth simulado con JWT firmados.`);
-} catch(error:any) {console.error(error.message);process.exitCode=1;
+} catch(error:any) {console.error(error.code === 'ERR_ASSERTION' ? error.stack : error.message);process.exitCode=1;
 } finally {await app?.close();await auth?.close();await database?.close();}
 // El runner nativo instala un beforeExit propio; preservar el fallo después de limpiar.
 if(process.exitCode) process.exit(process.exitCode);

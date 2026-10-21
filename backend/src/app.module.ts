@@ -18,6 +18,10 @@ import { BusinessInvitationsController } from './comerciante/equipo/invitaciones
 import { PersonalInvitationsController } from './compartido/invitaciones/personal.controller.js';
 import { PlatformInvitationsController } from './proveedor/invitaciones/invitaciones.controller.js';
 import { HealthController } from './compartido/salud/health.controller.js';
+import { ProductsController } from './comerciante/productos/productos.controller.js';
+import { ProductsService } from './comerciante/productos/productos.service.js';
+import { InventoryController } from './comerciante/inventario/inventario.controller.js';
+import { InventoryService } from './comerciante/inventario/inventario.service.js';
 
 @Module({})
 export class AppModule {
@@ -26,6 +30,8 @@ export class AppModule {
       module: AppModule,
       controllers: [
         HealthController,
+        ProductsController,
+        InventoryController,
         MeController,
         BusinessController,
         LocalsController,
@@ -37,6 +43,8 @@ export class AppModule {
       providers: [
         { provide: CONFIG, useValue: config },
         DatabaseService,
+        ProductsService,
+        InventoryService,
         AuthService,
         BusinessService,
         MeService,

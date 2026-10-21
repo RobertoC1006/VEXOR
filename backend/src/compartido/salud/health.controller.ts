@@ -6,7 +6,11 @@ import { sql } from 'kysely';
 export class HealthController {
   constructor(private readonly database: DatabaseService) {}
   @Get() @Public() health() {
-    return { status: 'ok' };
+    const revision = process.env.RENDER_GIT_COMMIT;
+    return {
+      status: 'ok',
+      revision: revision && /^[a-f0-9]{40}$/.test(revision) ? revision : null,
+    };
   }
   @Get('ready') @Public() async ready() {
     await sql`select 1`.execute(this.database.db);

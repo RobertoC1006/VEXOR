@@ -97,7 +97,36 @@ interface Auditoria {
   nuevo: JSONColumnType<Record<string, unknown>> | null;
   ocurrido_en: Timestamp;
 }
+type Money = ColumnType<string | null, string | null | undefined, string | null>;
+interface Producto extends Dated {
+  nivel_registro: Generated<'simple' | 'intermedio' | 'avanzado'>;
+  caracteristicas: ColumnType<{ nombre: string; valor: string }[], string | undefined, string>;
+  producto_padre_id: Generated<string | null>;
+  id: Generated<string>;
+  negocio_id: string;
+  nombre: string;
+  alias: Generated<string | null>;
+  descripcion: Generated<string | null>;
+  codigo: Generated<string | null>;
+  precio: Money;
+  costo: Money;
+  activo: Generated<boolean>;
+  version: Generated<number>;
+}
+interface InventarioInicial extends Dated {
+  negocio_id: string;
+  local_id: string;
+  producto_id: string;
+  cantidad: number;
+  referencia: Generated<string | null>;
+  estado: Generated<'preparacion' | 'confirmado'>;
+  version: Generated<number>;
+  confirmado_en: NullableTimestamp;
+  confirmado_por: Generated<string | null>;
+}
 export interface Database {
+  'app.productos': Producto;
+  'app.inventario_inicial': InventarioInicial;
   'app.negocios': Negocio;
   'app.locales': Local;
   'app.usuarios': Usuario;

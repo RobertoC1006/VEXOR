@@ -42,6 +42,10 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       503: 'El servicio no está disponible por ahora. Vuelve a intentar en un momento.',
     };
     const knownErrors: Record<string, string> = {
+      PRODUCTO_CON_CONTEO: 'Este producto ya tiene un conteo. Cambiar su desglose requiere distribuir explícitamente las existencias; conserva su configuración actual.',
+      PRODUCTO_CON_VARIANTES: 'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
+      VARIANTE_DUPLICADA: 'Ya existe una variante con esas características.',
+      CODIGO_PRODUCTO_DUPLICADO: 'Ese código ya identifica un producto de este negocio.',
       LIMITE_PUESTOS_ACTIVOS: 'El plan básico permite un solo puesto activo para venta.',
       NOMBRE_ROL_DUPLICADO: 'Ya existe un rol con ese nombre en este negocio.',
     };

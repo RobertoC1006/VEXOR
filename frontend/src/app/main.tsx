@@ -39,6 +39,8 @@ import { TeamPage } from '../comerciante/equipo/paginas/team-page';
 import { RolesPage } from '../comerciante/equipo/paginas/roles-page';
 import { MemberPage } from '../comerciante/equipo/paginas/member-page';
 import { TeamInvitationsPage } from '../comerciante/equipo/paginas/team-invitations-page';
+import { ProductsPage } from '../comerciante/productos/paginas/products-page';
+import { InventoryPage } from '../comerciante/inventario/paginas/inventory-page';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -117,6 +119,8 @@ function App() {
                   <Route index element={<DashboardPage />} />
                   <Route path="configuracion" element={<BusinessSettingsPage />} />
                   <Route path="locales" element={<LocalsPage />} />
+                  <Route path="productos" element={<ProductsPage />} />
+                  <Route path="inventario" element={<InventoryPage />} />
                   <Route path="equipo" element={<TeamLayout />}>
                     <Route index element={<TeamPage />} />
                     <Route path="roles" element={<RolesPage />} />

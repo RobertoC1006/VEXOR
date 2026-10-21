@@ -24,15 +24,17 @@ export function PageHeading({
   title,
   description,
   action,
+  eyebrow = 'CONFIGURA TU NEGOCIO',
 }: {
   title: string;
   description: string;
   action?: ReactNode;
+  eyebrow?: string;
 }) {
   return (
     <div className="page-heading">
       <div>
-        <span className="eyebrow">CONFIGURA TU NEGOCIO</span>
+        <span className="eyebrow">{eyebrow}</span>
         <h1>{title}</h1>
         <p>{description}</p>
       </div>

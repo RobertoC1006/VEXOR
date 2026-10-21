@@ -166,6 +166,8 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 ### Productos, inventario y compras
 
 - Debe permitir incorporar mercadería que ya está en estantes, vitrinas o guardada, además de registrar nuevas compras.
+- **Ficha mínima confirmada:** solo el nombre es obligatorio; código, características, costo y precio son opcionales. Un costo o precio sin registrar permanece pendiente, no se convierte en cero.
+- **Códigos confirmados:** impedir que un código identifique más de un producto, variante o presentación del mismo negocio.
 - Debe registrar y permitir consultar ubicaciones para encontrar productos.
 - El comerciante elige el detalle que necesita registrar. Los ejemplos de tres niveles no deben convertirse en campos rígidos u obligatorios por rubro.
 - Marca, modelo, talla, copa, color y diseño son ejemplos de características; no una lista universal obligatoria.
@@ -290,7 +292,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 
 1. Iniciar el siguiente bloque de productos e inventario inicial: concretar los datos mínimos y reglas abiertas necesarias; después base de datos → backend → frontend. Reutilizar un único registro de productos y plantillas editables por rubro, sin duplicar catálogo e inventario. Luego siguen ventas y venta offline/sincronización. La configuración del negocio ya está terminada y publicada; planes/cupos y alojamiento continúan pendientes, sin autorización automática para ampliarlos.
 2. Detallar cómo se corrige un conteo confirmado y se resuelve una diferencia entre stock registrado y físico, con autorización del propietario o de un rol habilitado. La venta de productos con conteo pendiente ya está resuelta: se realiza fuera de VEXOR.
-3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
+3. Definir características estructuradas, variantes, equivalencias y detalles de búsqueda. La ficha mínima y el rechazo de códigos duplicados ya están confirmados en «Productos, inventario y compras».
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
 5. Definir precios por puesto/presentación, alcance de descuentos por venta o producto, límites y excepciones, cobros parciales y flujos de postventa y anulaciones. Están confirmados los pagos mixtos con vuelto, el descuento en soles o mediante total final y las políticas configurables por el propietario; faltan diferencias de precio en cambios, reembolsos y tratamiento de productos defectuosos.
 6. Extender permisos y auditoría al implementar cada módulo posterior. La integración online Supabase Auth/NestJS/RLS y el manejo de sesión vencida ya existen; definir continuidad local, caducidad offline y revalidación al sincronizar.
