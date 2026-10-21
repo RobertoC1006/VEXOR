@@ -75,7 +75,14 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - Comenzar el desarrollo por módulos; no esperar a definir todo el sistema ni abrir otra ronda general de planificación. Resolver con el usuario las reglas pendientes antes de implementar la función que las necesita. Presentar casos concretos y opciones cuando haga falta una decisión de negocio.
 - **Primera secuencia:** base de datos del núcleo de negocios, usuarios, roles/permisos y locales —diseño físico, herramienta de persistencia, migraciones y comprobación de aislamiento—; después backend de autenticación, pertenencia y permisos; luego acceso y primeras pantallas del frontend/demo.
 - Empezar por la base de datos significa el primer bloque, no crear las 60 tablas de una sola vez. La persistencia implementada utiliza Kysely y `pg`, con migraciones SQL versionadas; los detalles técnicos corresponden al asistente dentro del stack acordado.
-- Después se continúa con productos, inventario y ventas, contemplando la operación offline desde el diseño. Las reglas aún abiertas se resuelven por módulo; no se convierten en requisitos por estar incluidas en una propuesta. Se mantiene completar el alcance acordado antes del uso real en el puesto.
+
+### Orden de implementación y segundo bloque — confirmado
+
+- **Orden acordado después del núcleo publicado:** configuración del negocio → productos e inventario inicial → ventas → venta sin internet y sincronización. Diseñar ventas desde el inicio para su posterior operación offline; esta secuencia no elimina ese requisito ni cierra las reglas pendientes de cada módulo. Completar el alcance acordado antes del uso real en el puesto.
+- **Bloque 2: configuración del negocio.** Incluye las pantallas de Mi negocio (edición de datos básicos), Puestos y almacenes (registro y edición, respetando el puesto activo del básico) y Equipo (invitaciones, consulta de accesos, asignación de permisos y locales).
+- **Secuencia de trabajo dentro del bloque:** primero revisar y completar la base de datos, después backend y finalmente frontend, con las verificaciones correspondientes. Reutilizar el núcleo existente; una etapa puede quedar cubierta sin nuevas tablas o migraciones si el esquema actual satisface el alcance.
+- La matriz inicial de permisos y quién puede asignarlos, así como las reglas abiertas de activación/desactivación y cambio de uso de locales, deben concretarse antes de implementar los comportamientos que dependan de ellas. Aprobar el bloque no convierte propuestas previas en reglas confirmadas.
+- Trabajo iniciado en `codex/configuracion-negocio`, creada desde `main` publicado. El detalle técnico de la revisión inicial está en [Configuración del negocio](diseno/CONFIGURACION_NEGOCIO.md).
 
 ### Arquitectura — confirmado
 
@@ -274,7 +281,7 @@ Este mapa organiza la conversación; todavía no constituye un alcance completo 
 
 ## Pendientes para próximas conversaciones
 
-1. Definir el siguiente bloque funcional desde el núcleo y la demo ya implementados; concretar las reglas abiertas del módulo elegido antes de desarrollarlo. No repetir el aprovisionamiento SQL ni rehacer el acceso. Consultar los pendientes de alojamiento sin asumir que estén autorizados para ejecución inmediata.
+1. Desarrollar el bloque 2 de configuración del negocio en el orden acordado: base de datos → backend → frontend, reutilizando el núcleo publicado y concretando sus reglas abiertas antes de implementar las funciones afectadas. Después siguen productos/inventario inicial, ventas y venta offline/sincronización. Los pendientes de alojamiento no quedan autorizados automáticamente.
 2. Detallar cómo se corrige un conteo confirmado y se resuelve una diferencia entre stock registrado y físico, con autorización del propietario o de un rol habilitado. La venta de productos con conteo pendiente ya está resuelta: se realiza fuera de VEXOR.
 3. Definir campos mínimos, características, variantes, códigos duplicados o ambiguos, equivalencias y búsqueda.
 4. Precisar si el modo de ubicación exacta se configura por negocio, puesto o producto, y cómo se cambia de modo.
