@@ -16,6 +16,7 @@ Usa el contexto disponible de la conversación. Consulta [docs/MEMORIA_PROYECTO.
 - Cuando el usuario confirme que un bloque quedó aprobado (por ejemplo, «listo, queda ese cambio»), realizar las verificaciones pertinentes, crear un commit con los cambios de ese bloque y hacer push a la rama actual, sin solicitar otra confirmación para esos pasos. Una idea, pregunta o cambio aún en revisión no activa este cierre.
 - No incluir credenciales, secretos, resultados locales ni cambios ajenos al bloque aprobado. Informar el commit, la rama y el resultado del push; no darlo por completado si falla.
 - Trabajar por funcionalidades o fases. Cuando se defina el siguiente bloque, crear su rama con prefijo `codex/` desde el estado aprobado y publicado. No inventar la siguiente fase ni crear otra rama solo por terminar la actual.
+- `main` es la rama estable de publicación para Vercel y Render. Desarrollar en ramas `codex/` creadas desde `main`; probar y revisar antes de integrar. Commit y push de una rama de trabajo no autorizan por sí solos un merge a `main`: integrarlo cuando el usuario apruebe su publicación, comprobar el resultado integrado y verificar ambos despliegues. No hacer push forzado ni migraciones automáticas para publicar.
 
 ## Calidad y organización del código
 

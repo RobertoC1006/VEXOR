@@ -1,6 +1,6 @@
 # Demo: Vercel y Render
 
-Decisión del usuario del 20 de octubre de 2026: PWA en Vercel y backend en Render. Sustituye el alojamiento conjunto en Vercel. Rama de esta fase: `codex/demo-vercel`.
+Decisión del usuario del 20 de octubre de 2026: PWA en Vercel y backend en Render. Sustituye el alojamiento conjunto en Vercel. La primera demo se publicó desde `codex/demo-vercel`; el usuario aprobó después usar `main` como rama estable de publicación.
 
 Destinos configurados: PWA `https://vexor-robertoc1006.vercel.app`; API `https://vexor-api-robertoc1006.onrender.com`. Supabase Auth ya tiene Site URL público y callback exacto, conservando el callback local. Render respondió correctamente a las comprobaciones HTTP de salud, SQL y sesión requeridas. La verificación del recorrido autenticado público se registra por separado.
 
@@ -18,7 +18,11 @@ Preset Other, raíz del repositorio, build `npm run build:web`, salida `dist/web
 
 `vercel.json` usa rewrite externo hacia Render, conserva las rutas SPA y marca API `private, no-store`. El navegador usa `/api/v1` del mismo origen. Al cambiar de servicio Render debe actualizarse el destino del rewrite. No activar caché de respuestas autenticadas.
 
-La rama de producción de ambos servicios debe ser la de esta fase; importar `main` no publica este trabajo. Los previews alternativos no se añaden a Auth con comodines.
+La rama de producción de ambos servicios es `main`. Los siguientes bloques se desarrollan en ramas `codex/` creadas desde `main`, se prueban y revisan antes de integrar su publicación aprobada. Un push a una rama de trabajo no actualiza por sí mismo el backend público; los previews de frontend tampoco crean un backend aislado. Los previews alternativos no se añaden a Auth con comodines.
+
+Vercel y Render despliegan independientemente tras el push a `main`; todavía no existe una promoción coordinada ni una batería completa de pruebas automática que bloquee ambos despliegues. Preparar cambios de API compatibles durante esa transición y comprobar los dos servicios. `render.yaml` documenta la configuración; este servicio se creó desde Dashboard, por lo que la rama también se cambia en sus Settings.
+
+Referencia de recuperación previa a la transición: rama conservada `codex/demo-vercel`, commit `0cf850e`. No se elimina ni se reescribe. Los cambios de base de datos requieren su propio procedimiento; volver a una versión de código no revierte migraciones.
 
 ## Auth y verificación
 

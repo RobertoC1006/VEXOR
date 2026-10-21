@@ -5,7 +5,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    branch: codex/demo-vercel
+    branch: main
     buildCommand: npm ci --include=dev && npm run build:api
     startCommand: npm start
     healthCheckPath: /api/v1/health/ready
