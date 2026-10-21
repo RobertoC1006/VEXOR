@@ -14,7 +14,7 @@ export class BusinessService {
     return this.database.tenant(actor, negocioId, (tx) =>
       tx
         .selectFrom('app.negocios')
-        .select(['id', 'nombre', 'zona_horaria', 'activo'])
+        .select(['id', 'nombre', 'rubro', 'zona_horaria', 'activo'])
         .where('id', '=', negocioId)
         .executeTakeFirstOrThrow(),
     );
@@ -27,7 +27,7 @@ export class BusinessService {
         .updateTable('app.negocios')
         .set(data)
         .where('id', '=', negocioId)
-        .returning(['id', 'nombre', 'zona_horaria', 'activo'])
+        .returning(['id', 'nombre', 'rubro', 'zona_horaria', 'activo'])
         .executeTakeFirstOrThrow();
     });
   }

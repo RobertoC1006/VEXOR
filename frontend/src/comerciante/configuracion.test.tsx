@@ -42,9 +42,14 @@ beforeEach(() => {
   mock.context.can.mockReturnValue(true);
   mock.context.refresh.mockResolvedValue(undefined);
   mock.api.mockResolvedValue({});
+  mock.listAll.mockResolvedValue([]);
 });
 afterEach(cleanup);
 const local = {
+  mercado: null,
+  pabellon: null,
+  numero_puesto: null,
+  referencia: null,
   id: 'local',
   negocio_id: 'A',
   nombre: 'Puesto principal',
@@ -55,7 +60,11 @@ const local = {
 };
 it('consulta Mi negocio sin ofrecer edición a quien no tiene permiso', () => {
   mock.context.can.mockReturnValue(false);
-  render(<BusinessSettingsPage />);
+  render(
+    <MemoryRouter>
+      <BusinessSettingsPage />
+    </MemoryRouter>,
+  );
   expect(screen.getByLabelText('Nombre del negocio').hasAttribute('disabled')).toBe(false);
   expect(
     (screen.getByLabelText('Nombre del negocio') as HTMLInputElement).matches(':disabled'),
@@ -65,7 +74,11 @@ it('consulta Mi negocio sin ofrecer edición a quien no tiene permiso', () => {
 });
 it('guarda el negocio y actualiza el nombre compartido sin recargar la sesión', async () => {
   mock.api.mockResolvedValue({ ...mock.context.business, nombre: 'Flores y regalos' });
-  render(<BusinessSettingsPage />);
+  render(
+    <MemoryRouter>
+      <BusinessSettingsPage />
+    </MemoryRouter>,
+  );
   fireEvent.change(screen.getByLabelText('Nombre del negocio'), {
     target: { value: ' Flores y regalos ' },
   });
@@ -75,7 +88,7 @@ it('guarda el negocio y actualiza el nombre compartido sin recargar la sesión',
     '/negocios/A',
     expect.objectContaining({
       method: 'PATCH',
-      body: JSON.stringify({ nombre: 'Flores y regalos', zona_horaria: 'America/Lima' }),
+      body: JSON.stringify({ nombre: 'Flores y regalos', rubro: null }),
     }),
   );
   expect(mock.updateBusiness).toHaveBeenCalledWith('A', 'Flores y regalos');
@@ -98,7 +111,58 @@ it('pausar un local requiere confirmación y cancelar no envía cambios', async 
     nombre: 'Puesto principal',
     habilitado_venta: true,
     activo: false,
+    mercado: null,
+    pabellon: null,
+    numero_puesto: null,
+    referencia: null,
   });
+});
+it('guarda un rubro libre sin enviar zona horaria y muestra ubicaciones de sus locales', async () => {
+  mock.listAll.mockResolvedValue([
+    { ...local, mercado: 'Mercado Central', pabellon: 'B', numero_puesto: '024-A' },
+  ]);
+  mock.api.mockResolvedValue({ ...mock.context.business, rubro: 'Artesanía y regalos' });
+  render(
+    <MemoryRouter>
+      <BusinessSettingsPage />
+    </MemoryRouter>,
+  );
+  expect(screen.queryByLabelText('Zona horaria')).toBeNull();
+  await screen.findByText('Mercado Central · B · N.º 024-A');
+  fireEvent.change(screen.getByLabelText('Rubro del negocio'), {
+    target: { value: ' Artesanía y regalos ' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+  await screen.findByText('Cambios guardados.');
+  expect(JSON.parse(mock.api.mock.calls[0][1].body)).toEqual({
+    nombre: 'Comercial Aurora',
+    rubro: 'Artesanía y regalos',
+  });
+});
+it('edita la ubicación sin cambiar el estado y permite retirar campos opcionales', async () => {
+  render(
+    <LocalForm
+      local={{ ...local, mercado: 'Mercado Central', pabellon: 'B' }}
+      onSaved={mock.refresh}
+      onCancel={() => {}}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText('Pabellón o sector'), { target: { value: '' } });
+  fireEvent.change(screen.getByLabelText('Número de puesto o local'), {
+    target: { value: ' 024-A ' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar local' }));
+  await waitFor(() => expect(mock.refresh).toHaveBeenCalledOnce());
+  expect(JSON.parse(mock.api.mock.calls[0][1].body)).toEqual({
+    nombre: local.nombre,
+    activo: true,
+    habilitado_venta: true,
+    mercado: 'Mercado Central',
+    pabellon: null,
+    numero_puesto: '024-A',
+    referencia: null,
+  });
+  expect(screen.queryByRole('dialog')).toBeNull();
 });
 it('un conflicto de local conserva el formulario y permite corregirlo', async () => {
   mock.api.mockRejectedValue(

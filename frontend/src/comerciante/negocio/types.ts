@@ -1,6 +1,7 @@
 export interface BusinessDetail {
   id: string;
   nombre: string;
+  rubro: string | null;
   zona_horaria: string;
   activo: boolean;
 }

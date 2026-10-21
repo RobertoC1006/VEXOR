@@ -7,17 +7,18 @@ import { Button, Field } from '../../../compartido/componentes/ui';
 import { ActionFeedback, PageHeading } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../context';
 import type { BusinessDetail } from '../types';
+import { BusinessLocations } from '../../locales/componentes/business-locations';
 
 export function BusinessSettingsPage() {
   const { business, base, can, refresh } = useBusiness();
   const { updateBusiness } = useWorkspace();
   const action = useAction();
   const [name, setName] = useState(business.nombre),
-    [zone, setZone] = useState(business.zona_horaria);
+    [rubro, setRubro] = useState(business.rubro ?? '');
   useEffect(() => {
     setName(business.nombre);
-    setZone(business.zona_horaria);
-  }, [business.nombre, business.zona_horaria]);
+    setRubro(business.rubro ?? '');
+  }, [business.nombre, business.rubro]);
   const editable = can('negocio.editar');
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -25,7 +26,7 @@ export function BusinessSettingsPage() {
     await action.run(async () => {
       const result = await api<BusinessDetail>(base, {
         method: 'PATCH',
-        body: JSON.stringify({ nombre: name.trim(), zona_horaria: zone.trim() }),
+        body: JSON.stringify({ nombre: name.trim(), rubro: rubro.trim() || null }),
       });
       updateBusiness(result.id, result.nombre);
       await refresh();
@@ -52,21 +53,24 @@ export function BusinessSettingsPage() {
                 onChange={(event) => setName(event.target.value)}
               />
               <Field
-                id="business-zone"
-                label="Zona horaria"
-                value={zone}
-                required
-                maxLength={80}
-                list="business-zones"
-                onChange={(event) => setZone(event.target.value)}
+                id="business-rubro"
+                label="Rubro del negocio"
+                value={rubro}
+                maxLength={120}
+                list="business-rubros"
+                placeholder="Selecciona o escribe tu rubro"
+                onChange={(event) => setRubro(event.target.value)}
               />
-              <datalist id="business-zones">
-                <option value="America/Lima" />
-                <option value="America/Bogota" />
-                <option value="America/La_Paz" />
+              <datalist id="business-rubros">
+                <option value="Lencería" />
+                <option value="Juguetes" />
+                <option value="Abarrotes" />
+                <option value="Ropa y accesorios" />
+                <option value="Flores y regalos" />
               </datalist>
               <p className="field-hint">
-                Por ejemplo, America/Lima. Se utiliza para mostrar fechas y horas del negocio.
+                Puedes elegir una sugerencia o escribir otro rubro, también si vendes productos de
+                varios tipos.
               </p>
             </fieldset>
             <ActionFeedback {...action} />
@@ -76,8 +80,8 @@ export function BusinessSettingsPage() {
                 busy={action.busy}
                 disabled={
                   !name.trim() ||
-                  !zone.trim() ||
-                  (name === business.nombre && zone === business.zona_horaria)
+                  (name.trim() === business.nombre &&
+                    (rubro.trim() || null) === (business.rubro ?? null))
                 }
               >
                 <Save size={17} />
@@ -102,6 +106,7 @@ export function BusinessSettingsPage() {
           </span>
         </aside>
       </div>
+      <BusinessLocations />
     </>
   );
 }

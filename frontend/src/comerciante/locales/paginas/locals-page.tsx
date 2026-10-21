@@ -7,6 +7,7 @@ import { PageHeading, ResourceState } from '../../../compartido/componentes/feed
 import { useBusiness } from '../../negocio/context';
 import { LocalForm } from '../componentes/local-form';
 import type { BusinessLocal } from '../types';
+import { formatLocation } from '../location';
 
 export function LocalsPage() {
   const { base, access, can, refresh } = useBusiness();
@@ -66,6 +67,7 @@ export function LocalsPage() {
                 <div className="settings-row-main">
                   <h3>{local.nombre}</h3>
                   <p>{local.habilitado_venta ? 'Puesto de venta y almacenamiento' : 'Almacén'}</p>
+                  <p>{formatLocation(local) || 'Ubicación por completar'}</p>
                 </div>
                 <span className={`badge ${local.activo ? 'success' : 'neutral'}`}>
                   {local.activo ? 'Activo' : 'Pausado'}

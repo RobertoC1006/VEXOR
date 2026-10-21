@@ -15,12 +15,17 @@ interface Negocio extends Dated {
   nombre: string;
   activo: Generated<boolean>;
   zona_horaria: Generated<string>;
+  rubro: Generated<string | null>;
   version: Generated<string>;
 }
 interface Local extends Dated {
   id: Generated<string>;
   negocio_id: string;
   nombre: string;
+  mercado: Generated<string | null>;
+  pabellon: Generated<string | null>;
+  numero_puesto: Generated<string | null>;
+  referencia: Generated<string | null>;
   habilitado_venta: Generated<boolean>;
   activo: Generated<boolean>;
 }

@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 
 import { Transform } from 'class-transformer';
-import { IsISO8601, IsString, Length, Matches, ValidateIf } from 'class-validator';
+import { IsISO8601, IsOptional, IsString, Length, Matches, ValidateIf } from 'class-validator';
 
 export const TrimmedText = (max: number) =>
   applyDecorators(
@@ -13,6 +13,9 @@ export const TrimmedText = (max: number) =>
   );
 
 export const OptionalField = () => ValidateIf((_object, value: unknown) => value !== undefined);
+
+// Omitir conserva el dato; null permite retirar un texto opcional.
+export const NullableText = (max: number) => applyDecorators(IsOptional(), TrimmedText(max));
 
 export const Instant = () =>
   applyDecorators(

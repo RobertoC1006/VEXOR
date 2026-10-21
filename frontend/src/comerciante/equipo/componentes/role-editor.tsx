@@ -9,6 +9,7 @@ import { ConfirmationDialog } from '../../../compartido/componentes/confirmation
 import { useBusiness } from '../../negocio/context';
 import type { Permission, Role } from '../types';
 import { permissionLabel } from '../permissions';
+import { PermissionSuggestions } from './permission-suggestions';
 
 export function RoleEditor({
   role,
@@ -109,6 +110,13 @@ function RoleForm({
         )}
       </form>
       <form className="settings-form settings-divider" onSubmit={savePermissions}>
+        {editable && (
+          <PermissionSuggestions
+            permissions={permissions}
+            disabled={action.busy}
+            onSelect={setValues}
+          />
+        )}
         <ChoiceList
           legend="Acciones que permite este rol"
           value={values}

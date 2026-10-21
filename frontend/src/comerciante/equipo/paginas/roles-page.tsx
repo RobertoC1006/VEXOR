@@ -58,6 +58,11 @@ export function RolesPage() {
         }
       />
       <ActionFeedback {...action} />
+      <p className="field-hint">
+        El listado es el mismo para todos los roles; lo que cambia es qué acciones marcas. Por ahora
+        incluye la configuración del negocio, los locales y la consulta del equipo. Los permisos de
+        ventas, inventario, caja y comprobantes se incorporarán con esos módulos.
+      </p>
       {creating && (
         <section className="panel settings-panel">
           <h2>Nuevo rol</h2>
@@ -72,7 +77,8 @@ export function RolesPage() {
               autoFocus
             />
             <p className="field-hint">
-              Se crea sin permisos. Tú eliges sus acciones a continuación.
+              Después de crearlo puedes elegir una base sugerida, como Solo consulta, y ajustar sus
+              acciones.
             </p>
             <div className="form-actions">
               <Button

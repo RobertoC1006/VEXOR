@@ -7,6 +7,7 @@ import { ActionFeedback } from '../../../compartido/componentes/feedback';
 import { ConfirmationDialog } from '../../../compartido/componentes/confirmation-dialog';
 import { useBusiness } from '../../negocio/context';
 import type { BusinessLocal } from '../types';
+import { locationFields, locationValues } from '../location';
 
 export function LocalForm({
   local,
@@ -23,10 +24,15 @@ export function LocalForm({
     [active, setActive] = useState(local?.activo ?? true),
     [confirm, setConfirm] = useState(false);
   const action = useAction();
+  const [location, setLocation] = useState(() => locationValues(local));
   const changedState = Boolean(
     local && (local.activo !== active || local.habilitado_venta !== sale),
   );
-  const changed = !local || name.trim() !== local.nombre || changedState;
+  const changed =
+    !local ||
+    name.trim() !== local.nombre ||
+    changedState ||
+    JSON.stringify(locationValues(local)) !== JSON.stringify(locationValues(location));
   async function save() {
     const ok = await action.run(
       async () => {
@@ -35,6 +41,7 @@ export function LocalForm({
           body: JSON.stringify({
             nombre: name.trim(),
             habilitado_venta: sale,
+            ...locationValues(location),
             ...(access.es_propietario ? { activo: active } : {}),
           }),
         });
@@ -65,6 +72,24 @@ export function LocalForm({
             onChange={(event) => setName(event.target.value)}
             autoFocus
           />
+          <h3>Ubicación del local</h3>
+          <p className="field-hint">
+            Completa los datos que correspondan. También puedes ubicar un almacén fuera del mercado
+            usando la referencia.
+          </p>
+          <div className="form-grid">
+            {locationFields.map(({ key, ...field }) => (
+              <Field
+                key={key}
+                id={`local-${key}`}
+                {...field}
+                value={location[key] ?? ''}
+                onChange={(event) =>
+                  setLocation((previous) => ({ ...previous, [key]: event.target.value }))
+                }
+              />
+            ))}
+          </div>
           <CheckField
             label="Habilitado para vender"
             checked={sale}

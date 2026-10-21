@@ -38,7 +38,7 @@ export function DashboardPage() {
               </span>
               <span>
                 <strong>Mi negocio</strong>
-                <small>Nombre y zona horaria de {business.nombre}.</small>
+                <small>Nombre, rubro y ubicaciones de {business.nombre}.</small>
               </span>
               <ArrowRight size={18} />
             </Link>
@@ -79,8 +79,8 @@ export function DashboardPage() {
               <dd>{business.nombre}</dd>
             </div>
             <div>
-              <dt>Zona horaria</dt>
-              <dd>{business.zona_horaria}</dd>
+              <dt>Rubro</dt>
+              <dd>{business.rubro || 'Por completar'}</dd>
             </div>
           </dl>
           <p className="field-hint">

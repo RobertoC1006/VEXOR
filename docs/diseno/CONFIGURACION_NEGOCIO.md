@@ -61,10 +61,10 @@ La matriz comercial predefinida sigue pendiente: cada propietario puede configur
 
 ### Frontend de configuración
 
-Implementado en la rama de trabajo, pendiente de revisión del usuario y publicación:
+Bloque implementado y aprobado por el usuario el 21 de octubre de 2026 para integrarlo y publicarlo en `main`:
 
-- **Mi negocio:** nombre y zona horaria; consulta sin edición cuando falta permiso. El nombre actualizado se refleja también en la navegación compartida.
-- **Puestos y almacenes:** creación, edición, habilitación de venta y pausa/reactivación con confirmación; errores de límite conservan el formulario.
+- **Mi negocio:** nombre y rubro libre, con sugerencias editables; consulta sin edición cuando falta permiso. La zona horaria permanece interna y se retira del formulario. El nombre actualizado se refleja también en la navegación compartida. Muestra las ubicaciones guardadas de los locales autorizados, con enlace a su configuración.
+- **Puestos y almacenes:** creación, edición, habilitación de venta y pausa/reactivación con confirmación; errores de límite conservan el formulario. Cada local puede guardar mercado, pabellón/sector, número de puesto/local y referencia, todos opcionales.
 - **Equipo:** personas, propiedad y acceso activo, asignación explícita de locales, roles personalizados y sus acciones, asignación de roles por negocio/local y permisos individuales para permitir/denegar con vigencia, edición y revocación conservando el registro.
 - **Invitaciones de equipo:** solicitud, estado, reenvío y revocación. Los reintentos conservan cuerpo y clave de idempotencia en la sesión, también al volver a abrir la pantalla. La aceptación del correo para envío se distingue de la incorporación efectiva de la persona.
 
@@ -90,3 +90,19 @@ Las pruebas usan bases locales desechables. El backend revisado no requiere migr
 - Navegador con `npm run demo:browser`: negocio, locales, rol de flores/regalos y asignaciones/permisos individuales; invitación ficticia creada y revocada, cuenta de trabajador con datos de negocio de solo lectura y ruta directa de equipo bloqueada sin permiso. Auth y PostgreSQL son locales; no se envían correos reales.
 - Vista móvil de 390 × 844: navegación inferior y lista de locales verificadas visualmente, sin desbordamiento horizontal. Evidencia local en `test-results/configuracion-movil.png`.
 - El backend no cambió en esta entrega de pantallas; las 216 comprobaciones HTTP corresponden a la revisión anterior descrita arriba. No se ejecutaron migraciones ni despliegues.
+
+### Ajuste posterior: rubro y ubicación (21 de octubre de 2026)
+
+Tras guardar y subir las pantallas anteriores en el commit `f1576c5`, el usuario pidió retirar la zona horaria de la información del negocio, incorporar rubro y mostrar ubicación. La ubicación se guarda por local y se consulta también desde Mi negocio, sin duplicar datos ni designar implícitamente un local principal. La distinción de puesto/almacén sigue dependiendo de su habilitación de venta. El equipo conserva el alta por invitación.
+
+La nueva migración `backend/supabase/migrations/20261021000100_rubro_ubicacion.sql` añade rubro al negocio y los cuatro campos de ubicación al local, con límites, restricciones y privilegios de columna. Se conservan las políticas RLS, permisos y auditoría existentes. Los registros anteriores mantienen valores nulos; omitir un campo conserva su valor y enviar `null` permite retirarlo. Los DTO validan y recortan los textos; la selección de rubro no restringe al comerciante a una lista cerrada. Las plantillas para productos/inventario quedan para su propio bloque y no se activan automáticamente por rubro.
+
+Verificación del ajuste: `npm run test:api` completa 232 comprobaciones HTTP/integración sobre PostgreSQL desechable con las cuatro migraciones; `npm run test:web` completa 33 pruebas. Tipos, compilación y revisión del paquete público correctos. Navegador local: rubro Lencería guardado y recuperado al volver a la pantalla, y ubicación del puesto guardada y mostrada en Locales y Mi negocio. Evidencia local: `test-results/rubro-ubicacion.png`.
+
+La demo se reinició en `http://localhost:5174` para revisar el backend actualizado, con datos ficticios iniciales. Tras esa revisión, el usuario aprobó el bloque y su publicación en `main` el 21 de octubre de 2026. La migración debe aplicarse como paso controlado separado antes del despliegue del backend; no se ejecuta automáticamente al construir ni arrancar la aplicación. El cierre requiere verificar Supabase y ambos alojamientos.
+
+### Ayuda para configurar roles
+
+La etiqueta del permiso `negocio.editar` se presenta como «Editar información del negocio». El catálogo actual de cuatro acciones se comparte entre roles; crear o renombrar un rol no concede permisos. Para facilitar la selección, el editor ofrece bases opcionales de Solo consulta (lectura de locales), Gestión de locales (lectura y edición delegada) y Consulta de locales y equipo. Cada base utiliza solo acciones presentes en el catálogo del servidor y reemplaza únicamente las casillas del formulario; el propietario puede ajustarlas y debe guardar para aplicarlas. Se mantienen los locales asignados, el alcance del rol y las denegaciones individuales.
+
+Ventas, inventario, caja y comprobantes todavía no tienen módulos implementados en este bloque. Sus permisos deberán incorporarse junto con su autorización efectiva en el servidor; no se muestran permisos que aparenten controlar funciones inexistentes. La matriz comercial completa sigue pendiente de esos bloques. Pruebas frontend: 35 en nueve archivos, incluida selección de lectura sin escrituras hasta guardar y ausencia de sugerencias no soportadas o para usuarios de consulta.

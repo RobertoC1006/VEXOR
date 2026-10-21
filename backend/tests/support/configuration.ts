@@ -48,6 +48,27 @@ export async function testConfiguration(request: Request, id: (n: number) => str
     await request('patch', base, 1, 400, body);
   }
   assert.deepEqual((await request('get', base, 1, 200)).body, before);
+  // Rubro libre, ubicación por local y las mismas fronteras de autorización.
+  const businessWithRubro = (await request('patch', base, 1, 200, { rubro: ' Lencería y regalos ' })).body;
+  assert.equal(businessWithRubro.rubro, 'Lencería y regalos');
+  assert.equal(businessWithRubro.zona_horaria, before.zona_horaria);
+  assert.equal((await request('get', base, 1, 200)).body.rubro, 'Lencería y regalos');
+  await request('patch', base, 3, 403, { rubro: 'No autorizado' });
+  for (const rubro of [' ', 'x'.repeat(121), 42]) await request('patch', base, 1, 400, { rubro });
+  assert.equal((await request('patch', base, 1, 200, { rubro: null })).body.rubro, null);
+  const location = { mercado: ' Mercado Central ', pabellon: ' B ', numero_puesto: ' 024-A ', referencia: ' Junto a la entrada ' };
+  const located = (await request('patch', local, 1, 200, location)).body;
+  assert.equal(located.mercado, 'Mercado Central');
+  assert.equal(located.pabellon, 'B');
+  assert.equal(located.numero_puesto, '024-A');
+  assert.equal((await request('get', local, 3, 200)).body.referencia, 'Junto a la entrada');
+  await request('patch', local, 3, 403, { mercado: 'Sin permiso de edición' });
+  await request('patch', `${base}/locales/${id(404)}`, 1, 404, { mercado: 'Otro negocio' });
+  for (const body of [{ mercado: '' }, { pabellon: 'x'.repeat(81) }, { numero_puesto: 24 }, { referencia: 'x'.repeat(241) }])
+    await request('patch', local, 1, 400, body);
+  const clearedLocation = (await request('patch', local, 1, 200, { mercado: null, pabellon: null, numero_puesto: null, referencia: null })).body;
+  assert.equal(clearedLocation.mercado, null);
+  assert.equal(clearedLocation.numero_puesto, null);
   for (const body of [
     {},
     { nombre: null },

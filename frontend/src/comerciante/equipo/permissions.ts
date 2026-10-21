@@ -1,9 +1,11 @@
 import type { IndividualPermission, Permission } from './types';
 
 export function permissionLabel(permission: Permission) {
-  return permission.codigo === 'locales.gestionar'
-    ? 'Editar locales asignados'
-    : permission.descripcion;
+  const labels: Record<string, string> = {
+    'negocio.editar': 'Editar información del negocio',
+    'locales.gestionar': 'Editar locales asignados',
+  };
+  return labels[permission.codigo] ?? permission.descripcion;
 }
 
 export function permissionState(permission: IndividualPermission, now = Date.now()) {

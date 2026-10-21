@@ -1835,6 +1835,11 @@
       "BusinessPatchDto": {
         "type": "object",
         "properties": {
+          "rubro": {
+            "type": "object",
+            "nullable": true,
+            "example": "Lencería"
+          },
           "nombre": {
             "type": "string"
           },
@@ -1847,6 +1852,22 @@
       "LocalCreateDto": {
         "type": "object",
         "properties": {
+          "mercado": {
+            "type": "object",
+            "nullable": true
+          },
+          "pabellon": {
+            "type": "object",
+            "nullable": true
+          },
+          "numero_puesto": {
+            "type": "object",
+            "nullable": true
+          },
+          "referencia": {
+            "type": "object",
+            "nullable": true
+          },
           "nombre": {
             "type": "string"
           },
@@ -1866,6 +1887,22 @@
       "LocalPatchDto": {
         "type": "object",
         "properties": {
+          "mercado": {
+            "type": "object",
+            "nullable": true
+          },
+          "pabellon": {
+            "type": "object",
+            "nullable": true
+          },
+          "numero_puesto": {
+            "type": "object",
+            "nullable": true
+          },
+          "referencia": {
+            "type": "object",
+            "nullable": true
+          },
           "nombre": {
             "type": "string"
           },
