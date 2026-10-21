@@ -53,5 +53,6 @@ export class ProductPatchDto extends PartialType(ProductCreateDto, { skipNullPro
   @ApiProperty() @IsInt() @Min(1) @Max(2147483647) version!: number;
 }
 export class ProductQueryDto extends PaginationDto {
+  @ApiPropertyOptional() @OptionalField() @TrimmedText(120) codigo?: string;
   @ApiPropertyOptional() @OptionalField() @TrimmedText(160) q?: string;
 }

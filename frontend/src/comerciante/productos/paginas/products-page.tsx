@@ -73,6 +73,7 @@ function ProductCatalog() {
         value={resource.search}
         onChange={resource.setSearch}
         onSearch={resource.find}
+        onScan={resource.findCode}
       />
       {!resource.data ? (
         <ResourceState error={resource.error} retry={resource.refresh} />

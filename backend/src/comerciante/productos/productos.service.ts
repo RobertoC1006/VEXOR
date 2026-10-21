@@ -28,6 +28,10 @@ export class ProductsService {
           .executeTakeFirstOrThrow();
         query = query.where('producto_padre_id', '=', parentId);
       } else query = query.where('producto_padre_id', 'is', null);
+      if (p.codigo)
+        query = query.where(sql<boolean>`(codigo = ${p.codigo} or exists (
+        select 1 from app.productos v where v.negocio_id = ${negocioId}::uuid
+        and v.producto_padre_id = app.productos.id and v.codigo = ${p.codigo}))`);
       if (p.q)
         query = query.where(sql<boolean>`(strpos(lower(nombre), lower(${p.q})) > 0 or
         strpos(lower(coalesce(alias, '')), lower(${p.q})) > 0 or codigo = ${p.q} or

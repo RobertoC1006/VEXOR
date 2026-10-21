@@ -49,6 +49,8 @@ export async function testProducts(
     await request('patch', url, 1, 400, body);
   assert.equal((await request('get', `${catalog}?q=libreta`, 1, 200)).body.items[0].id, p.id);
   assert.equal((await request('get', `${catalog}?q=000123`, 1, 200)).body.items[0].id, p.id);
+  assert.equal((await request('get', `${catalog}?codigo=000123`, 1, 200)).body.items[0].id, p.id);
+  assert.equal((await request('get', `${catalog}?codigo=Cuaderno`, 1, 200)).body.items.length, 0);
   assert.equal((await request('get', `${catalog}?q=%25`, 1, 200)).body.items.length, 0);
   const duplicate = await request('post', catalog, 1, 409, { nombre: 'Otro', codigo: ' 000123 ' });
   assert.equal(duplicate.body.error.code, 'CODIGO_PRODUCTO_DUPLICADO');

@@ -24,6 +24,10 @@ export function AttributesEditor({
           ? 'Cada combinación tendrá su propio conteo. Completa al menos una característica.'
           : 'Añade solo lo que te ayude a encontrar y describir tu producto. Esto no separa cantidades.'}
       </p>
+      <p className="field-hint">
+        Puedes cambiar los nombres, quitar características o añadir otras. Deja el valor vacío si no
+        quieres registrar esa característica; no se guardará.
+      </p>
       {value.map((a, i) => (
         <div key={i} className="attribute-row">
           <Field

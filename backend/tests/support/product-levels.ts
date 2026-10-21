@@ -127,6 +127,11 @@ export async function testProductLevels(
   const roots = (await request('get', `${catalog}?q=${a.codigo}`, 1, 200)).body.items;
   assert.equal(roots.length, 1);
   assert.equal(roots[0].id, parent.id);
+  assert.equal((await request('get', `${catalog}?codigo=${a.codigo}`, 1, 200)).body.items[0].id, parent.id);
+  const exactVariant = (await request('get', `${inventory}?codigo=${a.codigo}`, 1, 200)).body.items;
+  assert.equal(exactVariant.length, 1);
+  assert.equal(exactVariant[0].id, a.id);
+  assert.equal((await request('get', `${inventory}?codigo=${parent.codigo}`, 1, 200)).body.items.length, 2);
   assert.equal((await request('get', `${variants}?limit=1`, 1, 200)).body.has_more, true);
   const foreign = (
     await request('post', `/api/v1/negocios/${id(202)}/productos`, 4, 201, {

@@ -2,6 +2,24 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 const mock = vi.hoisted(() => ({ api: vi.fn(), saved: vi.fn(), can: vi.fn() }));
 vi.mock('../compartido/api/api', () => ({ api: mock.api }));
+vi.mock('../compartido/escaneo/barcode-scanner', () => ({
+  BarcodeScanner: ({
+    onRead,
+    onClose,
+  }: {
+    onRead: (code: string) => void;
+    onClose: () => void;
+  }) => (
+    <div role="dialog" aria-label="Cámara de prueba">
+      <button type="button" onClick={() => onRead('000123')}>
+        Leer código de prueba
+      </button>
+      <button type="button" onClick={onClose}>
+        Cerrar cámara de prueba
+      </button>
+    </div>
+  ),
+}));
 vi.mock('./negocio/context', () => ({
   useBusiness: () => ({ base: '/negocios/A', can: mock.can }),
 }));
@@ -159,14 +177,17 @@ it('el nivel intermedio conserva características descriptivas sin crear variant
   render(<ProductForm onSaved={mock.saved} onCancel={() => {}} />);
   fireEvent.change(screen.getByLabelText('Nivel de registro'), { target: { value: 'intermedio' } });
   fireEvent.change(screen.getByLabelText('Nombre del producto'), { target: { value: 'Cuaderno' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Añadir característica' }));
-  fireEvent.change(screen.getByLabelText('Característica 1'), { target: { value: 'Marca' } });
+  expect((screen.getByLabelText('Característica 1') as HTMLInputElement).value).toBe('Marca');
+  expect((screen.getByLabelText('Característica 2') as HTMLInputElement).value).toBe('Modelo');
+  expect((screen.getByLabelText('Característica 3') as HTMLInputElement).value).toBe('Talla');
+  expect((screen.getByLabelText('Característica 4') as HTMLInputElement).value).toBe('Color');
+  fireEvent.change(screen.getByLabelText('Característica 1'), { target: { value: 'Material' } });
   fireEvent.change(screen.getByLabelText('Valor 1'), { target: { value: 'Ejemplo' } });
   fireEvent.click(screen.getByRole('button', { name: 'Guardar producto' }));
   await waitFor(() => expect(mock.saved).toHaveBeenCalledOnce());
   expect(JSON.parse(mock.api.mock.calls[0][1].body)).toMatchObject({
     nivel_registro: 'intermedio',
-    caracteristicas: [{ nombre: 'Marca', valor: 'Ejemplo' }],
+    caracteristicas: [{ nombre: 'Material', valor: 'Ejemplo' }],
   });
 });
 it('prepara una ficha avanzada de lencería sin guardarla automáticamente', () => {
@@ -177,4 +198,61 @@ it('prepara una ficha avanzada de lencería sin guardarla automáticamente', () 
   );
   expect(screen.getByText(/No se contará un total adicional del modelo/)).toBeTruthy();
   expect(mock.api).not.toHaveBeenCalled();
+});
+it('escanear busca inmediatamente el código exacto y vuelve a la primera página', async () => {
+  mock.api.mockResolvedValue({ items: [], has_more: true });
+  render(<ProductsPage />);
+  const input = screen.getByLabelText('Buscar por nombre, alias o código');
+  fireEvent.change(input, { target: { value: 'texto anterior' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Buscar', exact: true }));
+  await waitFor(() =>
+    expect(mock.api).toHaveBeenCalledWith(
+      '/negocios/A/productos?limit=25&offset=0&q=texto+anterior',
+      expect.anything(),
+    ),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+  await waitFor(() =>
+    expect(mock.api).toHaveBeenCalledWith(
+      '/negocios/A/productos?limit=25&offset=25&q=texto+anterior',
+      expect.anything(),
+    ),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Escanear para buscar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Leer código de prueba' }));
+  await waitFor(() =>
+    expect(mock.api).toHaveBeenCalledWith(
+      '/negocios/A/productos?limit=25&offset=0&codigo=000123',
+      expect.anything(),
+    ),
+  );
+  expect((input as HTMLInputElement).value).toBe('000123');
+  expect(screen.queryByRole('dialog')).toBeNull();
+  const before = mock.api.mock.calls.length;
+  fireEvent.click(screen.getByRole('button', { name: 'Escanear para buscar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Leer código de prueba' }));
+  await waitFor(() => expect(mock.api.mock.calls.length).toBe(before + 1));
+  fireEvent.change(input, { target: { value: 'Cuaderno' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Buscar', exact: true }));
+  await waitFor(() =>
+    expect(mock.api).toHaveBeenCalledWith(
+      '/negocios/A/productos?limit=25&offset=0&q=Cuaderno',
+      expect.anything(),
+    ),
+  );
+});
+it('cerrar el escáner de búsqueda no modifica el texto ni ejecuta una consulta', async () => {
+  mock.api.mockResolvedValue({ items: [], has_more: false });
+  render(<ProductsPage />);
+  await screen.findByText('Todavía no hay productos en esta lista');
+  fireEvent.change(screen.getByLabelText('Buscar por nombre, alias o código'), {
+    target: { value: 'Mi búsqueda' },
+  });
+  const before = mock.api.mock.calls.length;
+  fireEvent.click(screen.getByRole('button', { name: 'Escanear para buscar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar cámara de prueba' }));
+  expect(mock.api.mock.calls.length).toBe(before);
+  expect(
+    (screen.getByLabelText('Buscar por nombre, alias o código') as HTMLInputElement).value,
+  ).toBe('Mi búsqueda');
 });

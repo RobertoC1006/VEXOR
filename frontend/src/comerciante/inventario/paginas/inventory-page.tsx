@@ -76,6 +76,7 @@ function LocalInventory({ localId }: { localId: string }) {
         value={resource.search}
         onChange={resource.setSearch}
         onSearch={resource.find}
+        onScan={resource.findCode}
       />
       {editor && data && (
         <CountForm

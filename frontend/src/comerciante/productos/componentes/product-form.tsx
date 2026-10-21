@@ -53,8 +53,13 @@ export function ProductForm({
         ? [
             { nombre: 'Marca', valor: 'Marca de prueba' },
             { nombre: 'Modelo', valor: 'Modelo de prueba' },
+            { nombre: 'Talla', valor: '' },
+            { nombre: 'Color', valor: '' },
           ]
-        : []),
+        : (parent
+            ? ['Talla', 'Copa', 'Color', 'Diseño']
+            : ['Marca', 'Modelo', 'Talla', 'Color']
+          ).map((nombre) => ({ nombre, valor: '' }))),
   );
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -129,7 +134,7 @@ export function ProductForm({
             onChange={(codigo) => setValues({ ...values, codigo })}
             disabled={action.busy}
           />
-          {(parent || level !== 'simple' || attributes.length > 0) && (
+          {(parent || level !== 'simple' || attributes.some((a) => a.valor.trim())) && (
             <AttributesEditor value={attributes} onChange={setAttributes} variant={!!parent} />
           )}
           {!parent && level === 'avanzado' && (

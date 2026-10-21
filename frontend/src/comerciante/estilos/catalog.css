@@ -2,10 +2,11 @@
   display: flex;
   gap: 12px;
   align-items: flex-end;
+  flex-wrap: wrap;
   margin: 24px 0;
 }
 .catalog-search .field {
-  flex: 1;
+  flex: 1 1 240px;
 }
 .catalog-pager {
   display: flex;

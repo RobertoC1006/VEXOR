@@ -80,6 +80,14 @@
             }
           },
           {
+            "name": "codigo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "q",
             "required": false,
             "in": "query",
@@ -187,6 +195,14 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "codigo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -377,6 +393,14 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "codigo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {

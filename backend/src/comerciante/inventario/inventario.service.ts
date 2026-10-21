@@ -60,6 +60,10 @@ export class InventoryService {
           ),
         )
         .where('p.negocio_id', '=', negocioId);
+      if (p.codigo)
+        query = query.where(sql<boolean>`(p.codigo = ${p.codigo} or exists (
+        select 1 from app.productos raiz where raiz.negocio_id = p.negocio_id
+        and raiz.id = p.producto_padre_id and raiz.codigo = ${p.codigo}))`);
       if (p.q)
         query = query.where(sql<boolean>`(strpos(lower(p.nombre), lower(${p.q})) > 0 or
         strpos(lower(coalesce(p.alias, '')), lower(${p.q})) > 0 or p.codigo = ${p.q} or exists (
