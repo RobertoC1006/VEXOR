@@ -2,6 +2,8 @@
 
 SaaS para comerciantes de mercados peruanos. Monolito NestJS/TypeScript, PostgreSQL/Supabase y PWA React/TypeScript/Vite.
 
+El código se organiza en `frontend/` y `backend/`, con áreas `proveedor/`, `comerciante/` y `compartido/`. La base de datos versionada vive en `backend/supabase/`. Consulta la [estructura del proyecto y sus comandos](docs/diseno/ESTRUCTURA_PROYECTO.md).
+
 Implementados: base de datos, backend del núcleo y primer frontend de acceso. La PWA incluye sesión, callback, contraseña y dos áreas separadas: **Administración de VEXOR**, con altas e invitaciones de negocios, y **Área de negocio**, con selección y dashboard comercial. Un administrador entra primero a `/plataforma` y cambia de área con la misma cuenta; un usuario comercial entra a `/negocios`. Ventas, inventario y sincronización offline corresponden a bloques posteriores.
 
 - [Frontend, recorrido local y configuración de Vercel](docs/diseno/FRONTEND_NUCLEO.md).
@@ -10,7 +12,7 @@ Implementados: base de datos, backend del núcleo y primer frontend de acceso. L
 - [Demo pública en Vercel y Render: verificación y pendientes](docs/verificacion/DESPLIEGUE_2026-10-20.md).
 
 - [Diseño físico, seguridad, ejecución y pruebas](docs/diseno/NUCLEO_BASE_DATOS.md).
-- [Migración inicial](supabase/migrations/20261020000100_nucleo.sql).
+- [Migración inicial](backend/supabase/migrations/20261020000100_nucleo.sql).
 - [Resultados y evidencia del despliegue en Supabase](docs/verificacion/NUCLEO_2026-10-20.md).
 - [Backend: endpoints, invitaciones y arranque](docs/diseno/BACKEND_NUCLEO.md).
 - [Pruebas del backend y migración nueva](docs/verificacion/BACKEND_2026-10-20.md).
@@ -36,6 +38,6 @@ npm run dev:api
 npm run dev:web
 ```
 
-Abre `http://localhost:5173`. Swagger: `http://127.0.0.1:3000/docs` en desarrollo. `npm run build` compila el backend en `dist/` y la PWA de producción en `dist/web/`; `npm start` inicia únicamente el backend local.
+Abre `http://localhost:5173`. Swagger: `http://127.0.0.1:3000/docs` en desarrollo. `npm run build` compila el backend en `dist/backend/` y la PWA de producción en `dist/frontend/`; `npm start` inicia únicamente el backend local.
 
 El alojamiento acordado es **frontend en Vercel y backend en Render**, dentro del mismo repositorio y con un único monolito Nest. `vercel.json` compila solo la PWA y dirige `/api/v1/*` al servicio Render; `render.yaml` documenta el servicio Node. Solo Render recibe la conexión SQL restringida y la clave secreta Auth. Vercel recibe exclusivamente la URL y la clave pública Auth. SMTP personalizado requiere su proveedor y configuración en Supabase, no se aprovisiona al arrancar. Consulta la [guía de despliegue](docs/diseno/DESPLIEGUE_DEMO.md).

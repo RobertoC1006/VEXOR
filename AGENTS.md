@@ -20,6 +20,8 @@ Usa el contexto disponible de la conversación. Consulta [docs/MEMORIA_PROYECTO.
 
 ## Calidad y organización del código
 
+- Organiza el código en `frontend/` y `backend/`; dentro de cada `src/`, separa funcionalidades de `proveedor/`, `comerciante/` y mecanismos reutilizables en `compartido/`. `app/` en frontend y el arranque de NestJS componen las áreas.
+- Las migraciones, configuración y certificado público de Supabase viven en `backend/supabase/`. La conexión y transacciones pertenecen a `backend/src/compartido/database/`. Mantén las pruebas y herramientas dentro de su frontend o backend; ejecuta los comandos npm desde la raíz.
 - Antes de añadir código, revisa las soluciones existentes y reutilízalas cuando corresponda. Evita métodos redundantes y variantes de una misma lógica que puedan divergir.
 - En frontend, comparte layouts, navegación, botones, campos y otros componentes o fragmentos repetidos. Separa la presentación de la lógica reutilizable de interacción y acceso a datos.
 - En backend, concentra cada regla de negocio en el módulo responsable y reutiliza servicios, validaciones y utilidades comunes. El frontend puede validar para ayudar al usuario, pero la autorización y las reglas de negocio se aplican en el servidor; las restricciones y RLS de la base siguen como protección adicional.

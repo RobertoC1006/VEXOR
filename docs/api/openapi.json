@@ -127,7 +127,7 @@
     },
     "/api/v1/negocios/{negocioId}": {
       "get": {
-        "operationId": "CoreController_business",
+        "operationId": "BusinessController_business",
         "parameters": [
           {
             "name": "negocioId",
@@ -153,7 +153,7 @@
         ]
       },
       "patch": {
-        "operationId": "CoreController_patchBusiness",
+        "operationId": "BusinessController_patchBusiness",
         "parameters": [
           {
             "name": "negocioId",
@@ -191,7 +191,7 @@
     },
     "/api/v1/negocios/{negocioId}/acceso": {
       "get": {
-        "operationId": "CoreController_access",
+        "operationId": "BusinessController_access",
         "parameters": [
           {
             "name": "negocioId",
@@ -249,7 +249,7 @@
     },
     "/api/v1/negocios/{negocioId}/locales": {
       "get": {
-        "operationId": "CoreController_locals",
+        "operationId": "LocalsController_locals",
         "parameters": [
           {
             "name": "negocioId",
@@ -305,7 +305,7 @@
         ]
       },
       "post": {
-        "operationId": "CoreController_createLocal",
+        "operationId": "LocalsController_createLocal",
         "parameters": [
           {
             "name": "negocioId",
@@ -342,8 +342,42 @@
       }
     },
     "/api/v1/negocios/{negocioId}/locales/{id}": {
+      "get": {
+        "operationId": "LocalsController_local",
+        "parameters": [
+          {
+            "name": "negocioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Núcleo del negocio"
+        ]
+      },
       "patch": {
-        "operationId": "CoreController_patchLocal",
+        "operationId": "LocalsController_patchLocal",
         "parameters": [
           {
             "name": "negocioId",
@@ -389,7 +423,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros": {
       "get": {
-        "operationId": "CoreController_members",
+        "operationId": "TeamController_members",
         "parameters": [
           {
             "name": "negocioId",
@@ -446,8 +480,42 @@
       }
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}": {
+      "get": {
+        "operationId": "TeamController_member",
+        "parameters": [
+          {
+            "name": "negocioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "miembroId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Núcleo del negocio"
+        ]
+      },
       "patch": {
-        "operationId": "CoreController_patchMember",
+        "operationId": "TeamController_patchMember",
         "parameters": [
           {
             "name": "negocioId",
@@ -493,7 +561,7 @@
     },
     "/api/v1/negocios/{negocioId}/roles": {
       "get": {
-        "operationId": "CoreController_roles",
+        "operationId": "TeamController_roles",
         "parameters": [
           {
             "name": "negocioId",
@@ -549,7 +617,7 @@
         ]
       },
       "post": {
-        "operationId": "CoreController_createRole",
+        "operationId": "TeamController_createRole",
         "parameters": [
           {
             "name": "negocioId",
@@ -586,8 +654,42 @@
       }
     },
     "/api/v1/negocios/{negocioId}/roles/{id}": {
+      "get": {
+        "operationId": "TeamController_role",
+        "parameters": [
+          {
+            "name": "negocioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Núcleo del negocio"
+        ]
+      },
       "patch": {
-        "operationId": "CoreController_patchRole",
+        "operationId": "TeamController_patchRole",
         "parameters": [
           {
             "name": "negocioId",
@@ -633,7 +735,7 @@
     },
     "/api/v1/negocios/{negocioId}/roles/{id}/permisos": {
       "get": {
-        "operationId": "CoreController_rolePermissions",
+        "operationId": "TeamController_rolePermissions",
         "parameters": [
           {
             "name": "negocioId",
@@ -667,7 +769,7 @@
         ]
       },
       "put": {
-        "operationId": "CoreController_setRolePermissions",
+        "operationId": "TeamController_setRolePermissions",
         "parameters": [
           {
             "name": "negocioId",
@@ -713,7 +815,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/roles": {
       "get": {
-        "operationId": "CoreController_memberRoles",
+        "operationId": "TeamController_memberRoles",
         "parameters": [
           {
             "name": "negocioId",
@@ -777,7 +879,7 @@
         ]
       },
       "post": {
-        "operationId": "CoreController_addMemberRole",
+        "operationId": "TeamController_addMemberRole",
         "parameters": [
           {
             "name": "negocioId",
@@ -823,7 +925,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/roles/{id}": {
       "delete": {
-        "operationId": "CoreController_removeMemberRole",
+        "operationId": "TeamController_removeMemberRole",
         "parameters": [
           {
             "name": "negocioId",
@@ -867,7 +969,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/locales": {
       "get": {
-        "operationId": "CoreController_memberLocals",
+        "operationId": "TeamController_memberLocals",
         "parameters": [
           {
             "name": "negocioId",
@@ -931,7 +1033,7 @@
         ]
       },
       "put": {
-        "operationId": "CoreController_setMemberLocals",
+        "operationId": "TeamController_setMemberLocals",
         "parameters": [
           {
             "name": "negocioId",
@@ -1007,7 +1109,7 @@
     },
     "/api/v1/negocios/{negocioId}/permisos": {
       "get": {
-        "operationId": "CoreController_permissions",
+        "operationId": "TeamController_permissions",
         "parameters": [
           {
             "name": "negocioId",
@@ -1035,7 +1137,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/permisos": {
       "get": {
-        "operationId": "CoreController_individualPermissions",
+        "operationId": "TeamController_individualPermissions",
         "parameters": [
           {
             "name": "negocioId",
@@ -1099,7 +1201,7 @@
         ]
       },
       "post": {
-        "operationId": "CoreController_grantPermission",
+        "operationId": "TeamController_grantPermission",
         "parameters": [
           {
             "name": "negocioId",
@@ -1145,7 +1247,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/permisos/{id}": {
       "patch": {
-        "operationId": "CoreController_patchPermission",
+        "operationId": "TeamController_patchPermission",
         "parameters": [
           {
             "name": "negocioId",
@@ -1199,7 +1301,7 @@
     },
     "/api/v1/negocios/{negocioId}/miembros/{miembroId}/permisos/{id}/revocar": {
       "post": {
-        "operationId": "CoreController_revokePermission",
+        "operationId": "TeamController_revokePermission",
         "parameters": [
           {
             "name": "negocioId",
@@ -1243,7 +1345,7 @@
     },
     "/api/v1/negocios/{negocioId}/auditoria": {
       "get": {
-        "operationId": "CoreController_audit",
+        "operationId": "TeamController_audit",
         "parameters": [
           {
             "name": "negocioId",

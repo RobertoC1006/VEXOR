@@ -1,5 +1,7 @@
 # Demo: Vercel y Render
 
+La [reorganización del repositorio](ESTRUCTURA_PROYECTO.md) prepara las rutas descritas aquí en la rama de configuración. La demo publicada conserva la versión de `main` hasta aprobar e integrar su publicación.
+
 Decisión del usuario del 20 de octubre de 2026: PWA en Vercel y backend en Render. Sustituye el alojamiento conjunto en Vercel. La primera demo se publicó desde `codex/demo-vercel`; el usuario aprobó después usar `main` como rama estable de publicación.
 
 Destinos configurados: PWA `https://vexor-robertoc1006.vercel.app`; API `https://vexor-api-robertoc1006.onrender.com`. Supabase Auth ya tiene Site URL público y callback exacto, conservando el callback local. Render respondió correctamente a las comprobaciones HTTP de salud, SQL y sesión requeridas. La verificación del recorrido autenticado público se registra por separado.
@@ -8,13 +10,13 @@ Destinos configurados: PWA `https://vexor-robertoc1006.vercel.app`; API `https:/
 
 Servicio Node desde la raíz del repositorio. Configuración reproducible en `render.yaml`; Node 22, build `npm ci --include=dev && npm run build:api`, inicio `npm start`, health check `/api/v1/health/ready`. Render suministra `PORT`; `HOST=0.0.0.0` permite escuchar en su interfaz.
 
-Variables privadas: `DATABASE_URL` de la cuenta restringida existente, `DATABASE_POOL_MAX=2`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `NODE_ENV=production`, `HOST=0.0.0.0`, `APP_ORIGINS` con origen HTTPS exacto y `INVITATION_REDIRECT_URL` con `/auth/callback`. No configurar `MIGRATION_DATABASE_URL`, ni ejecutar aprovisionamiento o migraciones al arrancar. Mantener `sslmode=verify-full` y `sslrootcert=supabase/certs/prod-ca-2021.crt` relativo a la raíz Linux. El certificado público está versionado.
+Variables privadas: `DATABASE_URL` de la cuenta restringida existente, `DATABASE_POOL_MAX=2`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `NODE_ENV=production`, `HOST=0.0.0.0`, `APP_ORIGINS` con origen HTTPS exacto y `INVITATION_REDIRECT_URL` con `/auth/callback`. No configurar `MIGRATION_DATABASE_URL`, ni ejecutar aprovisionamiento o migraciones al arrancar. Mantener `sslmode=verify-full` y `sslrootcert=backend/supabase/certs/prod-ca-2021.crt` relativo a la raíz Linux. El certificado público está versionado.
 
 El plan Free es para esta demo: puede suspenderse por inactividad y provocar arranque lento. No ofrece las garantías de disponibilidad de un servicio permanente. No se contrata ningún plan pagado automáticamente.
 
 ## Vercel
 
-Preset Other, raíz del repositorio, build `npm run build:web`, salida `dist/web`. Variables: exclusivamente `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. No copiar el `.env` completo. Se retiró el adaptador serverless para evitar desplegar un segundo backend.
+Preset Other, raíz del repositorio, build `npm run build:web`, salida `dist/frontend`. Variables: exclusivamente `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. No copiar el `.env` completo. Se retiró el adaptador serverless para evitar desplegar un segundo backend.
 
 `vercel.json` usa rewrite externo hacia Render, conserva las rutas SPA y marca API `private, no-store`. El navegador usa `/api/v1` del mismo origen. Al cambiar de servicio Render debe actualizarse el destino del rewrite. No activar caché de respuestas autenticadas.
 

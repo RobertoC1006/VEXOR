@@ -95,7 +95,7 @@ npm start
 
 `npm start` carga `.env` y luego `.env.runtime`, ambos ignorados por Git. Las variables reales del proceso tienen prioridad. Configurar URL/clave pública de Supabase, orígenes de la PWA y la cuenta PostgreSQL restringida. El envío requiere además la clave secreta Auth y el redirect permitido. No se envían correos al arrancar el servidor.
 
-Una cuenta SQL de desarrollo puede aprovisionarse mediante `scripts/provision-runtime.ts`, invocación administrativa explícita y separada de NestJS:
+Una cuenta SQL de desarrollo puede aprovisionarse mediante `backend/scripts/provision-runtime.ts`, invocación administrativa explícita y separada de NestJS:
 
 ```powershell
 # MIGRATION_DATABASE_URL administrativa solo en el entorno local de aprovisionamiento.
@@ -105,7 +105,7 @@ npm run db:provision-runtime
 
 El script crea `vexor_backend` con los atributos mínimos, genera una contraseña y la guarda en `.env.runtime` sin imprimirla. No sustituye roles o archivos existentes. Si el resultado del commit no se pudo confirmar, conserva la credencial para verificarlo sin perderla. El script también reconoce la forma `usuario.referencia` de los poolers de Supabase. Usar conexión directa o pooler de sesión para migraciones y aprovisionamiento. Si se necesita una CA específica, configurar `sslrootcert` o el almacén de certificados de Node; no desactivar la verificación TLS.
 
-La cuenta de desarrollo ya está aprovisionada en `vexor-dev` y se comprobó el arranque local. La conexión utiliza el pooler de sesión y `sslmode=verify-full&sslrootcert=supabase/certs/prod-ca-2021.crt`. Esta CA pública procede del enlace **Download certificate** en Database / Settings del Dashboard. El archivo está versionado; la contraseña generada permanece únicamente en `.env.runtime`. No volver a ejecutar el aprovisionamiento para arrancar el servidor.
+La cuenta de desarrollo ya está aprovisionada en `vexor-dev` y se comprobó el arranque local. La conexión utiliza el pooler de sesión y `sslmode=verify-full&sslrootcert=backend/supabase/certs/prod-ca-2021.crt`. Esta CA pública procede del enlace **Download certificate** en Database / Settings del Dashboard. El archivo está versionado; la contraseña generada permanece únicamente en `.env.runtime`. No volver a ejecutar el aprovisionamiento para arrancar el servidor.
 
 Para habilitar el primer administrador, crear/confirmar su identidad en Supabase Auth y ejecutar explícitamente:
 

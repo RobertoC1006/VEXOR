@@ -2,7 +2,7 @@ node_modules/
 .env
 .env.*
 !.env.example
-supabase/.temp/
-supabase/.branches/
+backend/supabase/.temp/
+backend/supabase/.branches/
 test-results/
 dist/

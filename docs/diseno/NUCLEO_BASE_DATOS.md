@@ -13,20 +13,20 @@ Se conserva el monolito NestJS/TypeScript, PostgreSQL en Supabase y Supabase Aut
 ## Persistencia y migraciones
 
 - **Kysely + `pg`**: consultas TypeScript y transacciones sobre una conexión PostgreSQL. No se incorpora otro servidor ni servicio.
-- **SQL versionado en `supabase/migrations`**, ejecutado por Supabase CLI. Una única autoridad para DDL, restricciones, funciones y RLS; no se usa el migrador de Kysely ni sincronización automática de esquemas.
+- **SQL versionado en `backend/supabase/migrations`**, ejecutado por Supabase CLI. Una única autoridad para DDL, restricciones, funciones y RLS; no se usa el migrador de Kysely ni sincronización automática de esquemas.
 - PostgreSQL 17 como base compatible, comprobada con PostgreSQL 17.11 y Supabase.
 - UUID generables también por clientes futuros y `timestamptz` para instantes. La zona horaria del negocio es un nombre válido del catálogo IANA de PostgreSQL; valor inicial `America/Lima`.
 - La migración inicial se aplica como una transacción. Una vez aplicada en un entorno compartido, las correcciones se escriben en nuevas migraciones.
 
 `20261020000200_runtime_migraciones.sql` permite a `postgres` asumir `vexor_runtime` para probar RLS en Supabase. Es necesario porque el administrador de Supabase tiene BYPASSRLS pero no es superusuario, y crear el rol no garantiza el permiso SET ROLE. La relación no concede acceso administrativo al runtime y no crea un login nuevo.
 
-Kysely se eligió por su acceso directo a transacciones y SQL PostgreSQL sin duplicar el esquema de migraciones en un ORM. El adaptador está en `src/database/database.ts` y se integró posteriormente en `DatabaseService` de NestJS.
+Kysely se eligió por su acceso directo a transacciones y SQL PostgreSQL sin duplicar el esquema de migraciones en un ORM. El adaptador está en `backend/src/compartido/database/database.ts` y se integró posteriormente en `DatabaseService` de NestJS.
 
 Fuentes técnicas: [RLS de PostgreSQL 17](https://www.postgresql.org/docs/17/ddl-rowsecurity.html), [migraciones de Supabase](https://supabase.com/docs/guides/deployment/database-migrations), [API de Kysely](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html).
 
 ## Modelo físico y relaciones
 
-El DDL completo y ejecutable está en `supabase/migrations/20261020000100_nucleo.sql`. Son **11 tablas propias**; el total de 60 del modelo global continúa siendo una propuesta revisable.
+El DDL completo y ejecutable está en `backend/supabase/migrations/20261020000100_nucleo.sql`. Son **11 tablas propias**; el total de 60 del modelo global continúa siendo una propuesta revisable.
 
 | Tabla en `app` | Identidad y datos principales | Integridad y acceso |
 | --- | --- | --- |
@@ -100,9 +100,9 @@ npm run db:test
 npm run db:test:postgres
 ```
 
-`db:test` crea PostgreSQL embebido desechable con PGlite y aplica las migraciones desde cero. `db:test:postgres` utiliza PostgreSQL portátil en Windows o un contenedor PostgreSQL 17 en otros sistemas; escucha solo en loopback con contraseña aleatoria y retira la base al terminar. El archivo `tests/db/bootstrap.sql` simula exclusivamente las dependencias Auth/roles en estas bases vacías; **no debe ejecutarse en Supabase**, que ya las administra.
+`db:test` crea PostgreSQL embebido desechable con PGlite y aplica las migraciones desde cero. `db:test:postgres` utiliza PostgreSQL portátil en Windows o un contenedor PostgreSQL 17 en otros sistemas; escucha solo en loopback con contraseña aleatoria y retira la base al terminar. El archivo `backend/tests/database/bootstrap.sql` simula exclusivamente las dependencias Auth/roles en estas bases vacías; **no debe ejecutarse en Supabase**, que ya las administra.
 
-`tests/db/nucleo.sql` ejecuta 71 comprobaciones de FKs, unicidad, vigencias, concesiones/denegaciones, copropiedad, RLS, escalada de privilegios, estado de acceso y auditoría. Termina en ROLLBACK y comprueba además que el contexto no queda en una conexión reutilizada. La misma suite sirve en Supabase desarrollo; los datos Auth ficticios también se revierten.
+`backend/tests/database/nucleo.sql` ejecuta 71 comprobaciones de FKs, unicidad, vigencias, concesiones/denegaciones, copropiedad, RLS, escalada de privilegios, estado de acceso y auditoría. Termina en ROLLBACK y comprueba además que el contexto no queda en una conexión reutilizada. La misma suite sirve en Supabase desarrollo; los datos Auth ficticios también se revierten.
 
 PostgreSQL añade dos carreras de bajas de propietarios (READ COMMITTED y REPEATABLE READ) y una integración real Kysely/pg con login restringido y pool de una conexión: acceso autorizado, cuenta administrativa rechazada, permiso ausente, tenant sin membresía, rollback de cambios y limpieza del contexto.
 
@@ -118,14 +118,14 @@ Para siguientes migraciones mediante CLI:
 
 ```powershell
 npx supabase login
-npx supabase link --project-ref xlkuqntkxzwayyxovoxy
-npx supabase db push --dry-run
+npx supabase --workdir backend link --project-ref xlkuqntkxzwayyxovoxy
+npx supabase --workdir backend db push --dry-run
 npm run db:migrate
 ```
 
 Las credenciales se introducen fuera del código. No usar `db reset --linked` sobre un entorno con información que deba conservarse. `db:reset` es local.
 
-Cuando la única autorización disponible es la sesión del Dashboard, `scripts/prepare-dashboard-deploy.ts` prepara el mismo archivo SQL y registra `version`, `name` y el texto completo en `supabase_migrations.schema_migrations` dentro del mismo commit. Protege también ese historial con RLS forzado y sin acceso de roles API/runtime. Normaliza los saltos CRLF del portapapeles de Windows a LF para comparar SHA-256 con el archivo local. No mantiene un segundo esquema o juego de migraciones. La salida de despliegue queda en `test-results/`, no en una nueva migración.
+Cuando la única autorización disponible es la sesión del Dashboard, `backend/scripts/prepare-dashboard-deploy.ts` prepara el mismo archivo SQL y registra `version`, `name` y el texto completo en `supabase_migrations.schema_migrations` dentro del mismo commit. Protege también ese historial con RLS forzado y sin acceso de roles API/runtime. Normaliza los saltos CRLF del portapapeles de Windows a LF para comparar SHA-256 con el archivo local. No mantiene un segundo esquema o juego de migraciones. La salida de despliegue queda en `test-results/`, no en una nueva migración.
 
 Para repetir únicamente la suite remota desde terminal, establecer `MIGRATION_DATABASE_URL` y `VEXOR_TEST_TARGET=development`, y ejecutar `npm run db:test:remote`. También puede ejecutarse el archivo de pruebas en el SQL Editor de este proyecto. No ejecutar el bootstrap de pruebas en remoto.
 

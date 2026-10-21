@@ -1,0 +1,107 @@
+import type { ColumnType, Generated, JSONColumnType } from 'kysely';
+
+type Timestamp = ColumnType<Date, Date | string | undefined, Date | string>;
+type NullableTimestamp = ColumnType<
+  Date | null,
+  Date | string | null | undefined,
+  Date | string | null
+>;
+interface Dated {
+  creado_en: Timestamp;
+  actualizado_en: Timestamp;
+}
+interface Negocio extends Dated {
+  id: Generated<string>;
+  nombre: string;
+  activo: Generated<boolean>;
+  zona_horaria: Generated<string>;
+  version: Generated<string>;
+}
+interface Local extends Dated {
+  id: Generated<string>;
+  negocio_id: string;
+  nombre: string;
+  habilitado_venta: Generated<boolean>;
+  activo: Generated<boolean>;
+}
+interface Usuario extends Dated {
+  id: Generated<string>;
+  auth_user_id: string;
+  nombre: string;
+  activo: Generated<boolean>;
+}
+interface Miembro extends Dated {
+  id: Generated<string>;
+  negocio_id: string;
+  usuario_id: string;
+  es_propietario: Generated<boolean>;
+  activo: Generated<boolean>;
+}
+interface Rol extends Dated {
+  id: Generated<string>;
+  negocio_id: string;
+  nombre: string;
+  activo: Generated<boolean>;
+}
+interface Permiso {
+  codigo: string;
+  alcance: 'negocio' | 'local';
+  descripcion: string;
+}
+interface RolPermiso {
+  negocio_id: string;
+  rol_id: string;
+  permiso_codigo: string;
+  creado_en: Timestamp;
+}
+interface MiembroRol {
+  id: Generated<string>;
+  negocio_id: string;
+  miembro_id: string;
+  rol_id: string;
+  local_id: string | null;
+  creado_en: Timestamp;
+}
+interface MiembroLocal {
+  negocio_id: string;
+  miembro_id: string;
+  local_id: string;
+  creado_en: Timestamp;
+}
+interface PermisoIndividual extends Dated {
+  id: Generated<string>;
+  negocio_id: string;
+  miembro_id: string;
+  permiso_codigo: string;
+  efecto: 'permitir' | 'denegar';
+  local_id: string | null;
+  otorgante_id: string;
+  motivo: string | null;
+  inicia_en: Timestamp;
+  vence_en: NullableTimestamp;
+  revocado_en: NullableTimestamp;
+}
+interface Auditoria {
+  id: Generated<string>;
+  negocio_id: string;
+  actor_auth_id: string | null;
+  actor_sql: string;
+  tabla: string;
+  operacion: string;
+  anterior: JSONColumnType<Record<string, unknown>> | null;
+  nuevo: JSONColumnType<Record<string, unknown>> | null;
+  ocurrido_en: Timestamp;
+}
+export interface Database {
+  'app.negocios': Negocio;
+  'app.locales': Local;
+  'app.usuarios': Usuario;
+  'app.miembros_negocio': Miembro;
+  'app.roles': Rol;
+  'app.permisos': Permiso;
+  'app.roles_permisos': RolPermiso;
+  'app.miembros_roles': MiembroRol;
+  'app.miembros_locales': MiembroLocal;
+  'app.permisos_otorgados': PermisoIndividual;
+  'app.auditoria_acceso': Auditoria;
+}

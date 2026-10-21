@@ -1,0 +1,8 @@
+@import '@fontsource-variable/dm-sans/wght.css';
+@import '@fontsource-variable/manrope/wght.css';
+
+@import '../compartido/estilos/base.css';
+@import '../compartido/autenticacion/auth.css';
+@import '../compartido/estilos/app.css';
+@import '../compartido/estilos/responsive.css';
+@import '../proveedor/estilos/platform.css';

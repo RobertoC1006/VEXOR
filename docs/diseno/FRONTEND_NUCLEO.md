@@ -4,7 +4,7 @@
 
 ## Alcance
 
-React, TypeScript y Vite en `web/`, dentro del repositorio del monolito. La presentación consume `/api/v1`; NestJS conserva la autorización y las reglas de negocio. Supabase Auth administra credenciales y sesiones. Las pantallas siguen las referencias claras/azules de VEXOR y se adaptan a escritorio, tablet y celular.
+React, TypeScript y Vite en `frontend/`, dentro del repositorio del monolito. La presentación consume `/api/v1`; NestJS conserva la autorización y las reglas de negocio. Supabase Auth administra credenciales y sesiones. Las pantallas siguen las referencias claras/azules de VEXOR y se adaptan a escritorio, tablet y celular. La [estructura actual](ESTRUCTURA_PROYECTO.md) separa proveedor, comerciante y código compartido.
 
 Rutas de acceso: `/ingresar`, `/recuperar`, `/auth/callback` y `/establecer-contrasena`. Rutas comerciales: `/negocios`, `/invitaciones` y `/negocios/:negocioId`. La administración del SaaS tiene `/plataforma`, `/plataforma/negocios`, `/plataforma/invitaciones` y `/plataforma/invitaciones/nueva`. `/` abre primero la administración de VEXOR si la identidad verificada tiene esa autorización; para el resto abre el área comercial. Las rutas desconocidas tienen una salida al inicio.
 
@@ -58,7 +58,7 @@ npm run build
 npm run test:web
 npm run test:api
 npm run test:hosting
-node --env-file=.env --env-file=.env.runtime --import tsx scripts/test-client-build.ts
+node --env-file=.env --env-file=.env.runtime --import tsx frontend/scripts/test-client-build.ts
 ```
 
 `test:hosting` comprueba por HTTP un servidor ya iniciado; `VEXOR_SMOKE_ORIGIN` permite elegir el destino remoto sin mutaciones. Para repetir pruebas manuales sin alterar vexor-dev: `npm run demo:browser`; abre `http://localhost:5174`. El comando crea PostgreSQL desechable, Auth local con JWT firmados, el Nest real y otra instancia de Vite. Imprime credenciales **ficticias y exclusivamente locales**. Ctrl+C cierra esos procesos y la base de prueba. Nunca usar esas credenciales en Supabase.
@@ -67,7 +67,7 @@ node --env-file=.env --env-file=.env.runtime --import tsx scripts/test-client-bu
 
 En vexor-dev quedaron configurados Site URL `http://localhost:5173` y redirect exacto `http://localhost:5173/auth/callback`. El primer administrador confirmó su identidad y estableció su contraseña personalmente; después se habilitó su administración explícita. Aceptó «Negocio demo VEXOR» desde la PWA y quedó como propietario.
 
-`scripts/setup-demo.ts` es una operación de desarrollo explícita: requiere `VEXOR_PROVISION_TARGET=development`, correo/nombre/negocio como argumentos, una identidad ya confirmada y las credenciales locales existentes. Registra al administrador y solicita la invitación por el mismo servicio del backend; conserva la idempotencia en `test-results/`. Nunca se ejecuta al iniciar HTTP o al desplegar. No crea ni modifica cuentas SQL.
+`backend/scripts/setup-demo.ts` es una operación de desarrollo explícita: requiere `VEXOR_PROVISION_TARGET=development`, correo/nombre/negocio como argumentos, una identidad ya confirmada y las credenciales locales existentes. Registra al administrador y solicita la invitación por el mismo servicio del backend; conserva la idempotencia en `test-results/`. Nunca se ejecuta al iniciar HTTP o al desplegar. No crea ni modifica cuentas SQL.
 
 SMTP personalizado está desactivado. El primer correo fue aceptado por el proveedor y el usuario completó el acceso; la notificación posterior de la invitación comercial devolvió `auth_rechazada`. La solicitud durable pudo aceptarse desde la sesión vigente. No se atribuye una causa más específica ni se afirma entrega SMTP general. Antes de invitar clientes externos hay que configurar un proveedor SMTP y validar entrega, recuperación y reenvíos.
 
@@ -76,7 +76,7 @@ SMTP personalizado está desactivado. El primer correo fue aceptado por el prove
 La instrucción actual del usuario separa el alojamiento: PWA estática en Vercel y monolito Nest en Render. La [guía de despliegue](DESPLIEGUE_DEMO.md) contiene la configuración vigente.
 
 - Framework preset: Other; raíz: este repositorio; Node 22 o posterior compatible.
-- Build Vercel: `npm run build:web`; salida pública: `dist/web`. Solo recibe las dos variables públicas de Auth.
+- Build Vercel: `npm run build:web`; salida pública: `dist/frontend`. Solo recibe las dos variables públicas de Auth.
 - `/api/v1/*` se dirige mediante rewrite externo a Render; el resto de rutas de aplicación vuelve a `index.html`. Los archivos estáticos existentes se sirven directamente.
 - Render compila `build:api` y ejecuta `npm start` con `HOST=0.0.0.0` y su `PORT`. Conserva RLS/autorización y la CA pública de Supabase. Se retiró el adaptador serverless de Vercel.
 - Variables del servidor: `NODE_ENV=production`, `DATABASE_URL` de la cuenta restringida existente, `DATABASE_POOL_MAX` inicial bajo (por ejemplo 2), URL/clave pública Auth, `SUPABASE_SECRET_KEY`, `APP_ORIGINS` con el origen HTTPS exacto y `INVITATION_REDIRECT_URL` terminado en `/auth/callback`.

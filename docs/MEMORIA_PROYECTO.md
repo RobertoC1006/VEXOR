@@ -21,7 +21,7 @@ Para retomar, consultar según la tarea: [alojamiento y publicación](#alojamien
 
 - `main` contiene el backend, frontend y despliegue, incluidas las ramas `codex/backend-nucleo`, `codex/frontend-nucleo` y `codex/demo-vercel`. La transición quedó publicada en el commit `6460247`, con Vercel Ready/Production y Render Live. La rama temporal de preparación se eliminó; `codex/demo-vercel` se conserva en `0cf850e` como referencia anterior. Una vuelta de código no revierte cambios de base de datos.
 - El alojamiento vigente es frontend en Vercel y backend en Render. La alternativa anterior de alojar ambos en Vercel quedó sustituida. `vexor.vercel.app` no pudo asignarse porque ya pertenecía a otro proyecto; cambiar mayúsculas no crea otro dominio. No hay un dominio propio contratado/configurado.
-- GitHub activa despliegues independientes al actualizar `main`. Vercel compila `npm run build:web` y publica `dist/web`; Render instala dependencias, compila `build:api` y ejecuta `npm start`, con Node 22 y health check `/api/v1/health/ready`. Vercel reenvía `/api/v1/*` a Render mediante `vercel.json`. El servicio Render fue creado desde Dashboard; `render.yaml` documenta sus ajustes y no es un Blueprint activo.
+- GitHub activa despliegues independientes al actualizar `main`. La demo publicada del núcleo usa la salida frontend `dist/web`; la reorganización de la rama de configuración prepara `dist/frontend` y backend en `dist/backend`, todavía sin publicar. Vercel conserva `npm run build:web`; Render instala dependencias, compila `build:api` y ejecuta `npm start`, con Node 22 y health check `/api/v1/health/ready`. Vercel reenvía `/api/v1/*` a Render mediante `vercel.json`. El servicio Render fue creado desde Dashboard; `render.yaml` documenta sus ajustes y no es un Blueprint activo.
 - Las nuevas funcionalidades se trabajan en ramas `codex/` desde `main`; se prueban y revisan antes de integrar su publicación aprobada. Las instrucciones operativas de commit, push y merge están en `AGENTS.md`. Un preview de frontend no crea un backend ni una base aislados. Aún no hay pruebas completas automáticas que bloqueen ambos despliegues ni promoción coordinada.
 - Auth tiene Site URL `https://vexor-robertoc1006.vercel.app` y callback exacto `https://vexor-robertoc1006.vercel.app/auth/callback`; se conserva `http://localhost:5173/auth/callback` para desarrollo. No autorizar comodines de previews. El backend usa ese origen público y callback.
 - Los secretos SQL y Auth se guardan solo en las variables privadas de Render. Vercel recibe únicamente la URL y clave pública de Supabase. Conservar `.env` y `.env.runtime` locales sin mostrarlos ni versionarlos; no transferir la conexión de migración a Render ni volver a aprovisionar la cuenta SQL restringida. Los despliegues no ejecutan aprovisionamiento, migraciones ni altas de administrador.
@@ -87,6 +87,12 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 ### Arquitectura — confirmado
 
 - El sistema tendrá arquitectura monolítica, según indicación expresa del usuario. La organización modular y el esquema concreto de datos se revisan como propuestas técnicas; no quedan aprobados por elegir monolito.
+
+### Organización del repositorio — confirmado
+
+- El usuario aprobó separar `frontend/` y `backend/`, con funcionalidades de `proveedor/`, `comerciante/` y mecanismos reutilizables en `compartido/` dentro de cada `src/`. Proveedor corresponde a la administración de VEXOR; comerciante, a la operación del negocio. Se conserva el monolito, una sola identidad y el aislamiento vigente.
+- Migraciones, configuración y certificado público de Supabase en `backend/supabase/`; conexión, transacciones y tipos SQL en `backend/src/compartido/database/`. Pruebas y herramientas dentro de su frontend/backend, con comandos npm desde la raíz y un solo archivo de dependencias.
+- La reorganización conserva las URLs y reglas existentes. No implementa todavía las pantallas comerciales de configuración. Ver [estructura, responsabilidades y verificación](diseno/ESTRUCTURA_PROYECTO.md). Los archivos generados quedan ocultos en el explorador compatible con VS Code.
 
 ### Stack tecnológico y alojamiento para pruebas
 

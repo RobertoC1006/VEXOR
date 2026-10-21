@@ -4,5 +4,4 @@
 test-results/
 .git/
 docs/
-tests/
-supabase/
+backend/
