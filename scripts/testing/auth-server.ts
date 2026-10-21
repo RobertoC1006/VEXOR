@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import type { Client } from 'pg';
 
 export interface TestUser {id:string;email:string;confirmed?:boolean;role?:string;metadata?:Record<string,unknown>}
-export async function startAuthServer(database:Client,initial:TestUser[]) {
+export async function startAuthServer(database:Client,initial:TestUser[],browserPassword?:string) {
   const users=new Map(initial.map(u=>[u.id,u]));
   const delivered:{email:string;kind:string}[]=[];
   const rejected=new Set<string>();
@@ -13,6 +13,19 @@ export async function startAuthServer(database:Client,initial:TestUser[]) {
   const api=express();api.use((_req,res,next)=>{res.setHeader('X-Supabase-Api-Version','2024-01-01');next();});api.use(express.json());
   let origin='';
   const issuer=()=>`${origin}/auth/v1`;
+  // Optional browser-only fixture support. Never mounted by the application.
+  if(browserPassword) {
+    api.use((_req,res,next)=>{res.setHeader('Access-Control-Allow-Origin','http://localhost:5174');res.setHeader('Access-Control-Allow-Headers','authorization,apikey,content-type,x-client-info,x-supabase-api-version');res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,OPTIONS');if(_req.method==='OPTIONS'){res.sendStatus(204);return;}next();});
+    const payload=(user:TestUser)=>({id:user.id,email:user.email,aud:'authenticated',role:'authenticated',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},created_at:new Date().toISOString()});
+    const refreshes=new Map<string,string>();
+    api.post('/auth/v1/token',async(req,res)=>{
+      const user=req.query.grant_type==='refresh_token'?users.get(refreshes.get(req.body.refresh_token)??''):[...users.values()].find(u=>u.email===req.body.email&&req.body.password===browserPassword);
+      if(!user){res.status(400).json({code:'invalid_credentials',error_code:'invalid_credentials',msg:'Invalid credentials'});return;}
+      const refresh=randomUUID();refreshes.set(refresh,user.id);
+      res.json({access_token:await token(user.id),refresh_token:refresh,token_type:'bearer',expires_in:600,user:payload(user)});
+    });
+    api.post('/auth/v1/logout',(_req,res)=>{res.json({});});
+  }
   api.get('/auth/v1/user',async(req,res)=>{
     const token=req.headers.authorization?.replace(/^Bearer /i,'');
     if(token==='auth-outage') {res.status(503).json({msg:'Unavailable',code:'unexpected_failure'});return;}

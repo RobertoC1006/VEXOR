@@ -6,9 +6,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build:api && npm run build:web",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.runtime dist/main.js",
-    "test:api": "npm run build && node --import tsx scripts/test-api.ts",
+    "test:api": "npm run build:api && node --import tsx scripts/test-api.ts",
     "db:provision-runtime": "node --env-file-if-exists=.env --import tsx scripts/provision-runtime.ts",
     "db:bootstrap-admin": "node --env-file-if-exists=.env --import tsx scripts/bootstrap-platform-admin.ts",
     "db:test": "node --import tsx scripts/test-db.ts",
@@ -16,9 +16,21 @@
     "db:test:postgres": "node --import tsx scripts/test-postgres.ts",
     "db:migrate": "supabase db push",
     "db:reset": "supabase db reset",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npm run typecheck:api && npm run typecheck:web",
+    "build:api": "tsc -p tsconfig.build.json",
+    "build:web": "node --import tsx scripts/build-web.ts",
+    "dev:web": "vite",
+    "dev:api": "npm run build:api && npm start",
+    "typecheck:api": "tsc --noEmit",
+    "typecheck:web": "tsc -p web/tsconfig.json",
+    "test:web": "vitest run --config vitest.config.ts",
+    "demo:browser": "npm run build:api && node --import tsx scripts/demo-browser.ts",
+    "demo:setup": "node --env-file-if-exists=.env --env-file-if-exists=.env.runtime --import tsx scripts/setup-demo.ts",
+    "test:hosting": "npm run build:api && node --env-file-if-exists=.env --env-file-if-exists=.env.runtime --import tsx scripts/test-hosting.ts"
   },
   "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
     "@nestjs/common": "^11.2.7",
     "@nestjs/core": "^11.2.7",
     "@nestjs/platform-express": "^11.2.7",
@@ -28,21 +40,34 @@
     "class-validator": "^0.15.1",
     "helmet": "^8.3.0",
     "kysely": "^0.28.8",
+    "lucide-react": "^1.60.0",
     "pg": "^8.16.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.14",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/express": "^5.0.6",
     "@types/node": "^22.18.0",
     "@types/pg": "^8.15.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@types/supertest": "^7.2.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "embedded-postgres": "17.10.0-beta.17",
     "jose": "^6.2.13",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.10",
     "supabase": "^2.54.11",
     "supertest": "^7.3.1",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   }
 }

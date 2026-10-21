@@ -15,7 +15,8 @@ export async function createApp(config:AppConfig,quiet=false) {
   app.use((req:Request & {requestId:string},res:Response,next:NextFunction)=>{
     const supplied=req.headers['x-request-id'];
     req.requestId=typeof supplied==='string' && /^[a-zA-Z0-9_-]{1,64}$/.test(supplied)?supplied:randomUUID();
-    res.setHeader('X-Request-ID',req.requestId);next();
+    res.setHeader('X-Request-ID',req.requestId);
+    res.setHeader('Cache-Control','private, no-store');next();
   });
   app.use(helmet());
   app.enableCors({origin:(origin:string|undefined,callback:(error:Error|null,allow?:boolean)=>void)=>{
