@@ -2,6 +2,8 @@
 
 Decisión del usuario del 20 de octubre de 2026: PWA en Vercel y backend en Render. Sustituye el alojamiento conjunto en Vercel. Rama de esta fase: `codex/demo-vercel`.
 
+Destinos configurados: PWA `https://vexor-robertoc1006.vercel.app`; API `https://vexor-api-robertoc1006.onrender.com`. Supabase Auth ya tiene Site URL público y callback exacto, conservando el callback local. Render respondió correctamente a las comprobaciones HTTP de salud, SQL y sesión requeridas. La verificación del recorrido autenticado público se registra por separado.
+
 ## Render
 
 Servicio Node desde la raíz del repositorio. Configuración reproducible en `render.yaml`; Node 22, build `npm ci --include=dev && npm run build:api`, inicio `npm start`, health check `/api/v1/health/ready`. Render suministra `PORT`; `HOST=0.0.0.0` permite escuchar en su interfaz.
