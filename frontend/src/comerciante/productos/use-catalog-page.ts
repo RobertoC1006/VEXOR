@@ -9,19 +9,22 @@ export function useCatalogPage<T, Extra extends object = object>(
   path: string,
   categoryId?: string,
   localId?: string,
+  inventoryFilter?: { productId?: string; status?: string },
 ) {
   const { business } = useBusiness();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [codeSearch, setCodeSearch] = useState(false);
   const pagination = usePageState(
-    `${path}:${categoryId ?? ''}:${localId ?? ''}`,
+    `${path}:${categoryId ?? ''}:${localId ?? ''}:${inventoryFilter?.productId ?? ''}:${inventoryFilter?.status ?? ''}`,
     business?.preferencias?.elementos_por_pagina,
   );
   const { offset, setOffset, pageSize } = pagination;
   const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset) });
   if (query) params.set(codeSearch ? 'codigo' : 'q', query);
   if (localId) params.set('local_id', localId);
+  if (inventoryFilter?.productId) params.set('producto_id', inventoryFilter.productId);
+  if (inventoryFilter?.status) params.set('estado_stock', inventoryFilter.status);
   if (categoryId) params.set('categoria_id', categoryId);
   const url = `${path}?${params}`;
   const resource = useResource(url, (signal) => api<Page<T> & Extra>(url, { signal }));

@@ -23,7 +23,8 @@ export function AppLayout({
   const location = useLocation();
   useEffect(() => {
     setOpen(false);
-    document.querySelector<HTMLElement>('#main-content')?.focus();
+    document.querySelector<HTMLElement>('#main-content')?.focus({ preventScroll: true });
+    window.scrollTo(0, 0);
   }, [location.pathname]);
   const name = data?.me.perfil?.nombre ?? data?.me.email ?? '';
   const selected = data?.businesses.find((b) => location.pathname.includes(b.negocio_id));

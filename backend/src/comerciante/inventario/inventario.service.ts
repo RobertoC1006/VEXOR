@@ -1,3 +1,4 @@
+import { stockAlert } from './queries.js';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { sql, type Transaction } from 'kysely';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
@@ -64,6 +65,33 @@ export class InventoryService {
           ),
         )
         .where('p.negocio_id', '=', negocioId);
+      let focused;
+      if (p.producto_id) {
+        focused = await tx
+          .selectFrom('app.productos as foco')
+          .leftJoin('app.productos as modelo', (j) =>
+            j
+              .onRef('modelo.negocio_id', '=', 'foco.negocio_id')
+              .onRef('modelo.id', '=', 'foco.producto_padre_id'),
+          )
+          .select(['foco.id', 'foco.nivel_registro'])
+          .select(sql<string>`coalesce(modelo.nombre || ' · ', '') || foco.nombre`.as('nombre'))
+          .where('foco.negocio_id', '=', negocioId)
+          .where('foco.id', '=', p.producto_id)
+          .executeTakeFirstOrThrow();
+        query = query.where((eb) =>
+          eb.or([eb('p.id', '=', p.producto_id!), eb('p.producto_padre_id', '=', p.producto_id!)]),
+        );
+      }
+      if (p.estado_stock) {
+        query = query
+          .where('p.activo', '=', true)
+          .where(sql<boolean>`(p.producto_padre_id is null or raiz.activo)`);
+        query =
+          p.estado_stock === 'bajo'
+            ? query.where(stockAlert())
+            : query.where('i.confirmado_en', 'is', null);
+      }
       if (p.codigo)
         query = query.where(sql<boolean>`(p.codigo = ${p.codigo} or exists (
         select 1 from app.productos raiz where raiz.negocio_id = p.negocio_id
@@ -84,6 +112,7 @@ export class InventoryService {
           p,
         ),
         permisos: rights,
+        ...(focused ? { producto_filtrado: focused } : {}),
       };
     });
   }

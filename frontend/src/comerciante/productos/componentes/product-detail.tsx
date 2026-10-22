@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { inventoryLink } from '../../inventario/navigation';
 import { useState, useId } from 'react';
 import { Modal } from '../../../compartido/componentes/modal';
 import { Button } from '../../../compartido/componentes/ui';
@@ -9,16 +11,18 @@ import { useBusiness } from '../../negocio/context';
 export function ProductDetail({
   product,
   localName,
+  localId,
   onClose,
   onEdit,
 }: {
   product: Product;
   localName?: string;
+  localId?: string;
   onClose: () => void;
   onEdit: () => void;
 }) {
   const tabsId = useId();
-  const { can } = useBusiness();
+  const { can, base } = useBusiness();
   const [tab, setTab] = useState('info');
   return (
     <Modal label={`Detalle de ${product.nombre}`} onClose={onClose}>
@@ -85,7 +89,7 @@ export function ProductDetail({
       </div>
       <section role="tabpanel" id={`${tabsId}-panel`} aria-labelledby={`${tabsId}-${tab}`}>
         {tab === 'combinations' ? (
-          <VariantsContent parent={product} onEdit={onEdit} />
+          <VariantsContent parent={product} localId={localId} onEdit={onEdit} />
         ) : (
           <>
             <div className="detail-summary">
@@ -117,6 +121,14 @@ export function ProductDetail({
                 />
               </div>
             </div>
+            {product.nivel_registro !== 'avanzado' && (
+              <Link
+                className="button secondary"
+                to={inventoryLink(base, { productId: product.id, localId, count: true })}
+              >
+                Ir a contar este producto
+              </Link>
+            )}
             {product.descripcion && <p>{product.descripcion}</p>}
             <dl className="product-facts">
               {product.caracteristicas.map((a) => (

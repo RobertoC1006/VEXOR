@@ -124,6 +124,7 @@ function ProductCatalog() {
       {detail && (
         <ProductDetail
           product={detail}
+          localId={localId || undefined}
           localName={locals.find((l) => l.id === localId)?.nombre}
           onClose={() => setDetail(null)}
           onEdit={() => {

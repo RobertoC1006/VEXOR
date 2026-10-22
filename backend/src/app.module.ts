@@ -1,3 +1,5 @@
+import { SummaryController } from './comerciante/inicio/resumen.controller.js';
+import { SummaryService } from './comerciante/inicio/resumen.service.js';
 import { Module, type DynamicModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { CONFIG, type AppConfig } from './compartido/config.js';
@@ -31,6 +33,7 @@ export class AppModule {
     return {
       module: AppModule,
       controllers: [
+        SummaryController,
         HealthController,
         ProductsController,
         InventoryController,
@@ -45,6 +48,7 @@ export class AppModule {
       ],
       providers: [
         { provide: CONFIG, useValue: config },
+        SummaryService,
         DatabaseService,
         ProductsService,
         ProductRegistrationService,

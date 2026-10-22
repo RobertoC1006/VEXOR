@@ -1,10 +1,12 @@
+import { useSearchParams } from 'react-router-dom';
+import { ChoicePicker } from '../../../compartido/componentes/choice-picker';
 import { MinimumForm } from '../componentes/minimum-form';
 import { StockGauge } from '../componentes/stock-gauge';
 import { MerchandiseTable } from '../../productos/componentes/merchandise-table';
 import { priceLabel } from '../../productos/types';
 import { Pagination } from '../../../compartido/componentes/pagination';
 import { Modal } from '../../../compartido/componentes/modal';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
 import { Button, Empty, Notice } from '../../../compartido/componentes/ui';
@@ -28,10 +30,18 @@ function InventoryLocals() {
   const resource = useResource(`${base}/inventario-locales`, (signal) =>
     listAll<BusinessLocal>(`${base}/locales`, signal),
   );
-  const [selected, setSelected] = useState('');
+  const [params, setParams] = useSearchParams();
+  const selected = params.get('local') ?? '';
+  const setSelected = (id: string) => {
+    const next = new URLSearchParams(params);
+    next.set('local', id);
+    next.delete('contar');
+    setParams(next);
+  };
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
   const locals = resource.data.filter((l) => l.activo);
-  const localId = selected || locals[0]?.id;
+  const unavailable = !!selected && !locals.some((l) => l.id === selected);
+  const localId = unavailable ? '' : selected || locals[0]?.id;
   return (
     <>
       <PageHeading
@@ -46,7 +56,13 @@ function InventoryLocals() {
       {locals.length ? (
         <>
           <LocalTabs locals={locals} value={localId} onChange={setSelected} />
-          <LocalInventory key={localId} localId={localId} />
+          {unavailable ? (
+            <Notice>
+              El local indicado no está disponible para tu cuenta. Elige uno de tus locales.
+            </Notice>
+          ) : (
+            <LocalInventory key={`${localId}:${params.get('producto') ?? ''}`} localId={localId} />
+          )}
         </>
       ) : (
         <Empty title="No hay locales disponibles">
@@ -60,14 +76,87 @@ function InventoryLocals() {
 }
 function LocalInventory({ localId }: { localId: string }) {
   const { base } = useBusiness();
-  const resource = useCatalogPage<InventoryItem, { permisos: InventoryPermissions }>(
-    `${base}/locales/${localId}/inventario`,
-  );
+  const [params, setParams] = useSearchParams();
+  const productId = params.get('producto') ?? undefined;
+  const status = params.get('estado') ?? '';
+  const autoCount = params.get('contar') === '1';
+  const consumed = useRef(false);
+  const resource = useCatalogPage<
+    InventoryItem,
+    {
+      permisos: InventoryPermissions;
+      producto_filtrado?: { id: string; nombre: string; nivel_registro: string };
+    }
+  >(`${base}/locales/${localId}/inventario`, undefined, undefined, {
+    productId,
+    status: status || undefined,
+  });
   const data = resource.data;
   const [minimum, setMinimum] = useState<InventoryItem | null>(null);
   const [editor, setEditor] = useState<InventoryItem | null>(null);
+  useEffect(() => {
+    if (!autoCount || !data || consumed.current) return;
+    consumed.current = true;
+    if (data.items.length !== 1 || data.has_more) return;
+    const item = data.items[0];
+    if (
+      item.estado !== 'confirmado' &&
+      (data.permisos.contar || (item.estado === 'preparacion' && data.permisos.confirmar))
+    )
+      setEditor({ ...item, nombre: item.nombre_completo ?? item.nombre });
+  }, [autoCount, data]);
+  function clearProduct() {
+    const next = new URLSearchParams(params);
+    next.delete('producto');
+    next.delete('contar');
+    setParams(next);
+  }
   return (
     <>
+      {productId && (
+        <section className="inventory-context">
+          <div>
+            <small>CONTEO DEL PRODUCTO SELECCIONADO</small>
+            <h2>{data?.producto_filtrado?.nombre ?? 'Producto seleccionado'}</h2>
+            <p>
+              {data?.producto_filtrado?.nivel_registro === 'avanzado'
+                ? 'Elige una combinación para contar. Solo ves el producto que abriste.'
+                : 'Aquí puedes revisar el conteo y el mínimo de este producto en el local seleccionado.'}
+            </p>
+          </div>
+          <Button variant="secondary" onClick={clearProduct}>
+            Ver todo el inventario
+          </Button>
+        </section>
+      )}
+      <ChoicePicker
+        label="Estado del inventario"
+        value={status}
+        options={[
+          {
+            id: '',
+            title: 'Todos los estados',
+            description: 'Productos y combinaciones del local',
+          },
+          {
+            id: 'pendiente',
+            title: 'Por contar',
+            description: 'Conteos pendientes y borradores de productos activos',
+          },
+          {
+            id: 'bajo',
+            title: 'Stock en alerta',
+            description: 'Existencias confirmadas en el mínimo o por debajo',
+          },
+        ]}
+        onChange={(id) => {
+          const next = new URLSearchParams(params);
+          if (id) next.set('estado', id);
+          else next.delete('estado');
+          next.delete('contar');
+          setParams(next);
+        }}
+      />
       {minimum && (
         <Modal
           label={`Stock mínimo de ${minimum.nombre_completo ?? minimum.nombre}`}

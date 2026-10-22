@@ -18,6 +18,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 it('ofrece navegación móvil compacta sin claves duplicadas, con todos los módulos en Más y sin header superior', () => {
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   render(
     <MemoryRouter initialEntries={['/negocios/A/productos']}>

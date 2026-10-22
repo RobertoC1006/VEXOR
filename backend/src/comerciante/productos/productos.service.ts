@@ -1,3 +1,4 @@
+import { stockAlert } from '../inventario/queries.js';
 import { requireInventoryLocal, inventoryRights } from '../inventario/access.js';
 import { savePhoto } from './fotos.js';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
@@ -59,7 +60,7 @@ export class ProductsService {
           }>`(select json_build_object(
           'cantidad', case when count(*) > 0 and count(*) = count(i.confirmado_en) then sum(i.cantidad) else null end,
           'confirmados', count(i.confirmado_en), 'total', count(*),
-          'bajos', count(*) filter(where i.confirmado_en is not null and m.minimo is not null and i.cantidad<=m.minimo),
+          'bajos', count(*) filter(where ${stockAlert()}),
           'minimo', case when count(*) > 0 and count(*) = count(m.minimo) then sum(m.minimo) else null end)
           from app.productos hoja left join app.stock_minimos m on m.negocio_id=hoja.negocio_id and m.producto_id=hoja.id and m.local_id=${p.local_id}::uuid left join app.inventario_inicial i on i.negocio_id = hoja.negocio_id and i.producto_id = hoja.id and i.local_id = ${p.local_id}::uuid
           where hoja.negocio_id = app.productos.negocio_id and (case when app.productos.nivel_registro = 'avanzado' then hoja.producto_padre_id = app.productos.id else hoja.id = app.productos.id end))`.as(

@@ -1,9 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Equals, IsInt, Max, Min, ValidateIf } from 'class-validator';
-import { NullableText } from '../../compartido/http/validation.js';
+import { Equals, IsInt, Max, Min, ValidateIf, IsIn, IsUUID } from 'class-validator';
+import { NullableText, OptionalField } from '../../compartido/http/validation.js';
 import { ProductQueryDto } from '../productos/dto.js';
 
-export class InventoryQueryDto extends ProductQueryDto {}
+export class InventoryQueryDto extends ProductQueryDto {
+  @ApiPropertyOptional() @OptionalField() @IsUUID() producto_id?: string;
+  @ApiPropertyOptional({ enum: ['bajo', 'pendiente'] })
+  @OptionalField()
+  @IsIn(['bajo', 'pendiente'])
+  estado_stock?: 'bajo' | 'pendiente';
+}
 export class CountSaveDto {
   @ApiProperty() @IsInt() @Min(0) @Max(2147483647) cantidad!: number;
   @ApiProperty({ description: '0 al crear; versión recibida al editar' })

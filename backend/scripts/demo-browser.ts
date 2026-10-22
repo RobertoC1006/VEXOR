@@ -15,8 +15,13 @@ await db.admin.query(`insert into auth.users(id) values('${id(1)}'),('${id(2)}')
  insert into app.locales(negocio_id,nombre,habilitado_venta) values('${id(21)}','Puesto principal',true),('${id(21)}','Almacén central',false);
  insert into app_private.administradores_plataforma(auth_user_id) values('${id(1)}');
  select set_config('vexor.auth_user_id','${id(1)}',false);`);
+await db.admin.query(`insert into auth.users(id) values('${id(4)}');
+ insert into app.usuarios(id,auth_user_id,nombre) values('${id(14)}','${id(4)}','María QA');
+ insert into app.negocios(id,nombre) values('${id(23)}','Lencería QA'),('${id(24)}','Abarrotes QA');
+ insert into app.miembros_negocio(negocio_id,usuario_id,es_propietario) values('${id(23)}','${id(14)}',true),('${id(24)}','${id(14)}',true);
+ insert into app.locales(negocio_id,nombre,habilitado_venta) values('${id(23)}','Puesto piloto',true),('${id(23)}','Almacén de respaldo',false),('${id(24)}','Puesto bodega',true);`);
 // Use the shared actor helper instead of relying on a privileged session context.
-const { withActor, createDatabase } = await import("../src/compartido/database/database.ts");
+const { withActor, createDatabase } = await import('../src/compartido/database/database.ts');
 const runtime = createDatabase(db.url, 1);
 const { sql } = await import('kysely');
 await withActor(runtime, { authUserId: id(1), email: 'propietario@example.test' }, (tx) =>
@@ -29,6 +34,7 @@ const auth = await startAuthServer(
   db.admin,
   [
     { id: id(1), email: 'propietario@example.test' },
+    { id: id(4), email: 'qa.mercado@example.test' },
     { id: id(2), email: 'trabajador@example.test' },
     { id: id(3), email: 'invitado@example.test' },
   ],
@@ -54,10 +60,13 @@ await app.listen(3001, '127.0.0.1');
 process.env.SUPABASE_URL = auth.url;
 process.env.SUPABASE_PUBLISHABLE_KEY = 'test-publishable';
 process.env.VEXOR_DEV_API_TARGET = 'http://127.0.0.1:3001';
-const vite = await createServer({ configFile: 'frontend/vite.config.ts', server: { port: 5174, strictPort: true } });
+const vite = await createServer({
+  configFile: 'frontend/vite.config.ts',
+  server: { port: 5174, strictPort: true },
+});
 await vite.listen();
 console.log(
-  'Demo LOCAL aislada: http://localhost:5174. Usuarios: propietario@example.test, trabajador@example.test, invitado@example.test. Contraseña ficticia: Vexor-demo-local-2026. No usar en vexor-dev.',
+  'Demo LOCAL aislada: http://localhost:5174. Usuarios: propietario@example.test, trabajador@example.test, invitado@example.test, qa.mercado@example.test. Contraseña ficticia: Vexor-demo-local-2026. No usar en vexor-dev.',
 );
 let closed = false;
 async function close() {

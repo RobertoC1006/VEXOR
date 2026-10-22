@@ -1,3 +1,4 @@
+import { inventoryLink } from '../../inventario/navigation';
 import { Pagination } from '../../../compartido/componentes/pagination';
 import { useCatalogPage } from '../use-catalog-page';
 import { Link } from 'react-router-dom';
@@ -6,7 +7,15 @@ import { ResourceState } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../../negocio/context';
 import { priceLabel, type Product } from '../types';
 
-export function VariantsContent({ parent, onEdit }: { parent: Product; onEdit: () => void }) {
+export function VariantsContent({
+  parent,
+  onEdit,
+  localId,
+}: {
+  parent: Product;
+  onEdit: () => void;
+  localId?: string;
+}) {
   const { base, can } = useBusiness();
   const resource = useCatalogPage<Product>(`${base}/productos/${parent.id}/variantes`);
   return (
@@ -45,6 +54,12 @@ export function VariantsContent({ parent, onEdit }: { parent: Product; onEdit: (
                     {priceLabel(v.precio)}
                   </p>
                 </div>
+                <Link
+                  className="button secondary"
+                  to={inventoryLink(base, { productId: v.id, localId, count: true })}
+                >
+                  Contar esta combinación<span className="visually-hidden"> {v.nombre}</span>
+                </Link>
               </article>
             ))}
             {!resource.data.items.length && (
@@ -52,7 +67,10 @@ export function VariantsContent({ parent, onEdit }: { parent: Product; onEdit: (
                 Las cantidades de cada talla y color se registran después en Inventario.
               </Empty>
             )}
-            <Link className="button secondary" to={`${base}/inventario`}>
+            <Link
+              className="button secondary"
+              to={inventoryLink(base, { productId: parent.id, localId, count: true })}
+            >
               Ir a contar el inventario
             </Link>
           </>
