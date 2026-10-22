@@ -14,6 +14,7 @@ import {
   ApiPropertyOptional,
   ApiTags,
   PartialType,
+  PickType,
 } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
@@ -25,8 +26,9 @@ import { requirePatch } from '../../compartido/http/input.js';
 import { TrimmedText } from '../../compartido/http/validation.js';
 import { requirePermission } from '../../compartido/database/database.js';
 import { requireProductRead } from '../productos/productos.service.js';
+import { ProductCreateDto } from '../productos/dto.js';
 
-export class CategoryCreateDto {
+export class CategoryCreateDto extends PickType(ProductCreateDto, ['ejes_variantes'] as const) {
   @ApiProperty() @TrimmedText(120) nombre!: string;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsUUID() padre_id?: string | null;
 }

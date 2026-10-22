@@ -2839,6 +2839,12 @@
       "CategoryCreateDto": {
         "type": "object",
         "properties": {
+          "ejes_variantes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "nombre": {
             "type": "string"
           },
@@ -2854,6 +2860,12 @@
       "CategoryPatchDto": {
         "type": "object",
         "properties": {
+          "ejes_variantes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "nombre": {
             "type": "string"
           },

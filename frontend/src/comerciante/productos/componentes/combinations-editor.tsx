@@ -1,3 +1,4 @@
+import { DifferencesEditor } from './differences-editor';
 import { Button, Field } from '../../../compartido/componentes/ui';
 import { CheckField } from '../../../compartido/componentes/form-controls';
 import { CodeField } from '../../../compartido/escaneo/code-field';
@@ -35,53 +36,29 @@ export function CombinationsEditor({
     <section className="registration-section">
       <h3>2. ¿Qué cambia entre las combinaciones?</h3>
       <p className="field-hint">
-        Elige lo que necesitas contar por separado. Puedes cambiar estos nombres o añadir otros. No
-        son categorías.
+        La categoría propone estos detalles. Puedes cambiar sus nombres, quitarlos o añadir otros.
+        Cambiar la categoría conserva las combinaciones que ya completaste.
       </p>
-      <div className="combination-axes">
-        {axes.map((axis, i) => (
-          <div key={i} className="attribute-row">
-            <Field
-              id={`axis-${i}`}
-              label={`Diferencia ${i + 1}`}
-              maxLength={40}
-              value={axis}
-              required
-              onChange={(e) => renameAxis(i, e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              aria-label={`Quitar diferencia ${i + 1}`}
-              onClick={() => {
-                onAxes(axes.filter((_, n) => n !== i));
-                onRows(
-                  rows.map((row) => ({
-                    ...row,
-                    caracteristicas: row.caracteristicas.filter(
-                      (a) => a.nombre.toLocaleLowerCase() !== axis.toLocaleLowerCase(),
-                    ),
-                  })),
-                );
-              }}
-            >
-              Quitar
-            </Button>
-          </div>
-        ))}
-      </div>
-      <Button
-        type="button"
-        variant="secondary"
-        disabled={axes.length >= 20}
-        onClick={() => onAxes([...axes, ''])}
-      >
-        Añadir diferencia
-      </Button>
+      <DifferencesEditor
+        value={axes}
+        onChange={onAxes}
+        onRename={renameAxis}
+        onRemove={(i) => {
+          onAxes(axes.filter((_, n) => n !== i));
+          onRows(
+            rows.map((row) => ({
+              ...row,
+              caracteristicas: row.caracteristicas.filter(
+                (a) => a.nombre.toLocaleLowerCase() !== axes[i].toLocaleLowerCase(),
+              ),
+            })),
+          );
+        }}
+      />
       <h3>3. Combinaciones del producto</h3>
       <p className="field-hint">
-        Cada fila representa una combinación, por ejemplo 48 / B / Rojo. Puede tener muchas
-        unidades; las contarás después en Inventario.
+        Cada fila representa una combinación de estos detalles. Puede tener muchas unidades; las
+        contarás después en Inventario.
       </p>
       {rows.map((row, i) => (
         <fieldset className="combination-card" key={row.key} aria-label={`Combinación ${i + 1}`}>

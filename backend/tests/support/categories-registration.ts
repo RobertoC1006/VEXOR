@@ -22,6 +22,30 @@ export async function testCategoriesRegistration(
     { nombre: 'Ropa', negocio_id: id(202) },
   ])
     await request('post', categories, 1, 400, body);
+  for (const ejes_variantes of [null, [''], Array(21).fill('Talla'), [42]])
+    await request('post', categories, 1, 400, { nombre: 'Plantilla inválida', ejes_variantes });
+  await request('post', categories, 1, 409, {
+    nombre: 'Duplicados',
+    ejes_variantes: ['Talla', 'talla'],
+  });
+  const template = (
+    await request('post', categories, 1, 201, {
+      nombre: 'Ropa por talla y color',
+      ejes_variantes: ['Talla', 'Color'],
+    })
+  ).body;
+  assert.deepEqual(template.ejes_variantes, ['Talla', 'Color']);
+  const templateUpdated = (
+    await request('patch', `${categories}/${template.id}`, 1, 200, {
+      version: template.version,
+      ejes_variantes: ['Medida', 'Color'],
+    })
+  ).body;
+  assert.deepEqual(templateUpdated.ejes_variantes, ['Medida', 'Color']);
+  await request('patch', `${categories}/${template.id}`, 1, 409, {
+    version: template.version,
+    ejes_variantes: [],
+  });
   const ropa = (await request('post', categories, 1, 201, { nombre: ' Ropa interior ' })).body;
   const mujer = (await request('post', categories, 1, 201, { nombre: 'Mujer', padre_id: ropa.id }))
     .body;

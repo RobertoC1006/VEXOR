@@ -7,14 +7,12 @@ export function AttributesEditor({
   variant = false,
   title,
   description,
-  onSeparate,
 }: {
   value: Attribute[];
   onChange: (value: Attribute[]) => void;
   variant?: boolean;
   title?: string;
   description?: string;
-  onSeparate?: (index: number) => void;
 }) {
   function update(index: number, changes: Partial<Attribute>) {
     onChange(value.map((a, i) => (i === index ? { ...a, ...changes } : a)));
@@ -63,11 +61,6 @@ export function AttributesEditor({
           >
             Quitar
           </Button>
-          {onSeparate && a.nombre.trim() && a.valor.trim() && (
-            <Button type="button" variant="ghost" onClick={() => onSeparate(i)}>
-              Usar en una combinación
-            </Button>
-          )}
         </div>
       ))}
       <div className="row-actions">

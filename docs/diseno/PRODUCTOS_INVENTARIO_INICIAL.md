@@ -10,13 +10,21 @@ Continuación autorizada en `codex/categorias-registro-productos`, desde `main` 
 - Categorías opcionales por negocio, con nombre editable y subcategorías. Agrupan productos y no tienen existencias propias. El filtro incluye las subcategorías de la categoría seleccionada.
 - El formulario avanzado reúne tres pasos: datos generales del modelo, diferencias que separan cantidades y combinaciones. Marca/modelo son ejemplos de datos comunes; talla/copa/color son diferencias editables. Cada combinación puede representar muchas unidades.
 - Cada combinación tiene código, precio y costo opcionales, además de sus valores. Los nombres vacíos se generan con esos valores. El conteo sigue en Inventario y no existe un total adicional del modelo.
-- Las fichas existentes conservan sus datos. El botón explícito «Usar en una combinación» pasa una característica común a una combinación nueva en el borrador; no modifica las combinaciones anteriores. Solo se persiste al guardar.
+- Las fichas existentes conservan sus datos. La acción «Usar en una combinación» se retiró por confusa; los datos comunes y las combinaciones se editan en sus respectivas secciones.
 - El modelo y las combinaciones modificadas se guardan en una sola transacción. Un código duplicado, versión obsoleta o cambio de identidad de una combinación contada revierte todo el guardado; el formulario conserva el borrador para corregirlo. Las combinaciones omitidas se conservan.
 - Las categorías reutilizan los permisos de productos, auditoría, contexto transaccional y RLS forzada. El servidor impide ciclos, nombres repetidos dentro del mismo grupo y referencias a categorías de otro negocio.
 
 API adicional bajo `/api/v1/negocios/:negocioId`: `GET/POST /categorias`, `PATCH /categorias/:id`, `POST /productos/registro` y `PUT /productos/:id/registro`. Los endpoints anteriores siguen disponibles. La migración `20261021000400_categorias_registro_guiado.sql` se aplicó manualmente a `vexor-dev` después de probarla en bases desechables; se verificó RLS forzada en las tres tablas del bloque.
 
 Verificación de esta continuación: typecheck y build correctos, 388 comprobaciones de API con PostgreSQL real, 56 pruebas de interfaz, migraciones desde cero y revisión del paquete público sin secretos. Prueba visual local: crear categoría y subcategoría, guardar un modelo con talla 48/copa B/rojo y volver a consultar la combinación persistida. Evidencia local excluida de Git: `test-results/registro-guiado-demo.png`.
+
+### Plantillas de detalles por categoría
+
+Continuación en `codex/plantillas-categorias-prueba-lenceria`. Cada categoría puede guardar nombres de detalles sugeridos (`ejes_variantes`), editables con el mismo editor usado por los modelos. Las guías opcionales incluyen brasieres (talla/copa/color), otras prendas (talla/color), alimentos y bebidas envasados (contenido/sabor), alimentos por variedad (variedad/calidad), limpieza (contenido/aroma) y artículos por capacidad (tamaño/capacidad). No se infiere una plantilla por palabras del nombre ni se obliga a un rubro.
+
+Una subcategoría sin detalles propios toma los de su superior. Al seleccionar la categoría en un modelo nuevo se rellenan los nombres de sus campos; los valores permanecen pendientes. Un cambio de categoría o de guía no reescribe combinaciones completadas o existentes. Las categorías nuevas sin guía permiten definir sus propios detalles. Lote y vencimiento no se usan como identidad del producto en estas guías; requieren el flujo correspondiente de lotes.
+
+Migración manual: `20261021000500_plantillas_categorias.sql`, validada desde cero y con RLS/privilegios existentes. Verificación: 396 comprobaciones de API y 57 pruebas de interfaz, además de typecheck, build y revisión del paquete público. La prueba autorizada en la interfaz del negocio de Vercel comprende 15 modelos y 30 combinaciones por modelo (450), identificados como PRUEBA, sin generar conteos ni ventas y conservando las fichas anteriores.
 
 ## Niveles y escaneo incorporados
 

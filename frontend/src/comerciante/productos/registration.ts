@@ -19,7 +19,11 @@ export function moneyValue(value: string) {
   const [whole, decimal] = value.trim().replace(',', '.').split('.');
   return `${whole.replace(/^0+(?=\d)/, '')}${decimal === undefined ? '' : `.${decimal}`}`;
 }
-export function initialAxes(product?: Product, combinations: Product[] = []) {
+export function initialAxes(
+  product?: Product,
+  combinations: Product[] = [],
+  suggested: string[] = [],
+) {
   const names = [
     ...(product?.ejes_variantes ?? []),
     ...combinations.flatMap((c) => c.caracteristicas.map((a) => a.nombre)),
@@ -29,7 +33,7 @@ export function initialAxes(product?: Product, combinations: Product[] = []) {
         (name, index) =>
           names.findIndex((n) => n.toLocaleLowerCase() === name.toLocaleLowerCase()) === index,
       )
-    : ['Talla', 'Copa', 'Color'];
+    : suggested;
 }
 export function combinationDraft(product?: Product, seed: Attribute[] = []): CombinationDraft {
   return {

@@ -12,7 +12,14 @@ import type { Product } from './types';
 const categories: Category[] = [
   { id: 'ropa', negocio_id: 'A', nombre: 'Ropa interior', padre_id: null, version: 1 },
   { id: 'mujer', negocio_id: 'A', nombre: 'Mujer', padre_id: 'ropa', version: 1 },
-  { id: 'brasieres', negocio_id: 'A', nombre: 'Brasieres', padre_id: 'mujer', version: 1 },
+  {
+    id: 'brasieres',
+    negocio_id: 'A',
+    nombre: 'Brasieres',
+    padre_id: 'mujer',
+    version: 1,
+    ejes_variantes: ['Talla', 'Copa', 'Color'],
+  },
 ];
 const model: Product = {
   id: 'modelo',
@@ -93,9 +100,10 @@ it('guarda el modelo y dos combinaciones juntas, con categoría y sin crear exis
   expect(body.combinaciones.map((c: any) => c.nombre)).toEqual(['48 / Rojo', '46 / Negro']);
   expect(JSON.stringify(body)).not.toContain('cantidad');
 });
-it('mover talla y color a una combinación requiere pulsar la acción y conserva la combinación anterior', async () => {
+it('conserva características y combinaciones previas sin ofrecer un traslado ambiguo', async () => {
   create(false, model);
   await screen.findByLabelText('Nombre del producto o modelo');
+  expect(screen.queryByRole('button', { name: 'Usar en una combinación' })).toBeNull();
   expect(
     (
       within(screen.getByRole('group', { name: 'Combinación 1' })).getByLabelText(
@@ -103,24 +111,11 @@ it('mover talla y color a una combinación requiere pulsar la acción y conserva
       ) as HTMLInputElement
     ).value,
   ).toBe('12');
-  expect(screen.getAllByRole('button', { name: 'Usar en una combinación' })).toHaveLength(3);
-  fireEvent.click(screen.getAllByRole('button', { name: 'Usar en una combinación' })[1]);
-  fireEvent.click(screen.getAllByRole('button', { name: 'Usar en una combinación' })[1]);
-  const next = within(screen.getByRole('group', { name: 'Combinación 2' }));
-  expect((next.getByLabelText('Talla') as HTMLInputElement).value).toBe('48');
-  expect((next.getByLabelText('Color') as HTMLInputElement).value).toBe('Rojo');
-  expect(mock.api).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Guardar modelo y combinaciones' }));
   await waitFor(() => expect(mock.saved).toHaveBeenCalledOnce());
   const body = JSON.parse(mock.api.mock.calls[0][1].body);
-  expect(body.version).toBe(4);
-  expect(body.producto.caracteristicas).toEqual([{ nombre: 'Marca', valor: 'RAE' }]);
-  expect(body.combinaciones).toHaveLength(1);
-  expect(body.combinaciones[0].id).toBeUndefined();
-  expect(body.combinaciones[0].caracteristicas).toEqual([
-    { nombre: 'Talla', valor: '48' },
-    { nombre: 'Color', valor: 'Rojo' },
-  ]);
+  expect(body.producto.caracteristicas).toEqual(model.caracteristicas);
+  expect(body.combinaciones).toEqual([]);
 });
 it('no reenvía ni reemplaza combinaciones existentes que no se editaron', async () => {
   create(false, model);
@@ -155,11 +150,26 @@ it('crear una categoría no descarta la ficha que se estaba preparando', async (
     '/negocios/A/categorias',
     expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ nombre: 'Niña', padre_id: 'ropa' }),
+      body: JSON.stringify({ nombre: 'Niña', padre_id: 'ropa', ejes_variantes: [] }),
     }),
   );
   expect((screen.getByLabelText('Nombre del producto o modelo') as HTMLInputElement).value).toBe(
     'Modelo en preparación',
   );
   expect(mock.saved).not.toHaveBeenCalled();
+});
+
+it('usa los detalles de la categoría y conserva las filas completadas al cambiar de categoría', async () => {
+  create(false);
+  await screen.findByRole('option', { name: 'Ropa interior → Mujer → Brasieres' });
+  fireEvent.change(screen.getByLabelText('Nivel de registro'), { target: { value: 'avanzado' } });
+  fireEvent.change(screen.getByLabelText('Categoría (opcional)'), {
+    target: { value: 'brasieres' },
+  });
+  expect((screen.getByLabelText('Detalle 2') as HTMLInputElement).value).toBe('Copa');
+  fireEvent.click(screen.getByRole('button', { name: 'Añadir combinación' }));
+  const row = within(screen.getByRole('group', { name: 'Combinación 1' }));
+  fireEvent.change(row.getByLabelText('Talla'), { target: { value: '38' } });
+  fireEvent.change(screen.getByLabelText('Categoría (opcional)'), { target: { value: 'ropa' } });
+  expect((row.getByLabelText('Talla') as HTMLInputElement).value).toBe('38');
 });

@@ -10,6 +10,7 @@ import type { Product, RegistrationLevel, Attribute } from '../types';
 import { CodeField } from '../../../compartido/escaneo/code-field';
 import { AttributesEditor } from './attributes-editor';
 import { CategorySelect, useCategories } from '../../categorias/categories';
+import { categoryDetails } from '../../categorias/templates';
 import { CombinationsEditor } from './combinations-editor';
 import {
   changedCombination,
@@ -70,7 +71,15 @@ function ProductFields({
   );
   const advanced = !parent && level === 'avanzado';
   const [category, setCategory] = useState(product?.categoria_id ?? '');
-  const [axes, setAxes] = useState(() => initialAxes(product, initialCombinations));
+  const [axes, setAxes] = useState(() =>
+    initialAxes(
+      product,
+      initialCombinations,
+      example
+        ? ['Talla', 'Copa', 'Color']
+        : categoryDetails(categories.categories, product?.categoria_id ?? ''),
+    ),
+  );
   const [rows, setRows] = useState(() => initialCombinations.map((p) => combinationDraft(p)));
   const [attributes, setAttributes] = useState<Attribute[]>(
     product?.caracteristicas ??
@@ -84,39 +93,6 @@ function ProductFields({
             : ['Marca', 'Modelo', 'Talla', 'Color']
           ).map((nombre) => ({ nombre, valor: '' }))),
   );
-  function separate(index: number) {
-    const attribute = attributes[index];
-    const name =
-      axes.find((a) => a.toLocaleLowerCase() === attribute.nombre.toLocaleLowerCase()) ??
-      attribute.nombre;
-    if (!axes.includes(name)) setAxes([...axes, name]);
-    const target = rows.find(
-      (row) =>
-        !row.original &&
-        !row.caracteristicas.some(
-          (a) => a.nombre.toLocaleLowerCase() === name.toLocaleLowerCase() && a.valor.trim(),
-        ),
-    );
-    if (target)
-      setRows(
-        rows.map((row) =>
-          row.key === target.key
-            ? {
-                ...row,
-                caracteristicas: [
-                  ...row.caracteristicas.filter(
-                    (a) => a.nombre.toLocaleLowerCase() !== name.toLocaleLowerCase(),
-                  ),
-                  { nombre: name, valor: attribute.valor },
-                ],
-              }
-            : row,
-        ),
-      );
-    else
-      setRows([...rows, combinationDraft(undefined, [{ nombre: name, valor: attribute.valor }])]);
-    setAttributes(attributes.filter((_, i) => i !== index));
-  }
   async function submit(event: FormEvent) {
     event.preventDefault();
     const ok = await action.run(async () => {
@@ -219,7 +195,17 @@ function ProductFields({
           {!parent && (
             <>
               {advanced && <h3>1. Datos generales del modelo</h3>}
-              <CategorySelect value={category} onChange={setCategory} />
+              <CategorySelect
+                value={category}
+                onChange={(id) => {
+                  setCategory(id);
+                  if (
+                    !rows.some((row) => row.original || cleanAttributes(row.caracteristicas).length)
+                  ) {
+                    setAxes(categoryDetails(categories.categories, id));
+                  }
+                }}
+              />
               <Button type="button" variant="ghost" onClick={() => categories.setOpen(true)}>
                 Administrar categorías
               </Button>
@@ -258,7 +244,6 @@ function ProductFields({
                   ? 'Aquí van los datos que se repiten en todas las combinaciones, como marca o modelo. Lo que cambia de talla o color se completa abajo.'
                   : undefined
               }
-              onSeparate={advanced ? separate : undefined}
             />
           )}
           {advanced && (

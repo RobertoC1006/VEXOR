@@ -19,6 +19,7 @@ const files = [
   '20261021000200_productos_inventario_inicial.sql',
   '20261021000300_niveles_variantes.sql',
   '20261021000400_categorias_registro_guiado.sql',
+  '20261021000500_plantillas_categorias.sql',
 ];
 const client = new Client({ connectionString: secureDatabaseUrl(migrationUrl) });
 try {

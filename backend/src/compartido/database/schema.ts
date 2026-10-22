@@ -128,6 +128,7 @@ interface InventarioInicial extends Dated {
 }
 export interface Database {
   'app.categorias': {
+    ejes_variantes: Generated<string[]>;
     id: Generated<string>;
     negocio_id: string;
     nombre: string;

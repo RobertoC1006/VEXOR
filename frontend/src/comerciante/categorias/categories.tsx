@@ -6,6 +6,8 @@ import { Button, Field, Notice } from '../../compartido/componentes/ui';
 import { SelectField } from '../../compartido/componentes/form-controls';
 import { ActionFeedback } from '../../compartido/componentes/feedback';
 import { useBusiness } from '../negocio/context';
+import { DifferencesEditor } from '../productos/componentes/differences-editor';
+import { categoryTemplates } from './templates';
 
 export interface Category {
   id: string;
@@ -13,6 +15,7 @@ export interface Category {
   nombre: string;
   padre_id: string | null;
   version: number;
+  ejes_variantes?: string[];
 }
 export function categoryPath(categories: Category[], id: string): string {
   const names: string[] = [],
@@ -162,6 +165,7 @@ function CategoryForm({
   const [name, setName] = useState(category?.nombre ?? ''),
     [parent, setParent] = useState(category?.padre_id ?? '');
   const action = useAction();
+  const [details, setDetails] = useState(category?.ejes_variantes ?? []);
   return (
     <form
       className="settings-form"
@@ -173,6 +177,7 @@ function CategoryForm({
             body: JSON.stringify({
               nombre: name.trim(),
               padre_id: parent || null,
+              ejes_variantes: details.map((name) => name.trim()),
               ...(category ? { version: category.version } : {}),
             }),
           });
@@ -180,6 +185,7 @@ function CategoryForm({
           if (!category) {
             setName('');
             setParent('');
+            setDetails([]);
           }
         }, 'Categoría guardada. Ya puedes seleccionarla en el producto.');
       }}
@@ -201,6 +207,28 @@ function CategoryForm({
           onChange={setParent}
           exclude={category?.id}
         />
+        <h3>Detalles sugeridos para las combinaciones</h3>
+        <p className="field-hint">
+          Elige una guía y edítala como necesites. Se usarán los nombres de estos campos; los
+          valores los completas en cada producto. Sin detalles propios, se usan los de la categoría
+          superior. Las fichas existentes conservan sus combinaciones.
+        </p>
+        <SelectField
+          label="Elegir guía de detalles"
+          value=""
+          onChange={(e) => {
+            const template = categoryTemplates.find((t) => t.id === e.target.value);
+            if (template) setDetails([...template.detalles]);
+          }}
+        >
+          <option value="">Personalizar detalles</option>
+          {categoryTemplates.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.nombre} · {t.detalles.join(', ')}
+            </option>
+          ))}
+        </SelectField>
+        <DifferencesEditor value={details} onChange={setDetails} />
       </fieldset>
       <ActionFeedback {...action} />
       <div className="form-actions">
