@@ -36,7 +36,9 @@ export function VariantsContent({
                   ? undefined
                   : resource.offset + (resource.data?.items.length ?? 0)
               }
-              {...resource}
+              pageSize={resource.pageSize}
+              offset={resource.offset}
+              loading={resource.loading}
               more={resource.data.has_more ?? false}
               onChange={resource.setOffset}
               onPageSize={resource.setPageSize}
