@@ -28,6 +28,12 @@ export class ProductsService {
           .executeTakeFirstOrThrow();
         query = query.where('producto_padre_id', '=', parentId);
       } else query = query.where('producto_padre_id', 'is', null);
+      if (p.categoria_id)
+        query = query.where(sql<boolean>`categoria_id in (
+        with recursive categorias as (
+          select id from app.categorias where negocio_id = ${negocioId}::uuid and id = ${p.categoria_id}::uuid
+          union all select c.id from app.categorias c join categorias superior on c.padre_id = superior.id where c.negocio_id = ${negocioId}::uuid
+        ) select id from categorias)`);
       if (p.codigo)
         query = query.where(sql<boolean>`(codigo = ${p.codigo} or exists (
         select 1 from app.productos v where v.negocio_id = ${negocioId}::uuid
@@ -61,56 +67,77 @@ export class ProductsService {
     });
   }
   create(actor: Actor, negocioId: string, data: ProductCreateDto, parentId?: string) {
-    return this.database.tenant(actor, negocioId, async (tx) => {
-      await requirePermission(tx, 'productos.gestionar');
-      if (parentId)
-        await tx
-          .selectFrom('app.productos')
-          .select('id')
-          .where('negocio_id', '=', negocioId)
-          .where('id', '=', parentId)
-          .where('nivel_registro', '=', 'avanzado')
-          .where('producto_padre_id', 'is', null)
-          .forUpdate()
-          .executeTakeFirstOrThrow();
-      return tx
-        .insertInto('app.productos')
-        .values({
-          ...data,
-          caracteristicas: data.caracteristicas ? JSON.stringify(data.caracteristicas) : undefined,
-          negocio_id: negocioId,
-          producto_padre_id: parentId,
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    });
+    return this.database.tenant(actor, negocioId, (tx) =>
+      this.createInTransaction(tx, negocioId, data, parentId),
+    );
   }
-  patch(actor: Actor, negocioId: string, id: string, data: ProductPatchDto) {
-    const { version, ...changes } = data;
-    requirePatch(changes);
-    return this.database.tenant(actor, negocioId, async (tx) => {
-      await requirePermission(tx, 'productos.gestionar');
-      const current = await tx
+  async createInTransaction(
+    tx: Transaction<Database>,
+    negocioId: string,
+    data: ProductCreateDto,
+    parentId?: string,
+  ) {
+    await requirePermission(tx, 'productos.gestionar');
+    if (parentId)
+      await tx
         .selectFrom('app.productos')
-        .select('version')
+        .select('id')
         .where('negocio_id', '=', negocioId)
-        .where('id', '=', id)
+        .where('id', '=', parentId)
+        .where('nivel_registro', '=', 'avanzado')
+        .where('producto_padre_id', 'is', null)
         .forUpdate()
         .executeTakeFirstOrThrow();
-      if (current.version !== version)
-        throw new ConflictException('El producto cambió; actualiza su ficha');
-      return tx
-        .updateTable('app.productos')
-        .set({
-          ...changes,
-          caracteristicas: changes.caracteristicas
-            ? JSON.stringify(changes.caracteristicas)
-            : undefined,
-        })
-        .where('negocio_id', '=', negocioId)
-        .where('id', '=', id)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    });
+    return tx
+      .insertInto('app.productos')
+      .values({
+        ...data,
+        caracteristicas: data.caracteristicas ? JSON.stringify(data.caracteristicas) : undefined,
+        negocio_id: negocioId,
+        producto_padre_id: parentId,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+  patch(actor: Actor, negocioId: string, id: string, data: ProductPatchDto) {
+    return this.database.tenant(actor, negocioId, (tx) =>
+      this.patchInTransaction(tx, negocioId, id, data),
+    );
+  }
+  async patchInTransaction(
+    tx: Transaction<Database>,
+    negocioId: string,
+    id: string,
+    data: ProductPatchDto,
+    expectedParent?: string | null,
+  ) {
+    const { version, ...changes } = data;
+    requirePatch(changes);
+    await requirePermission(tx, 'productos.gestionar');
+    let query = tx
+      .selectFrom('app.productos')
+      .select('version')
+      .where('negocio_id', '=', negocioId)
+      .where('id', '=', id);
+    if (expectedParent !== undefined)
+      query =
+        expectedParent === null
+          ? query.where('producto_padre_id', 'is', null)
+          : query.where('producto_padre_id', '=', expectedParent);
+    const current = await query.forUpdate().executeTakeFirstOrThrow();
+    if (current.version !== version)
+      throw new ConflictException('El producto cambió; actualiza su ficha');
+    return tx
+      .updateTable('app.productos')
+      .set({
+        ...changes,
+        caracteristicas: changes.caracteristicas
+          ? JSON.stringify(changes.caracteristicas)
+          : undefined,
+      })
+      .where('negocio_id', '=', negocioId)
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
   }
 }

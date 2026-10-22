@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
+  IsUUID,
+  ArrayUnique,
+  Length,
+  IsDefined,
   IsArray,
   IsBoolean,
   IsIn,
@@ -21,6 +25,15 @@ export class AttributeDto {
   @ApiProperty() @TrimmedText(160) valor!: string;
 }
 export class ProductCreateDto {
+  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsUUID() categoria_id?: string | null;
+  @ApiPropertyOptional({ type: [String] })
+  @OptionalField()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @Length(1, 40, { each: true })
+  ejes_variantes?: string[];
   @ApiPropertyOptional({ enum: ['simple', 'intermedio', 'avanzado'] })
   @OptionalField()
   @IsIn(['simple', 'intermedio', 'avanzado'])
@@ -53,6 +66,25 @@ export class ProductPatchDto extends PartialType(ProductCreateDto, { skipNullPro
   @ApiProperty() @IsInt() @Min(1) @Max(2147483647) version!: number;
 }
 export class ProductQueryDto extends PaginationDto {
+  @ApiPropertyOptional() @OptionalField() @IsUUID() categoria_id?: string;
   @ApiPropertyOptional() @OptionalField() @TrimmedText(120) codigo?: string;
   @ApiPropertyOptional() @OptionalField() @TrimmedText(160) q?: string;
+}
+export class CombinationDto extends ProductCreateDto {
+  @ApiPropertyOptional() @OptionalField() @IsUUID() id?: string;
+  @ApiPropertyOptional() @OptionalField() @IsInt() @Min(1) @Max(2147483647) version?: number;
+}
+export class RegistrationDto {
+  @ApiProperty({ type: ProductCreateDto })
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => ProductCreateDto)
+  producto!: ProductCreateDto;
+  @ApiPropertyOptional() @OptionalField() @IsInt() @Min(1) @Max(2147483647) version?: number;
+  @ApiProperty({ type: [CombinationDto] })
+  @IsArray()
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => CombinationDto)
+  combinaciones!: CombinationDto[];
 }

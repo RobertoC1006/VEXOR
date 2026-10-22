@@ -112,3 +112,41 @@
   color: var(--muted);
   font-size: 12px;
 }
+.registration-section {
+  display: grid;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.combination-axes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.settings-form fieldset.combination-card {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  padding: 20px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+.combination-card legend {
+  font-weight: 700;
+  color: var(--navy);
+  padding-inline: 8px;
+  font-size: 14px;
+}
+.registration-section > .button {
+  justify-self: start;
+}
+@media (max-width: 640px) {
+  .combination-axes {
+    grid-template-columns: 1fr;
+  }
+  .settings-form fieldset.combination-card {
+    padding: 16px 12px;
+  }
+}
+.catalog-category-filter {
+  margin-bottom: 24px;
+}

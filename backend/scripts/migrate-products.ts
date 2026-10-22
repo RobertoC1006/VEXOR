@@ -18,6 +18,7 @@ if (
 const files = [
   '20261021000200_productos_inventario_inicial.sql',
   '20261021000300_niveles_variantes.sql',
+  '20261021000400_categorias_registro_guiado.sql',
 ];
 const client = new Client({ connectionString: secureDatabaseUrl(migrationUrl) });
 try {
@@ -45,10 +46,10 @@ try {
     }
     const protection = (
       await client.query(
-        "select count(*)::int as n from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='app' and c.relname in ('productos','inventario_inicial') and c.relrowsecurity and c.relforcerowsecurity",
+        "select count(*)::int as n from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='app' and c.relname in ('productos','inventario_inicial','categorias') and c.relrowsecurity and c.relforcerowsecurity",
       )
     ).rows[0].n;
-    if (protection !== 2) throw new Error('No se verificó RLS forzada en ambas tablas');
+    if (protection !== 3) throw new Error('No se verificó RLS forzada en las tres tablas');
     await client.query('commit');
     console.log('Migraciones del bloque aplicadas y registradas; RLS forzada verificada.');
   } else await client.query('rollback');

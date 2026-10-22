@@ -1,16 +1,35 @@
-import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentActor } from '../../compartido/autenticacion/actor.decorator.js';
 import type { Actor } from '../../compartido/database/database.service.js';
 import { BusinessId, ResourceId } from '../../compartido/http/resource-params.js';
-import { ProductCreateDto, ProductPatchDto, ProductQueryDto } from './dto.js';
+import { ProductCreateDto, ProductPatchDto, ProductQueryDto, RegistrationDto } from './dto.js';
 import { ProductsService } from './productos.service.js';
+import { ProductRegistrationService } from './registro.service.js';
 
 @ApiTags('Productos')
 @ApiBearerAuth()
 @Controller('negocios/:negocioId/productos')
 export class ProductsController {
-  constructor(private readonly products: ProductsService) {}
+  constructor(
+    private readonly products: ProductsService,
+    private readonly registration: ProductRegistrationService,
+  ) {}
+  @Post('registro') register(
+    @CurrentActor() a: Actor,
+    @BusinessId() n: string,
+    @Body() d: RegistrationDto,
+  ) {
+    return this.registration.save(a, n, d);
+  }
+  @Put(':id/registro') registerChanges(
+    @CurrentActor() a: Actor,
+    @BusinessId() n: string,
+    @ResourceId() id: string,
+    @Body() d: RegistrationDto,
+  ) {
+    return this.registration.save(a, n, d, id);
+  }
   @Get(':id/variantes') variants(
     @CurrentActor() a: Actor,
     @BusinessId() n: string,

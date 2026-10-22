@@ -99,6 +99,8 @@ interface Auditoria {
 }
 type Money = ColumnType<string | null, string | null | undefined, string | null>;
 interface Producto extends Dated {
+  categoria_id: Generated<string | null>;
+  ejes_variantes: Generated<string[]>;
   nivel_registro: Generated<'simple' | 'intermedio' | 'avanzado'>;
   caracteristicas: ColumnType<{ nombre: string; valor: string }[], string | undefined, string>;
   producto_padre_id: Generated<string | null>;
@@ -125,6 +127,15 @@ interface InventarioInicial extends Dated {
   confirmado_por: Generated<string | null>;
 }
 export interface Database {
+  'app.categorias': {
+    id: Generated<string>;
+    negocio_id: string;
+    nombre: string;
+    padre_id: Generated<string | null>;
+    version: Generated<number>;
+    creado_en: Timestamp;
+    actualizado_en: Timestamp;
+  };
   'app.productos': Producto;
   'app.inventario_inicial': InventarioInicial;
   'app.negocios': Negocio;

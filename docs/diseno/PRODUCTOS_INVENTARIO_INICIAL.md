@@ -3,6 +3,21 @@
 Rama: `codex/productos-inventario-inicial`, creada desde `main` en `62828eb`.
 El usuario autorizó el 21 de octubre de 2026 publicar esta entrega para probarla desde un iPhone. No cierra todas las funciones futuras de productos e inventario.
 
+## Categorías y registro guiado
+
+Continuación autorizada en `codex/categorias-registro-productos`, desde `main` en `310cb75`.
+
+- Categorías opcionales por negocio, con nombre editable y subcategorías. Agrupan productos y no tienen existencias propias. El filtro incluye las subcategorías de la categoría seleccionada.
+- El formulario avanzado reúne tres pasos: datos generales del modelo, diferencias que separan cantidades y combinaciones. Marca/modelo son ejemplos de datos comunes; talla/copa/color son diferencias editables. Cada combinación puede representar muchas unidades.
+- Cada combinación tiene código, precio y costo opcionales, además de sus valores. Los nombres vacíos se generan con esos valores. El conteo sigue en Inventario y no existe un total adicional del modelo.
+- Las fichas existentes conservan sus datos. El botón explícito «Usar en una combinación» pasa una característica común a una combinación nueva en el borrador; no modifica las combinaciones anteriores. Solo se persiste al guardar.
+- El modelo y las combinaciones modificadas se guardan en una sola transacción. Un código duplicado, versión obsoleta o cambio de identidad de una combinación contada revierte todo el guardado; el formulario conserva el borrador para corregirlo. Las combinaciones omitidas se conservan.
+- Las categorías reutilizan los permisos de productos, auditoría, contexto transaccional y RLS forzada. El servidor impide ciclos, nombres repetidos dentro del mismo grupo y referencias a categorías de otro negocio.
+
+API adicional bajo `/api/v1/negocios/:negocioId`: `GET/POST /categorias`, `PATCH /categorias/:id`, `POST /productos/registro` y `PUT /productos/:id/registro`. Los endpoints anteriores siguen disponibles. La migración `20261021000400_categorias_registro_guiado.sql` se aplicó manualmente a `vexor-dev` después de probarla en bases desechables; se verificó RLS forzada en las tres tablas del bloque.
+
+Verificación de esta continuación: typecheck y build correctos, 388 comprobaciones de API con PostgreSQL real, 56 pruebas de interfaz, migraciones desde cero y revisión del paquete público sin secretos. Prueba visual local: crear categoría y subcategoría, guardar un modelo con talla 48/copa B/rojo y volver a consultar la combinación persistida. Evidencia local excluida de Git: `test-results/registro-guiado-demo.png`.
+
 ## Niveles y escaneo incorporados
 
 - Nivel por ficha: simple (datos básicos y total), intermedio (características descriptivas) y avanzado (variantes con conteos independientes). El nivel no se activa por rubro; cualquier producto puede usarlo.

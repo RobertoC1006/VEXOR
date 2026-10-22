@@ -1,46 +1,37 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
 import { Button, Empty } from '../../../compartido/componentes/ui';
 import { ResourceState } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../../negocio/context';
-import { ProductForm } from './product-form';
 import { priceLabel, type Product } from '../types';
 
-export function VariantsPanel({ parent, onClose }: { parent: Product; onClose: () => void }) {
+export function VariantsPanel({
+  parent,
+  onClose,
+  onEdit,
+}: {
+  parent: Product;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
   const { base, can } = useBusiness();
   const resource = useResource(`${base}/productos/${parent.id}/variantes`, (signal) =>
     listAll<Product>(`${base}/productos/${parent.id}/variantes`, signal),
   );
-  const [editor, setEditor] = useState<Product | 'new' | null>(null);
   return (
-    <section className="panel settings-panel" aria-label={`Variantes de ${parent.nombre}`}>
+    <section className="panel settings-panel" aria-label={`Combinaciones de ${parent.nombre}`}>
       <div className="panel-heading compact">
-        <h2>Variantes de {parent.nombre}</h2>
+        <h2>Combinaciones de {parent.nombre}</h2>
         <Button variant="ghost" onClick={onClose}>
-          Cerrar variantes
+          Cerrar combinaciones
         </Button>
       </div>
       <p className="field-hint">
-        Registra una combinación por variante: por ejemplo talla 34, copa B y color negro. Cada
-        variante tendrá su propio código opcional y su conteo por local.
+        Cada combinación indica qué talla, copa, color u otras características vas a contar por
+        separado. Una combinación puede tener muchas unidades. La categoría solo agrupa productos.
       </p>
-      {can('productos.gestionar') && !editor && (
-        <Button onClick={() => setEditor('new')}>Nueva variante</Button>
-      )}
-      {editor && (
-        <ProductForm
-          key={editor === 'new' ? 'new' : editor.id}
-          parent={parent}
-          product={editor === 'new' ? undefined : editor}
-          onCancel={() => setEditor(null)}
-          onSaved={async () => {
-            setEditor(null);
-            await resource.refresh();
-          }}
-        />
-      )}
+      {can('productos.gestionar') && <Button onClick={onEdit}>Editar combinaciones</Button>}
       {!resource.data ? (
         <ResourceState error={resource.error} retry={resource.refresh} />
       ) : (
@@ -58,11 +49,6 @@ export function VariantsPanel({ parent, onClose }: { parent: Product; onClose: (
                   {priceLabel(v.precio)}
                 </p>
               </div>
-              {can('productos.gestionar') && (
-                <Button variant="secondary" onClick={() => setEditor(v)}>
-                  Editar<span className="visually-hidden"> {v.nombre}</span>
-                </Button>
-              )}
             </article>
           ))}
           {!resource.data.length && (

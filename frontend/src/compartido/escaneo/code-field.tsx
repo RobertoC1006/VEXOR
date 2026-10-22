@@ -6,18 +6,22 @@ export function CodeField({
   value,
   onChange,
   disabled = false,
+  label = 'Código (opcional)',
+  hint = 'Escanear copia el código. El nombre y los demás datos los completas en esta ficha.',
 }: {
   id: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  label?: string;
+  hint?: string | null;
 }) {
   return (
     <>
       <div className="code-field">
         <Field
           id={id}
-          label="Código (opcional)"
+          label={label}
           maxLength={120}
           value={value}
           disabled={disabled}
@@ -25,9 +29,7 @@ export function CodeField({
         />
         <ScanCodeButton disabled={disabled} onRead={onChange} />
       </div>
-      <p className="field-hint">
-        Escanear copia el código. El nombre y los demás datos los completas en esta ficha.
-      </p>
+      {hint && <p className="field-hint">{hint}</p>}
     </>
   );
 }

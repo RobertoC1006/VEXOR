@@ -4,6 +4,8 @@ export interface Attribute {
 }
 export type RegistrationLevel = 'simple' | 'intermedio' | 'avanzado';
 export interface Product {
+  categoria_id: string | null;
+  ejes_variantes: string[];
   nivel_registro: RegistrationLevel;
   caracteristicas: Attribute[];
   producto_padre_id: string | null;

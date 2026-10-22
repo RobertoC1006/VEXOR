@@ -42,6 +42,8 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       503: 'El servicio no está disponible por ahora. Vuelve a intentar en un momento.',
     };
     const knownErrors: Record<string, string> = {
+      CATEGORIA_DUPLICADA: 'Ya existe una categoría con ese nombre en este grupo.',
+      CATEGORIA_CIRCULAR: 'Una categoría no puede estar dentro de una de sus subcategorías.',
       PRODUCTO_CON_CONTEO: 'Este producto ya tiene un conteo. Cambiar su desglose requiere distribuir explícitamente las existencias; conserva su configuración actual.',
       PRODUCTO_CON_VARIANTES: 'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
       VARIANTE_DUPLICADA: 'Ya existe una variante con esas características.',

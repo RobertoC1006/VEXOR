@@ -8,16 +8,29 @@ import { VariantsPanel } from '../componentes/variants-panel';
 import { CatalogPager, CatalogSearch } from '../componentes/catalog-controls';
 import { useCatalogPage } from '../use-catalog-page';
 import { priceLabel, type Product } from '../types';
+import {
+  CategoriesProvider,
+  CategoriesManager,
+  CategorySelect,
+  categoryPath,
+  useCategories,
+} from '../../categorias/categories';
 
 export function ProductsPage() {
   const { can } = useBusiness();
   if (!can('productos.ver') && !can('productos.gestionar'))
     return <Notice>No tienes permiso para consultar productos.</Notice>;
-  return <ProductCatalog />;
+  return (
+    <CategoriesProvider>
+      <ProductCatalog />
+    </CategoriesProvider>
+  );
 }
 function ProductCatalog() {
   const { base, can } = useBusiness();
-  const resource = useCatalogPage<Product>(`${base}/productos`);
+  const categories = useCategories();
+  const [category, setCategory] = useState('');
+  const resource = useCatalogPage<Product>(`${base}/productos`, category);
   const [editor, setEditor] = useState<Product | 'new' | 'example' | null>(null);
   const [variants, setVariants] = useState<Product | null>(null);
   return (
@@ -40,6 +53,14 @@ function ProductCatalog() {
           )
         }
       />
+      {can('productos.gestionar') && (
+        <p className="catalog-example">
+          <Button variant="secondary" onClick={() => categories.setOpen(!categories.open)}>
+            Categorías
+          </Button>
+        </p>
+      )}
+      <CategoriesManager />
       {can('productos.gestionar') && !editor && (
         <p className="catalog-example">
           <Button
@@ -67,7 +88,15 @@ function ProductCatalog() {
         />
       )}
       {variants && (
-        <VariantsPanel key={variants.id} parent={variants} onClose={() => setVariants(null)} />
+        <VariantsPanel
+          key={variants.id}
+          parent={variants}
+          onClose={() => setVariants(null)}
+          onEdit={() => {
+            setEditor(variants);
+            setVariants(null);
+          }}
+        />
       )}
       <CatalogSearch
         value={resource.search}
@@ -75,6 +104,19 @@ function ProductCatalog() {
         onSearch={resource.find}
         onScan={resource.findCode}
       />
+      <div className="catalog-category-filter">
+        <CategorySelect
+          label="Filtrar por categoría"
+          empty="Todas las categorías"
+          value={category}
+          onChange={setCategory}
+        />
+      </div>
+      {categories.error && (
+        <Notice>
+          No pudimos cargar las categorías. Puedes seguir buscando productos o actualizar la página.
+        </Notice>
+      )}
       {!resource.data ? (
         <ResourceState error={resource.error} retry={resource.refresh} />
       ) : (
@@ -89,9 +131,16 @@ function ProductCatalog() {
                     {product.alias ? ` · ${product.alias}` : ''}
                   </p>
                   {product.descripcion && <p>{product.descripcion}</p>}
+                  {product.categoria_id && (
+                    <p>
+                      Categoría:{' '}
+                      {categoryPath(categories.categories, product.categoria_id) ||
+                        'Categoría asignada'}
+                    </p>
+                  )}
                   <p>
                     {product.nivel_registro === 'avanzado'
-                      ? 'Avanzado · inventario por variante'
+                      ? 'Modelo · cantidades por combinación'
                       : product.nivel_registro === 'intermedio'
                         ? 'Intermedio · características descriptivas'
                         : 'Simple · cantidad total'}
@@ -101,12 +150,14 @@ function ProductCatalog() {
                       {product.caracteristicas.map((a) => `${a.nombre}: ${a.valor}`).join(' · ')}
                     </p>
                   )}
-                  <p>
-                    {priceLabel(product.precio)} ·{' '}
-                    {product.costo === null
-                      ? 'Costo pendiente'
-                      : `Costo: ${priceLabel(product.costo)}`}
-                  </p>
+                  {product.nivel_registro !== 'avanzado' && (
+                    <p>
+                      {priceLabel(product.precio)} ·{' '}
+                      {product.costo === null
+                        ? 'Costo pendiente'
+                        : `Costo: ${priceLabel(product.costo)}`}
+                    </p>
+                  )}
                 </div>
                 {!product.activo && <span className="badge neutral">Pausado</span>}
                 {product.nivel_registro === 'avanzado' && (
@@ -117,7 +168,7 @@ function ProductCatalog() {
                       setVariants(product);
                     }}
                   >
-                    Variantes<span className="visually-hidden"> {product.nombre}</span>
+                    Ver combinaciones<span className="visually-hidden"> {product.nombre}</span>
                   </Button>
                 )}
                 {can('productos.gestionar') && (
@@ -128,7 +179,8 @@ function ProductCatalog() {
                       setEditor(product);
                     }}
                   >
-                    Editar<span className="visually-hidden"> {product.nombre}</span>
+                    {product.nivel_registro === 'avanzado' ? 'Editar modelo' : 'Editar'}
+                    <span className="visually-hidden"> {product.nombre}</span>
                   </Button>
                 )}
               </article>

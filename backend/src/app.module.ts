@@ -22,6 +22,8 @@ import { ProductsController } from './comerciante/productos/productos.controller
 import { ProductsService } from './comerciante/productos/productos.service.js';
 import { InventoryController } from './comerciante/inventario/inventario.controller.js';
 import { InventoryService } from './comerciante/inventario/inventario.service.js';
+import { CategoriesController, CategoriesService } from './comerciante/categorias/categorias.js';
+import { ProductRegistrationService } from './comerciante/productos/registro.service.js';
 
 @Module({})
 export class AppModule {
@@ -32,6 +34,7 @@ export class AppModule {
         HealthController,
         ProductsController,
         InventoryController,
+        CategoriesController,
         MeController,
         BusinessController,
         LocalsController,
@@ -44,7 +47,9 @@ export class AppModule {
         { provide: CONFIG, useValue: config },
         DatabaseService,
         ProductsService,
+        ProductRegistrationService,
         InventoryService,
+        CategoriesService,
         AuthService,
         BusinessService,
         MeService,

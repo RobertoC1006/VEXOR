@@ -14,6 +14,7 @@ import { startAuthServer, type TestUser } from './support/auth-server.ts';
 import { testConfiguration } from './support/configuration.ts';
 import { testProducts } from './support/products.ts';
 import { testProductLevels } from './support/product-levels.ts';
+import { testCategoriesRegistration } from './support/categories-registration.ts';
 import { secureDatabaseUrl } from '../src/compartido/database/database.ts';
 
 const id=(n:number)=>`bc000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -178,6 +179,7 @@ try {
   await testConfiguration(request,id);
   await testProducts(request,id,database.admin);
   await testProductLevels(request,id);
+  await testCategoriesRegistration(request,id,database.admin);
 
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','https://malicioso.example').expect(403);results.push('CORS rechaza origen ajeno');
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','http://localhost:5173').expect('Access-Control-Allow-Origin','http://localhost:5173').expect(200);results.push('CORS acepta origen configurado');

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
-const mock = vi.hoisted(() => ({ api: vi.fn(), saved: vi.fn(), can: vi.fn() }));
-vi.mock('../compartido/api/api', () => ({ api: mock.api }));
+const mock = vi.hoisted(() => ({ api: vi.fn(), listAll: vi.fn(), saved: vi.fn(), can: vi.fn() }));
+vi.mock('../compartido/api/api', () => ({ api: mock.api, listAll: mock.listAll }));
 vi.mock('../compartido/escaneo/barcode-scanner', () => ({
   BarcodeScanner: ({
     onRead,
@@ -31,6 +31,7 @@ import type { InventoryItem } from './inventario/types';
 beforeEach(() => {
   vi.clearAllMocks();
   mock.api.mockResolvedValue({});
+  mock.listAll.mockResolvedValue([]);
   mock.saved.mockResolvedValue(undefined);
   mock.can.mockReturnValue(true);
 });
@@ -64,6 +65,7 @@ it('crea con solo el nombre y conserva los importes desconocidos como null', asy
     precio: null,
     costo: null,
     activo: true,
+    categoria_id: null,
     nivel_registro: 'simple',
     caracteristicas: [],
   });
@@ -193,10 +195,10 @@ it('el nivel intermedio conserva características descriptivas sin crear variant
 it('prepara una ficha avanzada de lencería sin guardarla automáticamente', () => {
   render(<ProductForm example onSaved={mock.saved} onCancel={() => {}} />);
   expect((screen.getByLabelText('Nivel de registro') as HTMLSelectElement).value).toBe('avanzado');
-  expect((screen.getByLabelText('Nombre del producto') as HTMLInputElement).value).toBe(
+  expect((screen.getByLabelText('Nombre del producto o modelo') as HTMLInputElement).value).toBe(
     'Sostén modelo de prueba',
   );
-  expect(screen.getByText(/No se contará un total adicional del modelo/)).toBeTruthy();
+  expect(screen.getByText(/El modelo no tiene un conteo adicional/)).toBeTruthy();
   expect(mock.api).not.toHaveBeenCalled();
 });
 it('escanear busca inmediatamente el código exacto y vuelve a la primera página', async () => {
@@ -204,7 +206,7 @@ it('escanear busca inmediatamente el código exacto y vuelve a la primera págin
   render(<ProductsPage />);
   const input = screen.getByLabelText('Buscar por nombre, alias o código');
   fireEvent.change(input, { target: { value: 'texto anterior' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Buscar', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: /^Buscar$/ }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
       '/negocios/A/productos?limit=25&offset=0&q=texto+anterior',
@@ -233,7 +235,7 @@ it('escanear busca inmediatamente el código exacto y vuelve a la primera págin
   fireEvent.click(screen.getByRole('button', { name: 'Leer código de prueba' }));
   await waitFor(() => expect(mock.api.mock.calls.length).toBe(before + 1));
   fireEvent.change(input, { target: { value: 'Cuaderno' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Buscar', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: /^Buscar$/ }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
       '/negocios/A/productos?limit=25&offset=0&q=Cuaderno',

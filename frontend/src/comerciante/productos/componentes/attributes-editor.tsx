@@ -5,10 +5,16 @@ export function AttributesEditor({
   value,
   onChange,
   variant = false,
+  title,
+  description,
+  onSeparate,
 }: {
   value: Attribute[];
   onChange: (value: Attribute[]) => void;
   variant?: boolean;
+  title?: string;
+  description?: string;
+  onSeparate?: (index: number) => void;
 }) {
   function update(index: number, changes: Partial<Attribute>) {
     onChange(value.map((a, i) => (i === index ? { ...a, ...changes } : a)));
@@ -16,13 +22,16 @@ export function AttributesEditor({
   return (
     <section
       className="attributes-editor"
-      aria-label={variant ? 'Características de la variante' : 'Características del producto'}
+      aria-label={
+        title ?? (variant ? 'Características de la variante' : 'Características del producto')
+      }
     >
-      <h3>{variant ? 'Qué distingue esta variante' : 'Características'}</h3>
+      <h3>{title ?? (variant ? 'Qué distingue esta variante' : 'Características')}</h3>
       <p className="field-hint">
-        {variant
-          ? 'Cada combinación tendrá su propio conteo. Completa al menos una característica.'
-          : 'Añade solo lo que te ayude a encontrar y describir tu producto. Esto no separa cantidades.'}
+        {description ??
+          (variant
+            ? 'Cada combinación tendrá su propio conteo. Completa al menos una característica.'
+            : 'Añade solo lo que te ayude a encontrar y describir tu producto. Esto no separa cantidades.')}
       </p>
       <p className="field-hint">
         Puedes cambiar los nombres, quitar características o añadir otras. Deja el valor vacío si no
@@ -54,6 +63,11 @@ export function AttributesEditor({
           >
             Quitar
           </Button>
+          {onSeparate && a.nombre.trim() && a.valor.trim() && (
+            <Button type="button" variant="ghost" onClick={() => onSeparate(i)}>
+              Usar en una combinación
+            </Button>
+          )}
         </div>
       ))}
       <div className="row-actions">

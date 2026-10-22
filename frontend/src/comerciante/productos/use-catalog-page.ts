@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../compartido/api/api';
 import { useResource } from '../../compartido/api/use-resource';
 import type { Page } from '../../compartido/tipos/types';
 
-export function useCatalogPage<T, Extra extends object = object>(path: string) {
+export function useCatalogPage<T, Extra extends object = object>(
+  path: string,
+  categoryId?: string,
+) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [codeSearch, setCodeSearch] = useState(false);
   const [offset, setOffset] = useState(0);
+  useEffect(() => {
+    setOffset(0);
+  }, [categoryId]);
   const params = new URLSearchParams({ limit: '25', offset: String(offset) });
   if (query) params.set(codeSearch ? 'codigo' : 'q', query);
+  if (categoryId) params.set('categoria_id', categoryId);
   const url = `${path}?${params}`;
   const resource = useResource(url, (signal) => api<Page<T> & Extra>(url, { signal }));
   function find(value: string, byCode: boolean) {

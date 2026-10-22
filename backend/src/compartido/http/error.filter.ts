@@ -11,6 +11,14 @@ import type { AuthenticatedRequest } from '../autenticacion/auth.guard.js';
 import type { Response } from 'express';
 
 const uniqueConflicts: Record<string, { code: string; message: string }> = {
+  categorias_nombre: {
+    code: 'CATEGORIA_DUPLICADA',
+    message: 'Ya existe una categoría con ese nombre en este grupo',
+  },
+  categoria_circular: {
+    code: 'CATEGORIA_CIRCULAR',
+    message: 'Una categoría no puede estar dentro de una de sus subcategorías',
+  },
   producto_con_conteo: {
     code: 'PRODUCTO_CON_CONTEO',
     message:
