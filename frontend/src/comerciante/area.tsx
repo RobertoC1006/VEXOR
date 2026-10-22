@@ -2,10 +2,9 @@ import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { Building2, House, MapPin, Users, Package, ClipboardList } from 'lucide-react';
 import { AppLayout } from '../compartido/layouts/app-layout';
 import { BusinessProvider, useBusiness } from './negocio/context';
-import { BusinessSwitch } from './mis-negocios/componentes/business-switch';
 
 function BusinessLayout() {
-  const { base, can, business } = useBusiness();
+  const { base, can } = useBusiness();
   return (
     <AppLayout
       navigation={
@@ -43,7 +42,6 @@ function BusinessLayout() {
         </>
       }
     >
-      <BusinessSwitch name={business.nombre} />
       <Outlet />
     </AppLayout>
   );

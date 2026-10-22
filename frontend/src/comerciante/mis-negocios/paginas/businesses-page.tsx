@@ -1,3 +1,4 @@
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -14,6 +15,7 @@ import { Button, Empty } from '../../../compartido/componentes/ui';
 
 export function BusinessesPage() {
   const { data, reload } = useWorkspace();
+  const page = useClientPage(data?.businesses ?? []);
   return (
     <>
       <div className="page-heading">
@@ -50,9 +52,10 @@ export function BusinessesPage() {
           </h2>
           <span>Accesos activos</span>
         </div>
+        <ClientPager page={page} />
         {data?.businesses.length ? (
           <div className="business-grid">
-            {data.businesses.map((b) => (
+            {page.items.map((b) => (
               <Link className="business-card" to={`/negocios/${b.negocio_id}`} key={b.negocio_id}>
                 <div className="business-card-top">
                   <span className="business-monogram">{b.nombre.slice(0, 1).toUpperCase()}</span>

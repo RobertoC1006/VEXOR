@@ -1,3 +1,4 @@
+import { Modal } from '../../compartido/componentes/modal';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { api, listAll } from '../../compartido/api/api';
 import { useResource } from '../../compartido/api/use-resource';
@@ -111,47 +112,46 @@ export function CategoriesManager() {
   const [selected, setSelected] = useState('');
   if (!open || !can('productos.gestionar')) return null;
   return (
-    <section className="panel settings-panel" aria-label="Administrar categorías">
-      <div className="panel-heading compact">
-        <h2>Categorías de tu negocio</h2>
-        <Button variant="ghost" onClick={() => setOpen(false)}>
-          Cerrar categorías
-        </Button>
-      </div>
-      <p className="field-hint">
-        Agrupa tus productos como prefieras. Por ejemplo: Ropa interior → Mujer → Brasieres. Una
-        categoría no tiene existencias propias.
-      </p>
-      {error ? (
-        <>
-          <Notice>{error.message}</Notice>
-          <Button onClick={() => void refresh()}>Actualizar categorías</Button>
-        </>
-      ) : (
-        <>
-          <SelectField
-            label="Categoría a editar"
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-          >
-            <option value="">Crear nueva categoría</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {categoryPath(categories, c.id)}
-              </option>
-            ))}
-          </SelectField>
-          <CategoryForm
-            key={selected}
-            category={categories.find((c) => c.id === selected)}
-            onSaved={async () => {
-              await refresh();
-              setSelected('');
-            }}
-          />
-        </>
-      )}
-    </section>
+    <Modal label="Administrar categorías" onClose={() => setOpen(false)}>
+      <section className="panel settings-panel" aria-label="Administrar categorías">
+        <div className="panel-heading compact">
+          <h2>Categorías de tu negocio</h2>
+        </div>
+        <p className="field-hint">
+          Agrupa tus productos como prefieras. Por ejemplo: Ropa interior → Mujer → Brasieres. Una
+          categoría no tiene existencias propias.
+        </p>
+        {error ? (
+          <>
+            <Notice>{error.message}</Notice>
+            <Button onClick={() => void refresh()}>Actualizar categorías</Button>
+          </>
+        ) : (
+          <>
+            <SelectField
+              label="Categoría a editar"
+              value={selected}
+              onChange={(e) => setSelected(e.target.value)}
+            >
+              <option value="">Crear nueva categoría</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {categoryPath(categories, c.id)}
+                </option>
+              ))}
+            </SelectField>
+            <CategoryForm
+              key={selected}
+              category={categories.find((c) => c.id === selected)}
+              onSaved={async () => {
+                await refresh();
+                setSelected('');
+              }}
+            />
+          </>
+        )}
+      </section>
+    </Modal>
   );
 }
 function CategoryForm({

@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { ModalPendingContext } from '../componentes/modal';
 
 export function useAction() {
+  const trackPending = useContext(ModalPendingContext);
   const pending = useRef(false);
   const mounted = useRef(true);
   const [busy, setBusy] = useState(false);
@@ -15,6 +17,7 @@ export function useAction() {
   async function run(action: () => Promise<unknown>, success = 'Cambios guardados.') {
     if (pending.current) return false;
     pending.current = true;
+    trackPending(1);
     setBusy(true);
     setError('');
     setMessage('');
@@ -27,6 +30,7 @@ export function useAction() {
       return false;
     } finally {
       pending.current = false;
+      trackPending(-1);
       if (mounted.current) setBusy(false);
     }
   }

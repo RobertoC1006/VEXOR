@@ -92,41 +92,10 @@
 .choice-list .check-field + .check-field {
   border-top: 1px solid var(--line);
 }
-.dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #101b3c70;
-  padding: 20px;
-}
-.confirmation-dialog {
-  width: min(100%, 480px);
-  max-height: calc(100dvh - 40px);
-  overflow: auto;
-  background: #fff;
-  border-radius: var(--radius);
-  padding: 30px;
-  box-shadow: 0 20px 80px #101b3c30;
-}
-.confirmation-dialog h2 {
-  font-size: 21px;
-}
-.confirmation-dialog p {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--muted);
-  margin: 16px 0 24px;
-  overflow-wrap: anywhere;
-}
+
 @media (max-width: 640px) {
   .form-grid {
     grid-template-columns: 1fr;
-  }
-  .confirmation-dialog {
-    padding: 24px;
   }
   .form-actions > .button {
     flex: 1;

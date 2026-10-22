@@ -1,3 +1,5 @@
+import { Modal } from '../../../compartido/componentes/modal';
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { useState, type FormEvent } from 'react';
 import { Plus, ShieldCheck } from 'lucide-react';
 import { api, listAll } from '../../../compartido/api/api';
@@ -40,6 +42,7 @@ export function RolesPage() {
       await resource.refresh();
     }, 'Rol creado. Ahora puedes elegir sus permisos.');
   }
+  const page = useClientPage(resource.data?.roles ?? []);
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
   const { roles, permissions } = resource.data;
   const role = roles.find((role) => role.id === selected);
@@ -64,37 +67,39 @@ export function RolesPage() {
         ventas, inventario, caja y comprobantes se incorporarán con esos módulos.
       </p>
       {creating && (
-        <section className="panel settings-panel">
-          <h2>Nuevo rol</h2>
-          <form className="settings-form" onSubmit={create}>
-            <Field
-              id="new-role-name"
-              label="Nombre del rol"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              maxLength={80}
-              required
-              autoFocus
-            />
-            <p className="field-hint">
-              Después de crearlo puedes elegir una base sugerida, como Solo consulta, y ajustar sus
-              acciones.
-            </p>
-            <div className="form-actions">
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={action.busy}
-                onClick={() => setCreating(false)}
-              >
-                Cancelar
-              </Button>
-              <Button busy={action.busy} disabled={!name.trim()}>
-                Crear rol
-              </Button>
-            </div>
-          </form>
-        </section>
+        <Modal label="Nuevo rol" onClose={() => setCreating(false)}>
+          <section className="panel settings-panel">
+            <h2>Nuevo rol</h2>
+            <form className="settings-form" onSubmit={create}>
+              <Field
+                id="new-role-name"
+                label="Nombre del rol"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={80}
+                required
+                autoFocus
+              />
+              <p className="field-hint">
+                Después de crearlo puedes elegir una base sugerida, como Solo consulta, y ajustar
+                sus acciones.
+              </p>
+              <div className="form-actions">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={action.busy}
+                  onClick={() => setCreating(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button busy={action.busy} disabled={!name.trim()}>
+                  Crear rol
+                </Button>
+              </div>
+            </form>
+          </section>
+        </Modal>
       )}
       <div className="settings-columns">
         <section className="panel">
@@ -102,9 +107,10 @@ export function RolesPage() {
             <h2>Roles del negocio</h2>
             <span className="count">{roles.length}</span>
           </div>
+          <ClientPager page={page} />
           {roles.length ? (
             <div className="settings-list">
-              {roles.map((item) => (
+              {page.items.map((item) => (
                 <button
                   type="button"
                   key={item.id}
@@ -128,12 +134,14 @@ export function RolesPage() {
           )}
         </section>
         {role ? (
-          <RoleEditor
-            key={role.id}
-            role={role}
-            permissions={permissions}
-            onSaved={resource.refresh}
-          />
+          <Modal label={`Permisos de ${role.nombre}`} onClose={() => setSelected(null)}>
+            <RoleEditor
+              key={role.id}
+              role={role}
+              permissions={permissions}
+              onSaved={resource.refresh}
+            />
+          </Modal>
         ) : (
           <aside className="settings-aside">
             <ShieldCheck size={26} />

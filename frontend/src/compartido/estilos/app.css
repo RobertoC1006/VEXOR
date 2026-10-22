@@ -56,58 +56,11 @@ nav a:hover {
 nav a > .count {
   margin-left: auto;
 }
-.sidebar-bottom {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-top: 1px solid var(--line);
-  padding: 20px 5px 0;
-  color: #7191bb;
-}
-.sidebar-bottom p {
-  font-size: 10px;
-  color: #6c7d96;
-}
-.sidebar-bottom small {
-  display: block;
-  font-size: 9px;
-  color: #8c98ab;
-}
 .app-body {
   margin-left: 220px;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-}
-.topbar {
-  height: 79px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid var(--line);
-  padding: 0 38px;
-  background: white;
-}
-.breadcrumb {
-  display: flex;
-  gap: 14px;
-  color: #8c97a9;
-  font-size: 11px;
-  min-width: 0;
-}
-.breadcrumb strong {
-  color: #596b88;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.topbar-account {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
 }
 .avatar {
   width: 34px;
@@ -120,19 +73,6 @@ nav a > .count {
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
-}
-.topbar-account strong {
-  font-size: 11px;
-  display: block;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.topbar-account small {
-  font-size: 9px;
-  color: #8290a5;
-  display: block;
-  margin-top: 2px;
 }
 .icon-button {
   display: grid;
@@ -368,39 +308,11 @@ nav a > .count {
   padding: 10px 12px;
   white-space: nowrap;
 }
-.business-switch {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: fit-content;
-  margin-bottom: 25px;
-  color: var(--navy);
-}
-.business-switch:hover {
-  text-decoration: none;
-}
-.business-switch .icon-tile {
-  width: 42px;
-  height: 42px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-}
-.business-switch small {
-  display: block;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #7a8aa4;
-  margin-bottom: 5px;
-}
-.business-switch strong {
-  font-size: 13px;
-}
-.business-switch > svg {
-  color: #7b8ba5;
-  margin-left: 12px;
-}
+
+
+
+
+
 .welcome-panel {
   display: flex;
   align-items: center;
@@ -577,39 +489,8 @@ nav a > .count {
   margin-top: 5px;
   color: #7d8ba1;
 }
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 24px;
-  font-size: 12px;
-}
-.pagination .button {
-  font-size: 12px;
-  min-height: 40px;
-  padding: 9px 16px;
-}
-.app-footer {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  border-top: 1px solid var(--line);
-  padding: 22px 38px;
-  color: #8b98ac;
-  font-size: 9px;
-}
-.app-footer .brand {
-  font-size: 17px;
-  letter-spacing: -1px;
-  opacity: 0.65;
-}
-.app-footer > span:last-child {
-  margin-left: auto;
-}
-.mobile-menu,
-.mobile-brand,
-.bottom-nav {
+.bottom-nav,
+.mobile-account {
   display: none;
 }
 .skip-link {
@@ -636,35 +517,54 @@ nav a > .count {
   top: 0;
   z-index: 50;
 }
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: flex;
+
+.sidebar {
+  overflow-y: auto;
 }
-.menu-backdrop {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: #0c1c3d66;
+.sidebar-brand {
+  margin-bottom: 28px;
 }
-.mobile-drawer {
-  position: relative;
-  background: white;
-  width: min(300px, 85vw);
-  height: 100dvh;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 20px 0 60px #10204020;
-}
-.mobile-drawer > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 40px;
-}
-.mobile-drawer > .button {
+.sidebar-bottom {
   margin-top: auto;
-  margin-bottom: env(safe-area-inset-bottom);
+  padding-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+.layout-account {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.account-identity {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.account-identity > div {
+  min-width: 0;
+}
+.account-identity strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.layout-account small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.layout-account .button {
+  justify-content: flex-start;
+  padding-inline: 8px;
+}
+.account-business {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--navy);
+}
+.app-footer {
+  display: none;
 }

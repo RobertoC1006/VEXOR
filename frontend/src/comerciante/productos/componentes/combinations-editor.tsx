@@ -1,3 +1,4 @@
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { DifferencesEditor } from './differences-editor';
 import { Button, Field } from '../../../compartido/componentes/ui';
 import { CheckField } from '../../../compartido/componentes/form-controls';
@@ -15,6 +16,7 @@ export function CombinationsEditor({
   onAxes: (axes: string[]) => void;
   onRows: (rows: CombinationDraft[]) => void;
 }) {
+  const page = useClientPage(rows);
   function renameAxis(index: number, name: string) {
     const previous = axes[index];
     onAxes(axes.map((a, i) => (i === index ? name : a)));
@@ -60,92 +62,111 @@ export function CombinationsEditor({
         Cada fila representa una combinación de estos detalles. Puede tener muchas unidades; las
         contarás después en Inventario.
       </p>
-      {rows.map((row, i) => (
-        <fieldset className="combination-card" key={row.key} aria-label={`Combinación ${i + 1}`}>
+      <ClientPager page={page} />
+      {page.items.map((row, localIndex) => (
+        <fieldset
+          className="combination-card"
+          key={row.key}
+          aria-label={`Combinación ${page.offset + localIndex + 1}`}
+        >
           <legend>
-            Combinación {i + 1}
+            Combinación {page.offset + localIndex + 1}
             {row.original ? ' · Guardada' : ' · Nueva'}
           </legend>
-          <div className="form-grid">
-            {axes.map((axis, index) => (
-              <Field
-                key={index}
-                id={`${row.key}-axis-${index}`}
-                label={axis || `Diferencia ${index + 1}`}
-                maxLength={160}
-                value={
-                  row.caracteristicas.find(
-                    (a) => a.nombre.toLocaleLowerCase() === axis.toLocaleLowerCase(),
-                  )?.valor ?? ''
-                }
-                onChange={(e) =>
-                  update(row.key, {
-                    caracteristicas: [
-                      ...row.caracteristicas.filter(
-                        (a) => a.nombre.toLocaleLowerCase() !== axis.toLocaleLowerCase(),
-                      ),
-                      { nombre: axis, valor: e.target.value },
-                    ],
-                  })
-                }
-              />
-            ))}
-          </div>
-          <Field
-            id={`${row.key}-name`}
-            label="Nombre de la combinación (opcional)"
-            placeholder="Se forma con los valores que completes"
-            maxLength={160}
-            value={row.nombre}
-            onChange={(e) => update(row.key, { nombre: e.target.value })}
-          />
-          <CodeField
-            id={`${row.key}-code`}
-            label="Código de esta combinación (opcional)"
-            hint={null}
-            value={row.codigo}
-            onChange={(codigo) => update(row.key, { codigo })}
-          />
-          <div className="form-grid">
-            {(['precio', 'costo'] as const).map((key) => (
-              <Field
-                key={key}
-                id={`${row.key}-${key}`}
-                label={
-                  key === 'precio'
-                    ? 'Precio de esta combinación (S/, opcional)'
-                    : 'Costo de esta combinación (S/, opcional)'
-                }
-                inputMode="decimal"
-                pattern="[0-9]{1,12}([.,][0-9]{1,2})?"
-                value={row[key]}
-                placeholder="Pendiente"
-                onChange={(e) => update(row.key, { [key]: e.target.value })}
-              />
-            ))}
-          </div>
-          {row.original ? (
-            <CheckField
-              label="Combinación activa"
-              checked={row.activo}
-              onChange={(activo) => update(row.key, { activo })}
-              hint="Pausarla conserva sus conteos. Una combinación ya contada no puede cambiar de talla o color desde este formulario."
+          <details open={!row.original}>
+            <summary>
+              <strong>
+                {row.caracteristicas
+                  .filter((a) => a.valor.trim())
+                  .map((a) => `${a.nombre}: ${a.valor}`)
+                  .join(' · ') || 'Completar los detalles'}
+              </strong>
+              <span>{row.codigo || 'Sin código'} · Editar detalles</span>
+            </summary>
+            <div className="form-grid">
+              {axes.map((axis, index) => (
+                <Field
+                  key={index}
+                  id={`${row.key}-axis-${index}`}
+                  label={axis || `Diferencia ${index + 1}`}
+                  maxLength={160}
+                  value={
+                    row.caracteristicas.find(
+                      (a) => a.nombre.toLocaleLowerCase() === axis.toLocaleLowerCase(),
+                    )?.valor ?? ''
+                  }
+                  onChange={(e) =>
+                    update(row.key, {
+                      caracteristicas: [
+                        ...row.caracteristicas.filter(
+                          (a) => a.nombre.toLocaleLowerCase() !== axis.toLocaleLowerCase(),
+                        ),
+                        { nombre: axis, valor: e.target.value },
+                      ],
+                    })
+                  }
+                />
+              ))}
+            </div>
+            <Field
+              id={`${row.key}-name`}
+              label="Nombre de la combinación (opcional)"
+              placeholder="Se forma con los valores que completes"
+              maxLength={160}
+              value={row.nombre}
+              onChange={(e) => update(row.key, { nombre: e.target.value })}
             />
-          ) : (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onRows(rows.filter((r) => r.key !== row.key))}
-            >
-              Quitar combinación {i + 1}
-            </Button>
-          )}
+            <CodeField
+              id={`${row.key}-code`}
+              label="Código de esta combinación (opcional)"
+              hint={null}
+              value={row.codigo}
+              onChange={(codigo) => update(row.key, { codigo })}
+            />
+            <div className="form-grid">
+              {(['precio', 'costo'] as const).map((key) => (
+                <Field
+                  key={key}
+                  id={`${row.key}-${key}`}
+                  label={
+                    key === 'precio'
+                      ? 'Precio de esta combinación (S/, opcional)'
+                      : 'Costo de esta combinación (S/, opcional)'
+                  }
+                  inputMode="decimal"
+                  pattern="[0-9]{1,12}([.,][0-9]{1,2})?"
+                  value={row[key]}
+                  placeholder="Pendiente"
+                  onChange={(e) => update(row.key, { [key]: e.target.value })}
+                />
+              ))}
+            </div>
+            {row.original ? (
+              <CheckField
+                label="Combinación activa"
+                checked={row.activo}
+                onChange={(activo) => update(row.key, { activo })}
+                hint="Pausarla conserva sus conteos. Una combinación ya contada no puede cambiar de talla o color desde este formulario."
+              />
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onRows(rows.filter((r) => r.key !== row.key))}
+              >
+                Quitar combinación {page.offset + localIndex + 1}
+              </Button>
+            )}
+          </details>
         </fieldset>
       ))}
       <Button
         type="button"
         variant="secondary"
-        onClick={() => onRows([...rows, combinationDraft()])}
+        onClick={() => {
+          onRows([...rows, combinationDraft()]);
+          page.setOffset(Math.floor(rows.length / page.pageSize) * page.pageSize);
+        }}
       >
         Añadir combinación
       </Button>

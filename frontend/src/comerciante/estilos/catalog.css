@@ -8,15 +8,6 @@
 .catalog-search .field {
   flex: 1 1 240px;
 }
-.catalog-pager {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid var(--line);
-  padding: 20px 24px;
-  font-size: 13px;
-}
 .catalog-title {
   font-size: 16px;
   margin-bottom: 6px;
@@ -43,23 +34,8 @@
   .catalog-search .button {
     padding-inline: 14px;
   }
-  .catalog-pager {
-    padding: 18px;
-    gap: 8px;
-  }
-  .catalog-pager .button {
-    padding-inline: 12px;
-  }
   .inventory-quantity {
     text-align: left;
-  }
-  .bottom-nav.business-nav {
-    justify-content: flex-start;
-    overflow-x: auto;
-  }
-  .bottom-nav.business-nav a {
-    flex: 1 0 80px;
-    max-width: none;
   }
 }
 .code-field {
@@ -100,17 +76,6 @@
 }
 .attribute-row .field {
   flex: 1 1 180px;
-}
-.catalog-example {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-block: 12px 24px;
-}
-.catalog-example span {
-  color: var(--muted);
-  font-size: 12px;
 }
 .registration-section {
   display: grid;

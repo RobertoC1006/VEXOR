@@ -209,14 +209,14 @@ it('escanear busca inmediatamente el código exacto y vuelve a la primera págin
   fireEvent.click(screen.getByRole('button', { name: /^Buscar$/ }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
-      '/negocios/A/productos?limit=25&offset=0&q=texto+anterior',
+      '/negocios/A/productos?limit=5&offset=0&q=texto+anterior',
       expect.anything(),
     ),
   );
   fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
-      '/negocios/A/productos?limit=25&offset=25&q=texto+anterior',
+      '/negocios/A/productos?limit=5&offset=5&q=texto+anterior',
       expect.anything(),
     ),
   );
@@ -224,7 +224,7 @@ it('escanear busca inmediatamente el código exacto y vuelve a la primera págin
   fireEvent.click(screen.getByRole('button', { name: 'Leer código de prueba' }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
-      '/negocios/A/productos?limit=25&offset=0&codigo=000123',
+      '/negocios/A/productos?limit=5&offset=0&codigo=000123',
       expect.anything(),
     ),
   );
@@ -238,7 +238,7 @@ it('escanear busca inmediatamente el código exacto y vuelve a la primera págin
   fireEvent.click(screen.getByRole('button', { name: /^Buscar$/ }));
   await waitFor(() =>
     expect(mock.api).toHaveBeenCalledWith(
-      '/negocios/A/productos?limit=25&offset=0&q=Cuaderno',
+      '/negocios/A/productos?limit=5&offset=0&q=Cuaderno',
       expect.anything(),
     ),
   );

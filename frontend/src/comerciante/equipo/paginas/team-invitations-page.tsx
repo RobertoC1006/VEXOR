@@ -1,3 +1,5 @@
+import { Modal } from '../../../compartido/componentes/modal';
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { useState } from 'react';
 import { api, listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
@@ -32,6 +34,7 @@ function ManageInvitations() {
     listAll<ManagedInvitation>(`${base}/invitaciones`, signal),
   );
   const action = useAction();
+  const [creating, setCreating] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     invitation: ManagedInvitation;
     kind: 'reenviar' | 'revocar';
@@ -55,14 +58,25 @@ function ManageInvitations() {
     );
     setConfirmation(null);
   }
+  const page = useClientPage(resource.data ?? []);
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
   return (
     <>
       <PageHeading
+        action={<Button onClick={() => setCreating(true)}>Invitar persona</Button>}
         title="Invitaciones del equipo"
         description="Incorpora personas y revisa sus invitaciones pendientes."
       />
-      <TeamInvitationForm onSaved={resource.refresh} />
+      {creating && (
+        <Modal label="Invitar persona" onClose={() => setCreating(false)}>
+          <TeamInvitationForm
+            onSaved={async () => {
+              setCreating(false);
+              await resource.refresh();
+            }}
+          />
+        </Modal>
+      )}
       <ActionFeedback {...action} />
       <section className="panel">
         <div className="panel-heading">
@@ -73,9 +87,10 @@ function ManageInvitations() {
             Actualizar
           </Button>
         </div>
+        <ClientPager page={page} />
         {resource.data.length ? (
           <div className="settings-list">
-            {resource.data.map((invitation) => (
+            {page.items.map((invitation) => (
               <article className="settings-row" key={invitation.id}>
                 <div className="settings-row-main">
                   <h3>{invitation.nombre}</h3>

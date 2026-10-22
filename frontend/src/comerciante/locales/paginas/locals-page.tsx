@@ -1,3 +1,5 @@
+import { Modal } from '../../../compartido/componentes/modal';
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { useState } from 'react';
 import { MapPin, Plus, RefreshCw, Store, Warehouse } from 'lucide-react';
 import { listAll } from '../../../compartido/api/api';
@@ -15,6 +17,7 @@ export function LocalsPage() {
     listAll<BusinessLocal>(`${base}/locales`, signal),
   );
   const [editor, setEditor] = useState<BusinessLocal | 'new' | null>(null);
+  const page = useClientPage(resource.data ?? []);
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
   const locals = resource.data;
   async function saved() {
@@ -36,12 +39,14 @@ export function LocalsPage() {
         }
       />
       {editor && (
-        <LocalForm
-          key={editor === 'new' ? 'new' : editor.id}
-          local={editor === 'new' ? undefined : editor}
-          onCancel={() => setEditor(null)}
-          onSaved={saved}
-        />
+        <Modal label="Datos del local" onClose={() => setEditor(null)}>
+          <LocalForm
+            key={editor === 'new' ? 'new' : editor.id}
+            local={editor === 'new' ? undefined : editor}
+            onCancel={() => setEditor(null)}
+            onSaved={saved}
+          />
+        </Modal>
       )}
       <section className="panel">
         <div className="panel-heading">
@@ -57,9 +62,10 @@ export function LocalsPage() {
             Actualizar
           </Button>
         </div>
+        <ClientPager page={page} />
         {locals.length ? (
           <div className="settings-list">
-            {locals.map((local) => (
+            {page.items.map((local) => (
               <article key={local.id} className="settings-row">
                 <span className="icon-tile">
                   {local.habilitado_venta ? <Store size={23} /> : <Warehouse size={23} />}

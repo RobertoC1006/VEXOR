@@ -37,30 +37,3 @@ export function CatalogSearch({
     </form>
   );
 }
-export function CatalogPager({
-  offset,
-  more,
-  loading,
-  onChange,
-}: {
-  offset: number;
-  more: boolean;
-  loading: boolean;
-  onChange: (offset: number) => void;
-}) {
-  return (
-    <div className="catalog-pager" aria-label="Páginas de productos">
-      <Button
-        variant="secondary"
-        disabled={loading || offset === 0}
-        onClick={() => onChange(Math.max(0, offset - 25))}
-      >
-        Anterior
-      </Button>
-      <span>Página {Math.floor(offset / 25) + 1}</span>
-      <Button variant="secondary" disabled={loading || !more} onClick={() => onChange(offset + 25)}>
-        Siguiente
-      </Button>
-    </div>
-  );
-}

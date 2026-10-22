@@ -173,3 +173,58 @@ it('usa los detalles de la categoría y conserva las filas completadas al cambia
   fireEvent.change(screen.getByLabelText('Categoría (opcional)'), { target: { value: 'ropa' } });
   expect((row.getByLabelText('Talla') as HTMLInputElement).value).toBe('38');
 });
+
+it('pagina treinta combinaciones y guarda los cambios de distintas páginas sin perder borradores', async () => {
+  mock.listAll.mockImplementation(async (url: string) =>
+    url.endsWith('/categorias')
+      ? categories
+      : Array.from({ length: 30 }, (_, i) => ({
+          ...oldCombination,
+          id: `variante-${i + 1}`,
+          nombre: `Combinación ${i + 1}`,
+          codigo: `COD-${i + 1}`,
+        })),
+  );
+  create(false, model);
+  await screen.findByRole('group', { name: 'Combinación 1' });
+  expect(screen.getAllByRole('group', { name: /^Combinación \d+$/ })).toHaveLength(5);
+  fireEvent.change(
+    within(screen.getByRole('group', { name: 'Combinación 1' })).getByLabelText(
+      'Precio de esta combinación (S/, opcional)',
+    ),
+    { target: { value: '21' } },
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+  fireEvent.change(
+    within(screen.getByRole('group', { name: 'Combinación 6' })).getByLabelText(
+      'Precio de esta combinación (S/, opcional)',
+    ),
+    { target: { value: '22' } },
+  );
+  fireEvent.change(screen.getByLabelText('Elementos por página'), { target: { value: '10' } });
+  expect(screen.getAllByRole('group', { name: /^Combinación \d+$/ })).toHaveLength(10);
+  expect(
+    (
+      within(screen.getByRole('group', { name: 'Combinación 1' })).getByLabelText(
+        'Precio de esta combinación (S/, opcional)',
+      ) as HTMLInputElement
+    ).value,
+  ).toBe('21');
+  fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+  fireEvent.change(
+    within(screen.getByRole('group', { name: 'Combinación 30' })).getByLabelText(
+      'Costo de esta combinación (S/, opcional)',
+    ),
+    { target: { value: '9' } },
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar modelo y combinaciones' }));
+  await waitFor(() => expect(mock.saved).toHaveBeenCalledOnce());
+  const body = JSON.parse(mock.api.mock.calls[0][1].body);
+  expect(body.combinaciones.map((c: any) => c.id)).toEqual([
+    'variante-1',
+    'variante-6',
+    'variante-30',
+  ]);
+  expect(body.combinaciones.map((c: any) => c.precio)).toEqual(['21', '22', null]);
+});

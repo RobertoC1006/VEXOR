@@ -1,3 +1,5 @@
+import { Pagination } from '../../../compartido/componentes/pagination';
+import { Modal } from '../../../compartido/componentes/modal';
 import { useState } from 'react';
 import { listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
@@ -6,7 +8,7 @@ import { SelectField } from '../../../compartido/componentes/form-controls';
 import { PageHeading, ResourceState } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../../negocio/context';
 import type { BusinessLocal } from '../../locales/types';
-import { CatalogPager, CatalogSearch } from '../../productos/componentes/catalog-controls';
+import { CatalogSearch } from '../../productos/componentes/catalog-controls';
 import { useCatalogPage } from '../../productos/use-catalog-page';
 import { CountForm } from '../componentes/count-form';
 import type { InventoryItem, InventoryPermissions } from '../types';
@@ -79,22 +81,37 @@ function LocalInventory({ localId }: { localId: string }) {
         onScan={resource.findCode}
       />
       {editor && data && (
-        <CountForm
-          key={`${editor.id}:${editor.version}`}
-          item={editor}
-          localId={localId}
-          permissions={data.permisos}
-          onCancel={() => setEditor(null)}
-          onSaved={async () => {
-            setEditor(null);
-            await resource.refresh();
-          }}
-        />
+        <Modal label={`Conteo de ${editor.nombre}`} onClose={() => setEditor(null)}>
+          <CountForm
+            key={`${editor.id}:${editor.version}`}
+            item={editor}
+            localId={localId}
+            permissions={data.permisos}
+            onCancel={() => setEditor(null)}
+            onSaved={async () => {
+              setEditor(null);
+              await resource.refresh();
+            }}
+          />
+        </Modal>
       )}
       {!data ? (
         <ResourceState error={resource.error} retry={resource.refresh} />
       ) : (
         <section className="panel">
+          <Pagination
+            total={
+              resource.data?.has_more
+                ? undefined
+                : resource.offset + (resource.data?.items.length ?? 0)
+            }
+            pageSize={resource.pageSize}
+            onPageSize={resource.setPageSize}
+            offset={resource.offset}
+            more={data.has_more ?? false}
+            loading={resource.loading}
+            onChange={resource.setOffset}
+          />
           <div className="settings-list">
             {data.items.map((item) => (
               <article className="settings-row" key={item.id}>
@@ -146,12 +163,6 @@ function LocalInventory({ localId }: { localId: string }) {
               Registra tu mercadería en Productos o prueba otra búsqueda.
             </Empty>
           )}
-          <CatalogPager
-            offset={resource.offset}
-            more={data.has_more ?? false}
-            loading={resource.loading}
-            onChange={resource.setOffset}
-          />
         </section>
       )}
     </>

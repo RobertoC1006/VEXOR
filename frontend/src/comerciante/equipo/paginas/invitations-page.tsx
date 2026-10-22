@@ -1,3 +1,4 @@
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Clock3, Mail, RefreshCw } from 'lucide-react';
@@ -11,6 +12,7 @@ export function InvitationsPage() {
     navigate = useNavigate(),
     [pending, setPending] = useState(''),
     [error, setError] = useState('');
+  const page = useClientPage(data?.invitations ?? []);
   async function accept(id: string) {
     setPending(id);
     setError('');
@@ -40,9 +42,10 @@ export function InvitationsPage() {
       </div>
       {error && <Notice>{error}</Notice>}
       <section className="panel">
+        <ClientPager page={page} />
         {data?.invitations.length ? (
           <div className="invitation-list">
-            {data.invitations.map((i) => (
+            {page.items.map((i) => (
               <article className="invitation-card" key={i.id}>
                 <span className="icon-tile">
                   <Mail size={25} />

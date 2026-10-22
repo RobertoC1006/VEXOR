@@ -18,9 +18,6 @@
   .app-body {
     margin-left: 190px;
   }
-  .topbar {
-    padding: 0 26px;
-  }
   #main-content {
     padding: 30px 26px 40px;
   }
@@ -154,32 +151,6 @@
   .app-body {
     margin-left: 0;
   }
-  .topbar {
-    height: 68px;
-    padding: 0 18px;
-    gap: 10px;
-  }
-  .mobile-menu {
-    display: grid;
-  }
-  .breadcrumb {
-    display: none;
-    font-size: 10px;
-    gap: 7px;
-  }
-  .breadcrumb > span {
-    display: none;
-  }
-  .topbar-account {
-    gap: 5px;
-    margin-left: auto;
-  }
-  .mobile-brand {
-    display: inline-flex;
-  }
-  .mobile-brand .brand {
-    font-size: 25px;
-  }
   .install-button {
     min-width: 44px;
     width: 44px;
@@ -189,19 +160,9 @@
   .install-label {
     display: none;
   }
-  .topbar-account > div {
-    display: none;
-  }
   .avatar {
     height: 31px;
     width: 31px;
-  }
-  .topbar-account .icon-button {
-    width: 44px;
-    min-width: 44px;
-  }
-  .topbar-account svg {
-    width: 16px;
   }
   #main-content {
     padding: 27px 18px 32px;
@@ -315,9 +276,6 @@
     font-size: 9px;
     padding: 8px 10px;
   }
-  .business-switch {
-    margin-bottom: 20px;
-  }
   .welcome-panel {
     padding: 25px 22px;
     gap: 5px;
@@ -389,14 +347,6 @@
     width: 37px;
     height: 37px;
   }
-  .app-footer {
-    padding: 22px 18px 100px;
-    gap: 12px;
-    font-size: 8px;
-  }
-  .app-footer .brand {
-    font-size: 15px;
-  }
   .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -411,12 +361,13 @@
     box-shadow: 0 -3px 15px #18325105;
     backdrop-filter: blur(10px);
   }
-  .bottom-nav a {
+  .bottom-nav a,
+  .bottom-nav .bottom-menu {
     flex-direction: column;
     gap: 5px;
     position: relative;
     font-size: 11px;
-    padding: 6px 14px;
+    padding: 6px 8px;
     min-height: 48px;
     margin: 0;
     background: none;
@@ -480,12 +431,7 @@
   .page-heading h1 {
     font-size: 22px;
   }
-  .business-switch {
-    max-width: 100%;
-  }
-  .business-switch strong {
-    overflow-wrap: anywhere;
-  }
+
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -495,5 +441,31 @@
     animation-iteration-count: 1 !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-footer {
+    display: block;
+    padding: 24px 18px calc(105px + env(safe-area-inset-bottom));
+  }
+  .mobile-account {
+    display: grid;
+    gap: 16px;
+  }
+  .bottom-nav > a,
+  .bottom-menu {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .bottom-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
   }
 }

@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { Modal } from '../../../compartido/componentes/modal';
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
+import { useState } from 'react';
 import { Building2, MoreHorizontal, RefreshCw, X } from 'lucide-react';
 import { api, ApiError } from '../../../compartido/api/api';
 import { invitationLabels, invitationState, platformPath, shortDate } from '../platform';
@@ -26,7 +28,7 @@ export function InvitationList({
   completed?: boolean;
 }) {
   const { reload } = usePlatform();
-  const confirmation = useRef<HTMLElement>(null);
+  const page = useClientPage(items, items.map((i) => i.id).join(','));
   const [action, setAction] = useState<{
       invitation: PlatformInvitation;
       kind: 'reenviar' | 'revocar';
@@ -35,9 +37,6 @@ export function InvitationList({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [message, setMessage] = useState('');
-  useEffect(() => {
-    if (action) confirmation.current?.focus();
-  }, [action]);
   async function confirm() {
     if (!action) return;
     setBusy(true);
@@ -82,6 +81,7 @@ export function InvitationList({
     );
   return (
     <>
+      <ClientPager page={page} />
       {message && <Notice tone="info">{message}</Notice>}
       <div
         className="platform-list"
@@ -95,7 +95,7 @@ export function InvitationList({
           <span>{completed ? 'Resultado' : 'Correo'}</span>
           {manage && <span>Acciones</span>}
         </div>
-        {items.map((i) => {
+        {page.items.map((i) => {
           const pending = invitationState(i) === 'pendiente';
           return (
             <article
@@ -190,38 +190,39 @@ export function InvitationList({
         })}
       </div>
       {action && (
-        <section
-          ref={confirmation}
-          tabIndex={-1}
-          className="confirmation-panel"
-          aria-labelledby="confirm-invitation-title"
-        >
-          <div>
-            <h2 id="confirm-invitation-title">
-              {action.kind === 'reenviar'
-                ? '¿Reenviar esta invitación?'
-                : '¿Revocar esta invitación?'}
-            </h2>
-            <p>
-              <strong>{action.invitation.negocio_nombre}</strong> · {action.invitation.email}
-            </p>
-            <p>
-              {action.kind === 'reenviar'
-                ? 'Se enviará otro correo al destinatario. El reenvío no modifica su cuenta ni su contraseña.'
-                : 'La invitación pendiente dejará de permitir una nueva incorporación. No elimina un negocio ni una membresía existente.'}
-            </p>
-          </div>
-          {error && <Notice>{error}</Notice>}
-          <div className="actions">
-            <Button variant="secondary" disabled={busy} onClick={() => setAction(null)}>
-              <X size={16} /> Cancelar
-            </Button>
-            <Button busy={busy} onClick={() => void confirm()}>
-              {action.kind === 'reenviar' ? <RefreshCw size={16} /> : null}
-              {action.kind === 'reenviar' ? 'Confirmar reenvío' : 'Confirmar revocación'}
-            </Button>
-          </div>
-        </section>
+        <Modal label="Revisar invitación" busy={busy} onClose={() => setAction(null)}>
+          <section
+            tabIndex={-1}
+            className="confirmation-panel"
+            aria-labelledby="confirm-invitation-title"
+          >
+            <div>
+              <h2 id="confirm-invitation-title">
+                {action.kind === 'reenviar'
+                  ? '¿Reenviar esta invitación?'
+                  : '¿Revocar esta invitación?'}
+              </h2>
+              <p>
+                <strong>{action.invitation.negocio_nombre}</strong> · {action.invitation.email}
+              </p>
+              <p>
+                {action.kind === 'reenviar'
+                  ? 'Se enviará otro correo al destinatario. El reenvío no modifica su cuenta ni su contraseña.'
+                  : 'La invitación pendiente dejará de permitir una nueva incorporación. No elimina un negocio ni una membresía existente.'}
+              </p>
+            </div>
+            {error && <Notice>{error}</Notice>}
+            <div className="actions">
+              <Button variant="secondary" disabled={busy} onClick={() => setAction(null)}>
+                <X size={16} /> Cancelar
+              </Button>
+              <Button busy={busy} onClick={() => void confirm()}>
+                {action.kind === 'reenviar' ? <RefreshCw size={16} /> : null}
+                {action.kind === 'reenviar' ? 'Confirmar reenvío' : 'Confirmar revocación'}
+              </Button>
+            </div>
+          </section>
+        </Modal>
       )}
     </>
   );

@@ -1,3 +1,4 @@
+import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { Link } from 'react-router-dom';
 import { Mail, RefreshCw, UserRound } from 'lucide-react';
 import { listAll } from '../../../compartido/api/api';
@@ -12,6 +13,7 @@ export function TeamPage() {
   const resource = useResource(`${base}/miembros`, (signal) =>
     listAll<Member>(`${base}/miembros`, signal),
   );
+  const page = useClientPage(resource.data ?? []);
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
   return (
     <>
@@ -37,8 +39,9 @@ export function TeamPage() {
             Actualizar
           </Button>
         </div>
+        <ClientPager page={page} />
         <div className="settings-list">
-          {resource.data.map((member) => (
+          {page.items.map((member) => (
             <article className="settings-row" key={member.id}>
               <span className="icon-tile">
                 <UserRound size={23} />
