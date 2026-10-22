@@ -148,7 +148,9 @@ export function AppLayout({
         </footer>
       </div>
       <nav className="bottom-nav" aria-label="Navegación móvil">
-        {mobileLinks}
+        {mobileLinks.map((link, index) => (
+          <Fragment key={index}>{link}</Fragment>
+        ))}
         <button
           className="bottom-menu"
           aria-label="Abrir menú"
