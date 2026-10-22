@@ -1,3 +1,4 @@
+import { testVisualCatalog } from './support/visual-catalog.ts';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -180,6 +181,7 @@ try {
   await testProducts(request,id,database.admin);
   await testProductLevels(request,id);
   await testCategoriesRegistration(request,id,database.admin);
+  await testVisualCatalog(request, id, database.admin);
 
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','https://malicioso.example').expect(403);results.push('CORS rechaza origen ajeno');
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','http://localhost:5173').expect('Access-Control-Allow-Origin','http://localhost:5173').expect(200);results.push('CORS acepta origen configurado');

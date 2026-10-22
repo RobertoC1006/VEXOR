@@ -1,10 +1,12 @@
+import { MerchandiseTable } from '../../productos/componentes/merchandise-table';
+import { priceLabel } from '../../productos/types';
 import { Pagination } from '../../../compartido/componentes/pagination';
 import { Modal } from '../../../compartido/componentes/modal';
 import { useState } from 'react';
 import { listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
 import { Button, Empty, Notice } from '../../../compartido/componentes/ui';
-import { SelectField } from '../../../compartido/componentes/form-controls';
+import { LocalTabs } from '../../locales/componentes/local-tabs';
 import { PageHeading, ResourceState } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../../negocio/context';
 import type { BusinessLocal } from '../../locales/types';
@@ -41,18 +43,7 @@ function InventoryLocals() {
       </Notice>
       {locals.length ? (
         <>
-          <SelectField
-            label="Puesto o almacén"
-            value={localId}
-            onChange={(e) => setSelected(e.target.value)}
-          >
-            {locals.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nombre}
-                {l.habilitado_venta ? '' : ' · Almacén'}
-              </option>
-            ))}
-          </SelectField>
+          <LocalTabs locals={locals} value={localId} onChange={setSelected} />
           <LocalInventory key={localId} localId={localId} />
         </>
       ) : (
@@ -112,52 +103,42 @@ function LocalInventory({ localId }: { localId: string }) {
             loading={resource.loading}
             onChange={resource.setOffset}
           />
-          <div className="settings-list">
-            {data.items.map((item) => (
-              <article className="settings-row" key={item.id}>
-                <div className="settings-row-main">
-                  <h2 className="catalog-title">
-                    {item.nombre_completo ?? item.nombre}
-                    {!item.activo ? ' · Pausado' : ''}
-                  </h2>
-                  <p>
-                    {item.codigo ? `Código: ${item.codigo}` : 'Sin código'}
-                    {item.referencia ? ` · ${item.referencia}` : ''}
-                  </p>
-                  <p>
-                    {item.estado === 'confirmado'
-                      ? 'Existencia inicial confirmada'
-                      : item.estado === 'preparacion'
-                        ? 'Borrador de conteo'
-                        : 'Existencia desconocida'}
-                  </p>
-                </div>
-                <div className="inventory-quantity">
-                  <strong>{item.cantidad === null ? '—' : item.cantidad}</strong>
-                  <span>
-                    {item.estado === 'confirmado'
-                      ? 'Confirmado'
-                      : item.estado === 'preparacion'
-                        ? 'En preparación'
-                        : 'Pendiente de contar'}
-                  </span>
-                </div>
-                {item.estado !== 'confirmado' &&
-                  (data.permisos.contar ||
-                    (item.estado === 'preparacion' && data.permisos.confirmar)) && (
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        setEditor({ ...item, nombre: item.nombre_completo ?? item.nombre })
-                      }
-                    >
-                      {item.estado === 'pendiente' ? 'Contar' : 'Revisar'}
-                      <span className="visually-hidden"> {item.nombre}</span>
-                    </Button>
-                  )}
-              </article>
-            ))}
-          </div>
+          <MerchandiseTable
+            rows={data.items.map((item) => ({
+              id: item.id,
+              name: item.modelo_nombre ?? item.nombre,
+              code: item.codigo,
+              photoVersion: item.foto_version,
+              model: item.producto_padre_id ? item.nombre : 'Unidad',
+              details:
+                (item.caracteristicas ?? []).map((a) => `${a.nombre}: ${a.valor}`).join(' · ') ||
+                item.referencia ||
+                'Sin detalles adicionales',
+              price: priceLabel(item.precio ?? null),
+              stock: item.cantidad === null ? '—' : String(item.cantidad),
+              stockHint:
+                item.estado === 'confirmado'
+                  ? 'Confirmado'
+                  : item.estado === 'preparacion'
+                    ? 'Borrador de conteo'
+                    : 'Pendiente de contar',
+              active: item.activo,
+              actions:
+                item.estado !== 'confirmado' &&
+                (data.permisos.contar ||
+                  (item.estado === 'preparacion' && data.permisos.confirmar)) ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setEditor({ ...item, nombre: item.nombre_completo ?? item.nombre })
+                    }
+                  >
+                    {item.estado === 'pendiente' ? 'Contar' : 'Revisar'}
+                    <span className="visually-hidden"> {item.nombre}</span>
+                  </Button>
+                ) : null,
+            }))}
+          />
           {!data.items.length && (
             <Empty title="No hay productos en esta lista">
               Registra tu mercadería en Productos o prueba otra búsqueda.

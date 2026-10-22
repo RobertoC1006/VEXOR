@@ -1,14 +1,13 @@
+import { ChoiceCards } from '../../compartido/componentes/choice-cards';
+import { CategoryForm } from './category-form';
+import { categoryOptions } from './category-picker';
 import { Modal } from '../../compartido/componentes/modal';
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { api, listAll } from '../../compartido/api/api';
+import { listAll } from '../../compartido/api/api';
 import { useResource } from '../../compartido/api/use-resource';
-import { useAction } from '../../compartido/api/use-action';
-import { Button, Field, Notice } from '../../compartido/componentes/ui';
+import { Button, Notice } from '../../compartido/componentes/ui';
 import { SelectField } from '../../compartido/componentes/form-controls';
-import { ActionFeedback } from '../../compartido/componentes/feedback';
 import { useBusiness } from '../negocio/context';
-import { DifferencesEditor } from '../productos/componentes/differences-editor';
-import { categoryTemplates } from './templates';
 
 export interface Category {
   id: string;
@@ -109,133 +108,62 @@ export function CategorySelect({
 export function CategoriesManager() {
   const { categories, open, setOpen, error, refresh } = useCategories();
   const { can } = useBusiness();
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
   if (!open || !can('productos.gestionar')) return null;
+  const category = categories.find((c) => c.id === selected);
   return (
-    <Modal label="Administrar categorías" onClose={() => setOpen(false)}>
-      <section className="panel settings-panel" aria-label="Administrar categorías">
-        <div className="panel-heading compact">
-          <h2>Categorías de tu negocio</h2>
-        </div>
-        <p className="field-hint">
-          Agrupa tus productos como prefieras. Por ejemplo: Ropa interior → Mujer → Brasieres. Una
-          categoría no tiene existencias propias.
-        </p>
-        {error ? (
-          <>
-            <Notice>{error.message}</Notice>
-            <Button onClick={() => void refresh()}>Actualizar categorías</Button>
-          </>
-        ) : (
-          <>
-            <SelectField
-              label="Categoría a editar"
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
-            >
-              <option value="">Crear nueva categoría</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {categoryPath(categories, c.id)}
-                </option>
-              ))}
-            </SelectField>
-            <CategoryForm
-              key={selected}
-              category={categories.find((c) => c.id === selected)}
-              onSaved={async () => {
-                await refresh();
-                setSelected('');
-              }}
-            />
-          </>
-        )}
-      </section>
-    </Modal>
-  );
-}
-function CategoryForm({
-  category,
-  onSaved,
-}: {
-  category?: Category;
-  onSaved: () => Promise<void>;
-}) {
-  const { base } = useBusiness();
-  const [name, setName] = useState(category?.nombre ?? ''),
-    [parent, setParent] = useState(category?.padre_id ?? '');
-  const action = useAction();
-  const [details, setDetails] = useState(category?.ejes_variantes ?? []);
-  return (
-    <form
-      className="settings-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void action.run(async () => {
-          await api(`${base}/categorias${category ? `/${category.id}` : ''}`, {
-            method: category ? 'PATCH' : 'POST',
-            body: JSON.stringify({
-              nombre: name.trim(),
-              padre_id: parent || null,
-              ejes_variantes: details.map((name) => name.trim()),
-              ...(category ? { version: category.version } : {}),
-            }),
-          });
-          await onSaved();
-          if (!category) {
-            setName('');
-            setParent('');
-            setDetails([]);
-          }
-        }, 'Categoría guardada. Ya puedes seleccionarla en el producto.');
+    <Modal
+      label="Categorías de tu negocio"
+      onClose={() => {
+        setOpen(false);
+        setSelected(null);
       }}
     >
-      <fieldset disabled={action.busy}>
-        <Field
-          id="category-name"
-          label="Nombre de la categoría"
-          autoFocus
-          required
-          maxLength={120}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <CategorySelect
-          label="Dentro de"
-          empty="Ninguna: categoría principal"
-          value={parent}
-          onChange={setParent}
-          exclude={category?.id}
-        />
-        <h3>Detalles sugeridos para las combinaciones</h3>
-        <p className="field-hint">
-          Elige una guía y edítala como necesites. Se usarán los nombres de estos campos; los
-          valores los completas en cada producto. Sin detalles propios, se usan los de la categoría
-          superior. Las fichas existentes conservan sus combinaciones.
-        </p>
-        <SelectField
-          label="Elegir guía de detalles"
-          value=""
-          onChange={(e) => {
-            const template = categoryTemplates.find((t) => t.id === e.target.value);
-            if (template) setDetails([...template.detalles]);
-          }}
-        >
-          <option value="">Personalizar detalles</option>
-          {categoryTemplates.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.nombre} · {t.detalles.join(', ')}
-            </option>
-          ))}
-        </SelectField>
-        <DifferencesEditor value={details} onChange={setDetails} />
-      </fieldset>
-      <ActionFeedback {...action} />
-      <div className="form-actions">
-        <Button busy={action.busy} disabled={!name.trim()} type="submit">
-          Guardar categoría
-        </Button>
-      </div>
-    </form>
+      {error ? (
+        <>
+          <Notice>{error.message}</Notice>
+          <Button onClick={() => void refresh()}>Actualizar categorías</Button>
+        </>
+      ) : selected === null ? (
+        <>
+          <div className="category-heading">
+            <p>Organiza tu catálogo. Selecciona una categoría para editarla o crea una nueva.</p>
+            <Button
+              onClick={() => {
+                setSelected('new');
+                setMessage('');
+              }}
+            >
+              Nueva categoría
+            </Button>
+          </div>
+          {message && <Notice tone="info">{message}</Notice>}
+          <ChoiceCards
+            options={categoryOptions(categories).map((c) => ({
+              ...c,
+              label: `Editar categoría ${c.label}`,
+            }))}
+            onChoose={setSelected}
+          />
+        </>
+      ) : (
+        <>
+          <Button variant="ghost" onClick={() => setSelected(null)}>
+            Volver a categorías
+          </Button>
+          <h2>{category ? 'Editar categoría' : 'Nueva categoría'}</h2>
+          <CategoryForm
+            key={selected}
+            category={category}
+            onSaved={async () => {
+              await refresh();
+              setSelected(null);
+              setMessage('Categoría guardada. Ya puedes seleccionarla en el producto.');
+            }}
+          />
+        </>
+      )}
+    </Modal>
   );
 }

@@ -1,3 +1,4 @@
+import { ProductPhotoField } from './product-photo';
 import { useState, type FormEvent } from 'react';
 import { api, listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
@@ -70,6 +71,8 @@ function ProductFields({
     product?.nivel_registro ?? (example ? 'avanzado' : 'simple'),
   );
   const advanced = !parent && level === 'avanzado';
+  const [preparingPhoto, setPreparingPhoto] = useState(false);
+  const [photo, setPhoto] = useState<string | null | undefined>(undefined);
   const [category, setCategory] = useState(product?.categoria_id ?? '');
   const [axes, setAxes] = useState(() =>
     initialAxes(
@@ -98,6 +101,7 @@ function ProductFields({
     const ok = await action.run(async () => {
       const fields = {
         nombre: values.nombre.trim(),
+        ...(photo !== undefined ? { foto: photo } : {}),
         alias: values.alias.trim() || null,
         codigo: values.codigo.trim() || null,
         descripcion: values.descripcion.trim() || null,
@@ -211,6 +215,14 @@ function ProductFields({
               </Button>
             </>
           )}
+          {!parent && (
+            <ProductPhotoField
+              product={product}
+              value={photo}
+              onChange={setPhoto}
+              onBusyChange={setPreparingPhoto}
+            />
+          )}
           {textFields.map(({ key, ...field }) => (
             <Field
               key={key}
@@ -290,6 +302,7 @@ function ProductFields({
             type="submit"
             busy={action.busy}
             disabled={
+              preparingPhoto ||
               !values.nombre.trim() ||
               (!!parent && !attributes.some((a) => a.nombre.trim() && a.valor.trim()))
             }

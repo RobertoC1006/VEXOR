@@ -61,7 +61,7 @@ beforeEach(() => {
   mock.api.mockResolvedValue({});
   mock.saved.mockResolvedValue(undefined);
   mock.listAll.mockImplementation(async (url: string) =>
-    url.endsWith('/categorias') ? categories : [oldCombination],
+    url.endsWith('/categorias') ? categories : url.endsWith('/variantes') ? [oldCombination] : [],
   );
 });
 afterEach(cleanup);
@@ -142,8 +142,14 @@ it('crear una categoría no descarta la ficha que se estaba preparando', async (
     target: { value: 'Modelo en preparación' },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Administrar categorías' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Nueva categoría' }));
   fireEvent.change(screen.getByLabelText('Nombre de la categoría'), { target: { value: 'Niña' } });
-  fireEvent.change(screen.getByLabelText('Dentro de'), { target: { value: 'ropa' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Elegir categoría superior' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Elegir categoría superior' })).getByRole('button', {
+      name: 'Ropa interior',
+    }),
+  );
   fireEvent.click(screen.getByRole('button', { name: 'Guardar categoría' }));
   await screen.findByText('Categoría guardada. Ya puedes seleccionarla en el producto.');
   expect(mock.api).toHaveBeenCalledWith(
@@ -227,4 +233,22 @@ it('pagina treinta combinaciones y guarda los cambios de distintas páginas sin 
     'variante-30',
   ]);
   expect(body.combinaciones.map((c: any) => c.precio)).toEqual(['21', '22', null]);
+});
+
+it('presenta tarjetas y un botón de nueva categoría sin mezclar creación y edición en un select', async () => {
+  create();
+  fireEvent.click(screen.getByRole('button', { name: 'Administrar categorías' }));
+  const manager = within(screen.getByRole('dialog', { name: 'Categorías de tu negocio' }));
+  await manager.findByRole('button', { name: 'Editar categoría Ropa interior' });
+  expect(manager.queryByLabelText('Nombre de la categoría')).toBeNull();
+  expect(manager.queryByLabelText('Categoría a editar')).toBeNull();
+  fireEvent.click(manager.getByRole('button', { name: 'Editar categoría Ropa interior' }));
+  expect((manager.getByLabelText('Nombre de la categoría') as HTMLInputElement).value).toBe(
+    'Ropa interior',
+  );
+  fireEvent.click(manager.getByRole('button', { name: 'Elegir categoría superior' }));
+  const picker = within(screen.getByRole('dialog', { name: 'Elegir categoría superior' }));
+  expect(picker.getByRole('button', { name: 'Categoría principal' })).toBeTruthy();
+  expect(picker.queryByRole('button', { name: 'Ropa interior → Mujer' })).toBeNull();
+  expect(picker.queryByRole('button', { name: 'Ropa interior → Mujer → Brasieres' })).toBeNull();
 });

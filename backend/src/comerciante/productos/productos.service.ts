@@ -1,4 +1,6 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { requireInventoryLocal, inventoryRights } from '../inventario/access.js';
+import { savePhoto } from './fotos.js';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { sql, type Transaction } from 'kysely';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
 import { requirePermission, type Database } from '../../compartido/database/database.js';
@@ -19,6 +21,50 @@ export class ProductsService {
     return this.database.tenant(actor, negocioId, async (tx) => {
       await requireProductRead(tx);
       let query = tx.selectFrom('app.productos').selectAll().where('negocio_id', '=', negocioId);
+      if (!parentId)
+        query = query
+          .select(
+            sql<number>`(select count(*)::int from app.productos v where v.negocio_id = app.productos.negocio_id and v.producto_padre_id = app.productos.id)`.as(
+              'combinaciones_total',
+            ),
+          )
+          .select(
+            sql<
+              string | null
+            >`(select min(v.precio) from app.productos v where v.negocio_id = app.productos.negocio_id and v.producto_padre_id = app.productos.id)`.as(
+              'precio_min',
+            ),
+          )
+          .select(
+            sql<
+              string | null
+            >`(select max(v.precio) from app.productos v where v.negocio_id = app.productos.negocio_id and v.producto_padre_id = app.productos.id)`.as(
+              'precio_max',
+            ),
+          )
+          .select(
+            sql<number>`(select count(*)::int from app.productos v where v.negocio_id = app.productos.negocio_id and v.producto_padre_id = app.productos.id and v.precio is null)`.as(
+              'precios_pendientes',
+            ),
+          );
+      if (p.local_id) {
+        await requireInventoryLocal(tx, negocioId, p.local_id);
+        await inventoryRights(tx, p.local_id);
+        query = query.select(
+          sql<{
+            cantidad: number | null;
+            confirmados: number;
+            total: number;
+          }>`(select json_build_object(
+          'cantidad', case when count(*) > 0 and count(*) = count(i.confirmado_en) then sum(i.cantidad) else null end,
+          'confirmados', count(i.confirmado_en), 'total', count(*))
+          from app.productos hoja left join app.inventario_inicial i on i.negocio_id = hoja.negocio_id and i.producto_id = hoja.id and i.local_id = ${p.local_id}::uuid
+          where hoja.negocio_id = app.productos.negocio_id and (case when app.productos.nivel_registro = 'avanzado' then hoja.producto_padre_id = app.productos.id else hoja.id = app.productos.id end))`.as(
+            'stock',
+          ),
+        );
+      }
+
       if (parentId) {
         await tx
           .selectFrom('app.productos')
@@ -88,16 +134,22 @@ export class ProductsService {
         .where('producto_padre_id', 'is', null)
         .forUpdate()
         .executeTakeFirstOrThrow();
-    return tx
+    const { foto, ...fields } = data;
+    if (parentId && foto !== undefined)
+      throw new BadRequestException('La foto se registra en el modelo');
+    const result = await tx
       .insertInto('app.productos')
       .values({
-        ...data,
+        ...fields,
+        foto_version: foto ? 1 : 0,
         caracteristicas: data.caracteristicas ? JSON.stringify(data.caracteristicas) : undefined,
         negocio_id: negocioId,
         producto_padre_id: parentId,
       })
       .returningAll()
       .executeTakeFirstOrThrow();
+    await savePhoto(tx, negocioId, result.id, foto);
+    return result;
   }
   patch(actor: Actor, negocioId: string, id: string, data: ProductPatchDto) {
     return this.database.tenant(actor, negocioId, (tx) =>
@@ -111,12 +163,12 @@ export class ProductsService {
     data: ProductPatchDto,
     expectedParent?: string | null,
   ) {
-    const { version, ...changes } = data;
-    requirePatch(changes);
+    const { version, foto, ...changes } = data;
+    requirePatch({ ...changes, ...(foto !== undefined ? { foto } : {}) });
     await requirePermission(tx, 'productos.gestionar');
     let query = tx
       .selectFrom('app.productos')
-      .select('version')
+      .select(['version', 'foto_version', 'producto_padre_id'])
       .where('negocio_id', '=', negocioId)
       .where('id', '=', id);
     if (expectedParent !== undefined)
@@ -127,10 +179,13 @@ export class ProductsService {
     const current = await query.forUpdate().executeTakeFirstOrThrow();
     if (current.version !== version)
       throw new ConflictException('El producto cambió; actualiza su ficha');
-    return tx
+    if (current.producto_padre_id && foto !== undefined)
+      throw new BadRequestException('La foto se registra en el modelo');
+    const result = await tx
       .updateTable('app.productos')
       .set({
         ...changes,
+        ...(foto !== undefined ? { foto_version: foto ? current.foto_version + 1 : 0 } : {}),
         caracteristicas: changes.caracteristicas
           ? JSON.stringify(changes.caracteristicas)
           : undefined,
@@ -139,5 +194,23 @@ export class ProductsService {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
+    await savePhoto(tx, negocioId, id, foto);
+    return result;
+  }
+  photo(actor: Actor, negocioId: string, id: string) {
+    return this.database.tenant(actor, negocioId, async (tx) => {
+      await requireProductRead(tx);
+      return tx
+        .selectFrom('app.productos as p')
+        .leftJoin('app.productos_fotos as f', (join) =>
+          join
+            .onRef('f.negocio_id', '=', 'p.negocio_id')
+            .on(sql<boolean>`f.producto_id = coalesce(p.producto_padre_id, p.id)`),
+        )
+        .select('f.imagen')
+        .where('p.negocio_id', '=', negocioId)
+        .where('p.id', '=', id)
+        .executeTakeFirstOrThrow();
+    });
   }
 }

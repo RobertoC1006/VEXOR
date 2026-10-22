@@ -13,6 +13,7 @@ import {
   IsString,
   Matches,
   Max,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -25,6 +26,12 @@ export class AttributeDto {
   @ApiProperty() @TrimmedText(160) valor!: string;
 }
 export class ProductCreateDto {
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20000)
+  @Matches(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)
+  foto?: string | null;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsUUID() categoria_id?: string | null;
   @ApiPropertyOptional({ type: [String] })
   @OptionalField()
@@ -66,6 +73,7 @@ export class ProductPatchDto extends PartialType(ProductCreateDto, { skipNullPro
   @ApiProperty() @IsInt() @Min(1) @Max(2147483647) version!: number;
 }
 export class ProductQueryDto extends PaginationDto {
+  @ApiPropertyOptional() @OptionalField() @IsUUID() local_id?: string;
   @ApiPropertyOptional() @OptionalField() @IsUUID() categoria_id?: string;
   @ApiPropertyOptional() @OptionalField() @TrimmedText(120) codigo?: string;
   @ApiPropertyOptional() @OptionalField() @TrimmedText(160) q?: string;

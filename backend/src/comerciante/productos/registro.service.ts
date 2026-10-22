@@ -17,6 +17,8 @@ export class ProductRegistrationService {
       throw new BadRequestException('Un modelo nuevo no tiene combinaciones existentes');
     if (data.combinaciones.length && data.producto.nivel_registro !== 'avanzado')
       throw new BadRequestException('Las combinaciones requieren registro avanzado');
+    if (data.combinaciones.some((c) => c.foto !== undefined))
+      throw new BadRequestException('La foto se registra en el modelo');
     const ids = data.combinaciones.filter((c) => c.id).map((c) => c.id);
     if (
       new Set(ids).size !== ids.length ||
@@ -57,7 +59,7 @@ export class ProductRegistrationService {
           .insertInto('app.productos')
           .values(
             inserts.map((item) => {
-              const { id: _id, version: _version, ...fields } = item;
+              const { id: _id, version: _version, foto: _foto, ...fields } = item;
               return {
                 ...fields,
                 negocio_id: negocioId,

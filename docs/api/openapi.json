@@ -164,6 +164,14 @@
             }
           },
           {
+            "name": "local_id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "categoria_id",
             "required": false,
             "in": "query",
@@ -290,6 +298,14 @@
             }
           },
           {
+            "name": "local_id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "categoria_id",
             "required": false,
             "in": "query",
@@ -352,6 +368,42 @@
         },
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Productos"
+        ]
+      }
+    },
+    "/api/v1/negocios/{negocioId}/productos/{id}/foto": {
+      "get": {
+        "operationId": "ProductsController_photo",
+        "parameters": [
+          {
+            "name": "negocioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -493,6 +545,14 @@
                   "$ref": "#/components/schemas/Object"
                 }
               ]
+            }
+          },
+          {
+            "name": "local_id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -2589,6 +2649,10 @@
       "ProductCreateDto": {
         "type": "object",
         "properties": {
+          "foto": {
+            "type": "object",
+            "nullable": true
+          },
           "categoria_id": {
             "type": "object",
             "nullable": true
@@ -2649,6 +2713,10 @@
       "CombinationDto": {
         "type": "object",
         "properties": {
+          "foto": {
+            "type": "object",
+            "nullable": true
+          },
           "categoria_id": {
             "type": "object",
             "nullable": true
@@ -2740,6 +2808,10 @@
       "ProductPatchDto": {
         "type": "object",
         "properties": {
+          "foto": {
+            "type": "object",
+            "nullable": true
+          },
           "categoria_id": {
             "type": "object",
             "nullable": true

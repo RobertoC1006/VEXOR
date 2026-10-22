@@ -39,6 +39,7 @@ export async function createApp(config: AppConfig, quiet = false) {
     allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID'],
   });
+  app.use('/api/v1/negocios/:negocioId/productos', express.json({ limit: '128kb' }));
   app.use(express.json({ limit: '32kb' }));
   app.useGlobalPipes(
     new ValidationPipe({

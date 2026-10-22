@@ -49,6 +49,13 @@ export class ProductsController {
   @Get() list(@CurrentActor() a: Actor, @BusinessId() n: string, @Query() q: ProductQueryDto) {
     return this.products.list(a, n, q);
   }
+  @Get(':id/foto') photo(
+    @CurrentActor() a: Actor,
+    @BusinessId() n: string,
+    @ResourceId() id: string,
+  ) {
+    return this.products.photo(a, n, id);
+  }
   @Get(':id') get(@CurrentActor() a: Actor, @BusinessId() n: string, @ResourceId() id: string) {
     return this.products.get(a, n, id);
   }

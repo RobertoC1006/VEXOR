@@ -1,4 +1,9 @@
 export interface InventoryItem {
+  foto_version?: number;
+  precio?: string | null;
+  caracteristicas?: { nombre: string; valor: string }[];
+  producto_padre_id?: string | null;
+  modelo_nombre?: string | null;
   id: string;
   nombre: string;
   nombre_completo?: string;

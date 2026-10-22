@@ -7,14 +7,16 @@ import type { Page } from '../../compartido/tipos/types';
 export function useCatalogPage<T, Extra extends object = object>(
   path: string,
   categoryId?: string,
+  localId?: string,
 ) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [codeSearch, setCodeSearch] = useState(false);
-  const pagination = usePageState(`${path}:${categoryId ?? ''}`);
+  const pagination = usePageState(`${path}:${categoryId ?? ''}:${localId ?? ''}`);
   const { offset, setOffset, pageSize } = pagination;
   const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset) });
   if (query) params.set(codeSearch ? 'codigo' : 'q', query);
+  if (localId) params.set('local_id', localId);
   if (categoryId) params.set('categoria_id', categoryId);
   const url = `${path}?${params}`;
   const resource = useResource(url, (signal) => api<Page<T> & Extra>(url, { signal }));

@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { sql, type Transaction } from 'kysely';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
 import { requirePermission, type Database } from '../../compartido/database/database.js';
-import { requireLocalAccess } from '../../compartido/autorizacion/authorization.js';
+import { requireInventoryLocal, inventoryRights } from './access.js';
 import { requireProductRead } from '../productos/productos.service.js';
 import { page } from '../../compartido/http/pagination.js';
 import type { CountSaveDto, CountConfirmDto, InventoryQueryDto } from './dto.js';
@@ -11,27 +11,13 @@ import type { CountSaveDto, CountConfirmDto, InventoryQueryDto } from './dto.js'
 export class InventoryService {
   constructor(private readonly database: DatabaseService) {}
   private async context(tx: Transaction<Database>, negocioId: string, localId: string) {
-    await requireLocalAccess(tx, localId);
-    await tx
-      .selectFrom('app.locales')
-      .select('id')
-      .where('negocio_id', '=', negocioId)
-      .where('id', '=', localId)
-      .where('activo', '=', true)
-      .executeTakeFirstOrThrow();
+    await requireInventoryLocal(tx, negocioId, localId);
     await requireProductRead(tx);
   }
   list(actor: Actor, negocioId: string, localId: string, p: InventoryQueryDto) {
     return this.database.tenant(actor, negocioId, async (tx) => {
       await this.context(tx, negocioId, localId);
-      const rights = (
-        await sql<{ ver: boolean; contar: boolean; confirmar: boolean }>`select
-        app_private.puede('inventario.ver', ${localId}::uuid) as ver,
-        app_private.puede('inventario.contar', ${localId}::uuid) as contar,
-        app_private.puede('inventario.confirmar', ${localId}::uuid) as confirmar`.execute(tx)
-      ).rows[0];
-      if (!rights.ver && !rights.contar && !rights.confirmar)
-        await requirePermission(tx, 'inventario.ver', localId);
+      const rights = await inventoryRights(tx, localId);
       let query = tx
         .selectFrom('app.productos as p')
         .leftJoin('app.inventario_inicial as i', (join) =>
@@ -40,8 +26,17 @@ export class InventoryService {
             .onRef('i.producto_id', '=', 'p.id')
             .on('i.local_id', '=', localId),
         )
+        .leftJoin('app.productos as raiz', (join) =>
+          join
+            .onRef('raiz.negocio_id', '=', 'p.negocio_id')
+            .onRef('raiz.id', '=', 'p.producto_padre_id'),
+        )
         .select([
           'p.id',
+          'p.precio',
+          'p.caracteristicas',
+          'p.producto_padre_id',
+          'raiz.nombre as modelo_nombre',
           'p.nombre',
           'p.codigo',
           'p.alias',
@@ -50,6 +45,7 @@ export class InventoryService {
           'i.referencia',
           'i.confirmado_en',
         ])
+        .select(sql<number>`coalesce(raiz.foto_version, p.foto_version)`.as('foto_version'))
         .select(sql<string>`coalesce(i.estado, 'pendiente')`.as('estado'))
         .select(sql<number>`coalesce(i.version, 0)`.as('version'))
         .where('p.nivel_registro', '!=', 'avanzado')
