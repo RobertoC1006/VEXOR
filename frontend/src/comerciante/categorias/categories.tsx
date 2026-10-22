@@ -63,29 +63,14 @@ export function CategorySelect({
   onChange,
   label = 'Categoría (opcional)',
   empty = 'Sin categoría',
-  exclude,
 }: {
   value: string;
   onChange: (id: string) => void;
   label?: string;
   empty?: string;
-  exclude?: string;
 }) {
   const { categories, loading, error } = useCategories();
-  function permitted(category: Category) {
-    let current: Category | undefined = category;
-    const seen = new Set<string>();
-    while (current && !seen.has(current.id)) {
-      if (current.id === exclude) return false;
-      seen.add(current.id);
-      current = categories.find((c) => c.id === current!.padre_id);
-    }
-    return true;
-  }
-  const options = categories
-    .filter(permitted)
-    .map((c) => ({ id: c.id, path: categoryPath(categories, c.id) }))
-    .sort((a, b) => a.path.localeCompare(b.path, 'es'));
+  const options = categoryOptions(categories);
   return (
     <SelectField
       label={label}
@@ -99,7 +84,7 @@ export function CategorySelect({
       )}
       {options.map((c) => (
         <option key={c.id} value={c.id}>
-          {c.path}
+          {c.label}
         </option>
       ))}
     </SelectField>
