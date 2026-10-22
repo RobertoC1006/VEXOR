@@ -128,7 +128,9 @@ it('guarda un rubro libre sin enviar zona horaria y muestra ubicaciones de sus l
     </MemoryRouter>,
   );
   expect(screen.queryByLabelText('Zona horaria')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: /^2\s*Puestos$/ }));
   await screen.findByText('Mercado Central · B · N.º 024-A');
+  fireEvent.click(screen.getByRole('button', { name: /^1\s*Negocio$/ }));
   fireEvent.change(screen.getByLabelText('Rubro del negocio'), {
     target: { value: ' Artesanía y regalos ' },
   });

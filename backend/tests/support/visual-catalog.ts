@@ -44,7 +44,7 @@ export async function testVisualCatalog(
   const stock = async () =>
     (await request('get', `${catalog}?codigo=VISUAL&local_id=${id(401)}`, 1, 200)).body.items[0];
   let row = await stock();
-  assert.deepEqual(row.stock, { cantidad: null, confirmados: 0, total: 2 });
+  assert.deepEqual(row.stock, { cantidad: null, confirmados: 0, total: 2, minimo: null, bajos: 0 });
   assert.equal(row.precio_min, '10.00');
   assert.equal(row.precio_max, '12.00');
   for (let i = 0; i < 2; i++) {
@@ -60,6 +60,49 @@ export async function testVisualCatalog(
     assert.equal(row.stock.confirmados, i + 1);
     assert.equal(row.stock.cantidad, i === 0 ? null : 3);
   }
+
+  await request('patch', base, 3, 403, { descripcion: 'No autorizado' });
+  await request('patch', base, 1, 400, { preferencias: { nivel_registro: 'inventado' } });
+  await request('patch', base, 1, 400, { preferencias: { elementos_por_pagina: 50 } });
+  await request('patch', base, 1, 400, { foto: 'data:image/jpeg;base64,QUJDRA==' });
+  const profile = (
+    await request('patch', base, 1, 200, {
+      descripcion: 'Negocio de prueba',
+      foto,
+      preferencias: { nivel_registro: 'avanzado', ejes_variantes: ['Talla', 'Color'] },
+    })
+  ).body;
+  assert.equal(profile.foto, foto);
+  assert.equal(profile.descripcion, 'Negocio de prueba');
+  const updatedProfile = (
+    await request('patch', base, 1, 200, { preferencias: { elementos_por_pagina: 10 } })
+  ).body;
+  assert.equal(updatedProfile.preferencias.nivel_registro, 'avanzado');
+  assert.equal(updatedProfile.preferencias.elementos_por_pagina, 10);
+  for (const invalid of [0, -1, 1.2, '3'])
+    await request('put', `${inventory}/${variants[0].id}/minimo`, 1, 400, {
+      minimo: invalid,
+      version: 0,
+    });
+  await request('put', `${inventory}/${variants[0].id}/minimo`, 3, 403, { minimo: 4, version: 0 });
+  await request('put', `${inventory}/${model.id}/minimo`, 1, 404, { minimo: 4, version: 0 });
+  await request('put', `${inventory}/${variants[0].id}/minimo`, 1, 200, { minimo: 4, version: 0 });
+  await request('put', `${inventory}/${variants[0].id}/minimo`, 1, 409, { minimo: 5, version: 0 });
+  row = await stock();
+  assert.equal(row.stock.minimo, null);
+  assert.equal(row.stock.bajos, 1);
+  await request('put', `${inventory}/${variants[1].id}/minimo`, 1, 200, { minimo: 1, version: 0 });
+  row = await stock();
+  assert.equal(row.stock.minimo, 5);
+  assert.equal(row.stock.bajos, 2);
+  assert.equal(row.stock.cantidad, 3);
+  await request('put', `${inventory}/${variants[0].id}/minimo`, 1, 200, {
+    minimo: null,
+    version: 1,
+  });
+  row = await stock();
+  assert.equal(row.stock.minimo, null);
+  assert.equal(row.stock.bajos, 1);
   const listing = (await request('get', `${inventory}?q=VISUAL`, 1, 200)).body.items;
   assert.equal(listing.length, 2);
   assert.ok(
@@ -77,6 +120,22 @@ export async function testVisualCatalog(
     assert.equal(
       (
         await admin.query('select count(*)::int n from app.productos_fotos where negocio_id=$1', [
+          id(201),
+        ])
+      ).rows[0].n,
+      0,
+    );
+    assert.equal(
+      (
+        await admin.query('select count(*)::int n from app.stock_minimos where negocio_id=$1', [
+          id(201),
+        ])
+      ).rows[0].n,
+      0,
+    );
+    assert.equal(
+      (
+        await admin.query('select count(*)::int n from app.negocio_perfil where negocio_id=$1', [
           id(201),
         ])
       ).rows[0].n,

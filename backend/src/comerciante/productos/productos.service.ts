@@ -53,12 +53,15 @@ export class ProductsService {
         query = query.select(
           sql<{
             cantidad: number | null;
+            minimo: number | null;
             confirmados: number;
             total: number;
           }>`(select json_build_object(
           'cantidad', case when count(*) > 0 and count(*) = count(i.confirmado_en) then sum(i.cantidad) else null end,
-          'confirmados', count(i.confirmado_en), 'total', count(*))
-          from app.productos hoja left join app.inventario_inicial i on i.negocio_id = hoja.negocio_id and i.producto_id = hoja.id and i.local_id = ${p.local_id}::uuid
+          'confirmados', count(i.confirmado_en), 'total', count(*),
+          'bajos', count(*) filter(where i.confirmado_en is not null and m.minimo is not null and i.cantidad<=m.minimo),
+          'minimo', case when count(*) > 0 and count(*) = count(m.minimo) then sum(m.minimo) else null end)
+          from app.productos hoja left join app.stock_minimos m on m.negocio_id=hoja.negocio_id and m.producto_id=hoja.id and m.local_id=${p.local_id}::uuid left join app.inventario_inicial i on i.negocio_id = hoja.negocio_id and i.producto_id = hoja.id and i.local_id = ${p.local_id}::uuid
           where hoja.negocio_id = app.productos.negocio_id and (case when app.productos.nivel_registro = 'avanzado' then hoja.producto_padre_id = app.productos.id else hoja.id = app.productos.id end))`.as(
             'stock',
           ),

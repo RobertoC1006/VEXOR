@@ -1,4 +1,8 @@
+import type { BusinessPreferences } from './preferences';
 export interface BusinessDetail {
+  descripcion?: string | null;
+  foto?: string | null;
+  preferencias?: BusinessPreferences | null;
   id: string;
   nombre: string;
   rubro: string | null;

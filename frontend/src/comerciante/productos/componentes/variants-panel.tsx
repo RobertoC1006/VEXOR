@@ -1,4 +1,3 @@
-import { Modal } from '../../../compartido/componentes/modal';
 import { Pagination } from '../../../compartido/componentes/pagination';
 import { useCatalogPage } from '../use-catalog-page';
 import { Link } from 'react-router-dom';
@@ -7,19 +6,11 @@ import { ResourceState } from '../../../compartido/componentes/feedback';
 import { useBusiness } from '../../negocio/context';
 import { priceLabel, type Product } from '../types';
 
-export function VariantsPanel({
-  parent,
-  onClose,
-  onEdit,
-}: {
-  parent: Product;
-  onClose: () => void;
-  onEdit: () => void;
-}) {
+export function VariantsContent({ parent, onEdit }: { parent: Product; onEdit: () => void }) {
   const { base, can } = useBusiness();
   const resource = useCatalogPage<Product>(`${base}/productos/${parent.id}/variantes`);
   return (
-    <Modal label={`Combinaciones de ${parent.nombre}`} onClose={onClose}>
+    <>
       <section className="panel settings-panel" aria-label={`Combinaciones de ${parent.nombre}`}>
         <p className="field-hint">
           Cada combinación indica qué talla, copa, color u otras características vas a contar por
@@ -67,6 +58,6 @@ export function VariantsPanel({
           </>
         )}
       </section>
-    </Modal>
+    </>
   );
 }

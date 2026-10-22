@@ -5,7 +5,7 @@ import { requirePermission, type Database } from '../../compartido/database/data
 import { requireInventoryLocal, inventoryRights } from './access.js';
 import { requireProductRead } from '../productos/productos.service.js';
 import { page } from '../../compartido/http/pagination.js';
-import type { CountSaveDto, CountConfirmDto, InventoryQueryDto } from './dto.js';
+import type { CountSaveDto, CountConfirmDto, InventoryQueryDto, MinimumSaveDto } from './dto.js';
 
 @Injectable()
 export class InventoryService {
@@ -26,6 +26,12 @@ export class InventoryService {
             .onRef('i.producto_id', '=', 'p.id')
             .on('i.local_id', '=', localId),
         )
+        .leftJoin('app.stock_minimos as m', (j) =>
+          j
+            .onRef('m.negocio_id', '=', 'p.negocio_id')
+            .onRef('m.producto_id', '=', 'p.id')
+            .on('m.local_id', '=', localId),
+        )
         .leftJoin('app.productos as raiz', (join) =>
           join
             .onRef('raiz.negocio_id', '=', 'p.negocio_id')
@@ -33,6 +39,7 @@ export class InventoryService {
         )
         .select([
           'p.id',
+          'm.minimo',
           'p.precio',
           'p.caracteristicas',
           'p.producto_padre_id',
@@ -47,6 +54,7 @@ export class InventoryService {
         ])
         .select(sql<number>`coalesce(raiz.foto_version, p.foto_version)`.as('foto_version'))
         .select(sql<string>`coalesce(i.estado, 'pendiente')`.as('estado'))
+        .select(sql<number>`coalesce(m.version, 0)`.as('minimo_version'))
         .select(sql<number>`coalesce(i.version, 0)`.as('version'))
         .where('p.nivel_registro', '!=', 'avanzado')
         .select(
@@ -77,6 +85,52 @@ export class InventoryService {
         ),
         permisos: rights,
       };
+    });
+  }
+  minimum(
+    actor: Actor,
+    negocioId: string,
+    localId: string,
+    productoId: string,
+    data: MinimumSaveDto,
+  ) {
+    return this.database.tenant(actor, negocioId, async (tx) => {
+      await this.context(tx, negocioId, localId);
+      await requirePermission(tx, 'inventario.confirmar', localId);
+      await sql`select pg_advisory_xact_lock(hashtext(${negocioId + localId + productoId}))`.execute(
+        tx,
+      );
+      await tx
+        .selectFrom('app.productos')
+        .select('id')
+        .where('negocio_id', '=', negocioId)
+        .where('id', '=', productoId)
+        .where('nivel_registro', '!=', 'avanzado')
+        .executeTakeFirstOrThrow();
+      const current = await tx
+        .selectFrom('app.stock_minimos')
+        .selectAll()
+        .where('negocio_id', '=', negocioId)
+        .where('local_id', '=', localId)
+        .where('producto_id', '=', productoId)
+        .executeTakeFirst();
+      if ((current?.version ?? 0) !== data.version)
+        throw new ConflictException('El mínimo cambió; actualiza el inventario');
+      return tx
+        .insertInto('app.stock_minimos')
+        .values({
+          negocio_id: negocioId,
+          local_id: localId,
+          producto_id: productoId,
+          minimo: data.minimo,
+        })
+        .onConflict((c) =>
+          c
+            .columns(['negocio_id', 'local_id', 'producto_id'])
+            .doUpdateSet({ minimo: data.minimo, version: (current?.version ?? 0) + 1 }),
+        )
+        .returningAll()
+        .executeTakeFirstOrThrow();
     });
   }
   save(actor: Actor, negocioId: string, localId: string, productoId: string, data: CountSaveDto) {

@@ -1,3 +1,5 @@
+import { MinimumForm } from '../componentes/minimum-form';
+import { StockGauge } from '../componentes/stock-gauge';
 import { MerchandiseTable } from '../../productos/componentes/merchandise-table';
 import { priceLabel } from '../../productos/types';
 import { Pagination } from '../../../compartido/componentes/pagination';
@@ -62,9 +64,27 @@ function LocalInventory({ localId }: { localId: string }) {
     `${base}/locales/${localId}/inventario`,
   );
   const data = resource.data;
+  const [minimum, setMinimum] = useState<InventoryItem | null>(null);
   const [editor, setEditor] = useState<InventoryItem | null>(null);
   return (
     <>
+      {minimum && (
+        <Modal
+          label={`Stock mínimo de ${minimum.nombre_completo ?? minimum.nombre}`}
+          onClose={() => setMinimum(null)}
+        >
+          <MinimumForm
+            id={minimum.id}
+            localId={localId}
+            minimum={minimum.minimo ?? null}
+            version={minimum.minimo_version ?? 0}
+            onSaved={async () => {
+              setMinimum(null);
+              await resource.refresh();
+            }}
+          />
+        </Modal>
+      )}
       <CatalogSearch
         value={resource.search}
         onChange={resource.setSearch}
@@ -115,6 +135,17 @@ function LocalInventory({ localId }: { localId: string }) {
                 item.referencia ||
                 'Sin detalles adicionales',
               price: priceLabel(item.precio ?? null),
+              stockVisual: (
+                <StockGauge
+                  quantity={item.estado === 'confirmado' ? item.cantidad : null}
+                  minimum={item.minimo ?? null}
+                  hint={
+                    item.estado === 'preparacion'
+                      ? `Borrador: ${item.cantidad} unidades`
+                      : undefined
+                  }
+                />
+              ),
               stock: item.cantidad === null ? '—' : String(item.cantidad),
               stockHint:
                 item.estado === 'confirmado'
@@ -123,20 +154,28 @@ function LocalInventory({ localId }: { localId: string }) {
                     ? 'Borrador de conteo'
                     : 'Pendiente de contar',
               active: item.activo,
-              actions:
-                item.estado !== 'confirmado' &&
-                (data.permisos.contar ||
-                  (item.estado === 'preparacion' && data.permisos.confirmar)) ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      setEditor({ ...item, nombre: item.nombre_completo ?? item.nombre })
-                    }
-                  >
-                    {item.estado === 'pendiente' ? 'Contar' : 'Revisar'}
-                    <span className="visually-hidden"> {item.nombre}</span>
-                  </Button>
-                ) : null,
+              actions: (
+                <>
+                  {data.permisos.confirmar && (
+                    <Button variant="ghost" onClick={() => setMinimum(item)}>
+                      Configurar mínimo<span className="visually-hidden"> {item.nombre}</span>
+                    </Button>
+                  )}
+                  {item.estado !== 'confirmado' &&
+                  (data.permisos.contar ||
+                    (item.estado === 'preparacion' && data.permisos.confirmar)) ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        setEditor({ ...item, nombre: item.nombre_completo ?? item.nombre })
+                      }
+                    >
+                      {item.estado === 'pendiente' ? 'Contar' : 'Revisar'}
+                      <span className="visually-hidden"> {item.nombre}</span>
+                    </Button>
+                  ) : null}
+                </>
+              ),
             }))}
           />
           {!data.items.length && (

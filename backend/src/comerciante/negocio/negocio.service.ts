@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { sql } from 'kysely';
+import { sql, type Transaction } from 'kysely';
+import type { Database } from '../../compartido/database/database.js';
+import { validateJpeg } from '../../compartido/http/image.js';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
 import { requirePermission } from '../../compartido/database/database.js';
 import { currentMembership } from '../../compartido/autorizacion/authorization.js';
@@ -10,25 +12,67 @@ import type { PaginationDto } from '../../compartido/http/pagination.dto.js';
 @Injectable()
 export class BusinessService {
   constructor(private readonly database: DatabaseService) {}
+  private detail(tx: Transaction<Database>, negocioId: string) {
+    return tx
+      .selectFrom('app.negocios as n')
+      .leftJoin('app.negocio_perfil as p', 'p.negocio_id', 'n.id')
+      .select([
+        'n.id',
+        'n.nombre',
+        'n.rubro',
+        'n.zona_horaria',
+        'n.activo',
+        'p.descripcion',
+        'p.foto',
+        'p.preferencias',
+      ])
+      .where('n.id', '=', negocioId)
+      .executeTakeFirstOrThrow();
+  }
   business(actor: Actor, negocioId: string) {
-    return this.database.tenant(actor, negocioId, (tx) =>
-      tx
-        .selectFrom('app.negocios')
-        .select(['id', 'nombre', 'rubro', 'zona_horaria', 'activo'])
-        .where('id', '=', negocioId)
-        .executeTakeFirstOrThrow(),
-    );
+    return this.database.tenant(actor, negocioId, (tx) => this.detail(tx, negocioId));
   }
   patchBusiness(actor: Actor, negocioId: string, data: BusinessPatchDto) {
     requirePatch(data);
     return this.database.tenant(actor, negocioId, async (tx) => {
       await requirePermission(tx, 'negocio.editar');
-      return tx
-        .updateTable('app.negocios')
-        .set(data)
+      const { descripcion, foto, preferencias, ...fields } = data;
+      if (foto) validateJpeg(foto);
+      // Lock the business for atomic profile merges and preserve unrelated preferences.
+      const current = await tx
+        .selectFrom('app.negocios')
+        .select('nombre')
         .where('id', '=', negocioId)
-        .returning(['id', 'nombre', 'rubro', 'zona_horaria', 'activo'])
+        .forUpdate()
         .executeTakeFirstOrThrow();
+      await tx
+        .updateTable('app.negocios')
+        .set({ ...fields, nombre: fields.nombre ?? current.nombre })
+        .where('id', '=', negocioId)
+        .execute();
+      if (descripcion !== undefined || foto !== undefined || preferencias !== undefined) {
+        const profile = await tx
+          .selectFrom('app.negocio_perfil')
+          .selectAll()
+          .where('negocio_id', '=', negocioId)
+          .executeTakeFirst();
+        const values = {
+          descripcion: descripcion === undefined ? profile?.descripcion : descripcion,
+          foto: foto === undefined ? profile?.foto : foto,
+          preferencias: JSON.stringify({
+            ...profile?.preferencias,
+            ...Object.fromEntries(
+              Object.entries(preferencias ?? {}).filter(([, value]) => value !== undefined),
+            ),
+          }),
+        };
+        await tx
+          .insertInto('app.negocio_perfil')
+          .values({ negocio_id: negocioId, ...values })
+          .onConflict((c) => c.column('negocio_id').doUpdateSet(values))
+          .execute();
+      }
+      return this.detail(tx, negocioId);
     });
   }
   access(actor: Actor, negocioId: string, p: PaginationDto) {

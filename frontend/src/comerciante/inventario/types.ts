@@ -1,4 +1,6 @@
 export interface InventoryItem {
+  minimo?: number | null;
+  minimo_version?: number;
   foto_version?: number;
   precio?: string | null;
   caracteristicas?: { nombre: string; valor: string }[];

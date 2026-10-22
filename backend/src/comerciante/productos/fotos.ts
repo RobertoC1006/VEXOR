@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { validateJpeg } from '../../compartido/http/image.js';
 import type { Transaction } from 'kysely';
 import type { Database } from '../../compartido/database/database.js';
 
@@ -17,15 +17,7 @@ export async function savePhoto(
       .execute();
     return;
   }
-  const bytes = Buffer.from(foto.slice('data:image/jpeg;base64,'.length), 'base64');
-  if (
-    bytes.length < 4 ||
-    bytes[0] !== 255 ||
-    bytes[1] !== 216 ||
-    bytes.at(-2) !== 255 ||
-    bytes.at(-1) !== 217
-  )
-    throw new BadRequestException('La miniatura debe ser una imagen JPEG');
+  validateJpeg(foto);
   await tx
     .insertInto('app.productos_fotos')
     .values({ negocio_id: negocioId, producto_id: id, imagen: foto })

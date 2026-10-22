@@ -595,6 +595,60 @@
         ]
       }
     },
+    "/api/v1/negocios/{negocioId}/locales/{localId}/inventario/{id}/minimo": {
+      "put": {
+        "operationId": "InventoryController_minimum",
+        "parameters": [
+          {
+            "name": "negocioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "localId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinimumSaveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Inventario inicial"
+        ]
+      }
+    },
     "/api/v1/negocios/{negocioId}/locales/{localId}/inventario/{id}/conteo": {
       "put": {
         "operationId": "InventoryController_save",
@@ -2872,6 +2926,22 @@
           "version"
         ]
       },
+      "MinimumSaveDto": {
+        "type": "object",
+        "properties": {
+          "minimo": {
+            "type": "object",
+            "nullable": true
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "minimo",
+          "version"
+        ]
+      },
       "CountSaveDto": {
         "type": "object",
         "properties": {
@@ -2964,9 +3034,43 @@
           "nombre"
         ]
       },
+      "BusinessPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "nivel_registro": {
+            "type": "string"
+          },
+          "elementos_por_pagina": {
+            "type": "number"
+          },
+          "caracteristicas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ejes_variantes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "BusinessPatchDto": {
         "type": "object",
         "properties": {
+          "descripcion": {
+            "type": "object",
+            "nullable": true
+          },
+          "foto": {
+            "type": "object",
+            "nullable": true
+          },
+          "preferencias": {
+            "$ref": "#/components/schemas/BusinessPreferencesDto"
+          },
           "rubro": {
             "type": "object",
             "nullable": true,

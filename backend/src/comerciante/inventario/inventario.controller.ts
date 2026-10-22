@@ -4,7 +4,7 @@ import { CurrentActor } from '../../compartido/autenticacion/actor.decorator.js'
 import type { Actor } from '../../compartido/database/database.service.js';
 import { BusinessId, ResourceId } from '../../compartido/http/resource-params.js';
 import { InventoryService } from './inventario.service.js';
-import { CountSaveDto, CountConfirmDto, InventoryQueryDto } from './dto.js';
+import { CountSaveDto, CountConfirmDto, InventoryQueryDto, MinimumSaveDto } from './dto.js';
 import { Param, ParseUUIDPipe } from '@nestjs/common';
 
 @ApiTags('Inventario inicial')
@@ -19,6 +19,15 @@ export class InventoryController {
     @Query() q: InventoryQueryDto,
   ) {
     return this.inventory.list(a, n, l, q);
+  }
+  @Put(':id/minimo') minimum(
+    @CurrentActor() a: Actor,
+    @BusinessId() n: string,
+    @Param('localId', new ParseUUIDPipe()) l: string,
+    @ResourceId() id: string,
+    @Body() d: MinimumSaveDto,
+  ) {
+    return this.inventory.minimum(a, n, l, id, d);
   }
   @Put(':id/conteo') save(
     @CurrentActor() a: Actor,

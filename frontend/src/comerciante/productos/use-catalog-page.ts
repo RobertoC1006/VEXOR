@@ -1,3 +1,4 @@
+import { useBusiness } from '../negocio/context';
 import { useState } from 'react';
 import { api } from '../../compartido/api/api';
 import { useResource } from '../../compartido/api/use-resource';
@@ -9,10 +10,14 @@ export function useCatalogPage<T, Extra extends object = object>(
   categoryId?: string,
   localId?: string,
 ) {
+  const { business } = useBusiness();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [codeSearch, setCodeSearch] = useState(false);
-  const pagination = usePageState(`${path}:${categoryId ?? ''}:${localId ?? ''}`);
+  const pagination = usePageState(
+    `${path}:${categoryId ?? ''}:${localId ?? ''}`,
+    business?.preferencias?.elementos_por_pagina,
+  );
   const { offset, setOffset, pageSize } = pagination;
   const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset) });
   if (query) params.set(codeSearch ? 'codigo' : 'q', query);

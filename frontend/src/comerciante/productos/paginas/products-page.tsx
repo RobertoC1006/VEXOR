@@ -1,7 +1,10 @@
+import { ChoicePicker } from '../../../compartido/componentes/choice-picker';
+import { categoryOptions } from '../../categorias/category-picker';
+import { StockGauge } from '../../inventario/componentes/stock-gauge';
+import { ProductDetail } from '../componentes/product-detail';
 import { MerchandiseTable } from '../componentes/merchandise-table';
 import { listAll } from '../../../compartido/api/api';
 import { useResource } from '../../../compartido/api/use-resource';
-import { SelectField } from '../../../compartido/componentes/form-controls';
 import type { BusinessLocal } from '../../locales/types';
 import { Pagination } from '../../../compartido/componentes/pagination';
 import { Modal } from '../../../compartido/componentes/modal';
@@ -11,14 +14,12 @@ import { useBusiness } from '../../negocio/context';
 import { Button, Empty, Notice } from '../../../compartido/componentes/ui';
 import { PageHeading, ResourceState } from '../../../compartido/componentes/feedback';
 import { ProductForm } from '../componentes/product-form';
-import { VariantsPanel } from '../componentes/variants-panel';
 import { CatalogSearch } from '../componentes/catalog-controls';
 import { useCatalogPage } from '../use-catalog-page';
 import { catalogPrice, type Product } from '../types';
 import {
   CategoriesProvider,
   CategoriesManager,
-  CategorySelect,
   categoryPath,
   useCategories,
 } from '../../categorias/categories';
@@ -46,7 +47,7 @@ function ProductCatalog() {
   const localId = selectedLocal ?? locals[0]?.id;
   const resource = useCatalogPage<Product>(`${base}/productos`, category, localId || undefined);
   const [editor, setEditor] = useState<Product | 'new' | 'example' | null>(null);
-  const [variants, setVariants] = useState<Product | null>(null);
+  const [detail, setDetail] = useState<Product | null>(null);
   return (
     <>
       <PageHeading
@@ -57,7 +58,7 @@ function ProductCatalog() {
           can('productos.gestionar') && (
             <Button
               onClick={() => {
-                setVariants(null);
+                setDetail(null);
                 setEditor('new');
               }}
             >
@@ -76,7 +77,7 @@ function ProductCatalog() {
             <Button
               variant="ghost"
               onClick={() => {
-                setVariants(null);
+                setDetail(null);
                 setEditor('example');
               }}
             >
@@ -86,18 +87,19 @@ function ProductCatalog() {
         )}
         {canStock && locals.length > 0 && (
           <div className="catalog-stock-scope">
-            <SelectField
+            <ChoicePicker
               label="Stock en"
               value={localId ?? ''}
-              onChange={(e) => setSelectedLocal(e.target.value)}
-            >
-              <option value="">Sin stock por local</option>
-              {locals.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.nombre}
-                </option>
-              ))}
-            </SelectField>
+              onChange={setSelectedLocal}
+              options={[
+                { id: '', title: 'Sin stock por local', description: 'Consultar solo el catálogo' },
+                ...locals.map((l) => ({
+                  id: l.id,
+                  title: l.nombre,
+                  description: l.habilitado_venta ? 'Puesto de venta' : 'Almacén',
+                })),
+              ]}
+            />
           </div>
         )}
       </div>
@@ -119,14 +121,14 @@ function ProductCatalog() {
           />
         </Modal>
       )}
-      {variants && (
-        <VariantsPanel
-          key={variants.id}
-          parent={variants}
-          onClose={() => setVariants(null)}
+      {detail && (
+        <ProductDetail
+          product={detail}
+          localName={locals.find((l) => l.id === localId)?.nombre}
+          onClose={() => setDetail(null)}
           onEdit={() => {
-            setEditor(variants);
-            setVariants(null);
+            setEditor(detail);
+            setDetail(null);
           }}
         />
       )}
@@ -162,11 +164,14 @@ function ProductCatalog() {
           onScan={resource.findCode}
         />
         <div className="catalog-category-filter">
-          <CategorySelect
+          <ChoicePicker
             label="Filtrar por categoría"
-            empty="Todas las categorías"
             value={category}
             onChange={setCategory}
+            options={[
+              { id: '', title: 'Todas las categorías', description: 'Ver todo el catálogo' },
+              ...categoryOptions(categories.categories),
+            ]}
           />
         </div>
       </div>
@@ -201,6 +206,19 @@ function ProductCatalog() {
           <MerchandiseTable
             rows={resource.data.items.map((product) => ({
               id: product.id,
+              onOpen: () => setDetail(product),
+              stockVisual: (
+                <StockGauge
+                  lowCount={product.nivel_registro === 'avanzado' ? product.stock?.bajos : 0}
+                  quantity={product.stock?.cantidad ?? null}
+                  minimum={product.stock?.minimo ?? null}
+                  hint={
+                    product.stock?.cantidad === null && product.stock.confirmados
+                      ? `Parcial: ${product.stock.confirmados}/${product.stock.total}`
+                      : undefined
+                  }
+                />
+              ),
               name: product.nombre,
               code: product.codigo,
               photoVersion: product.foto_version,
@@ -235,31 +253,9 @@ function ProductCatalog() {
                         : 'Pendiente de contar',
               active: product.activo,
               actions: (
-                <>
-                  {product.nivel_registro === 'avanzado' && (
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setEditor(null);
-                        setVariants(product);
-                      }}
-                    >
-                      Ver combinaciones<span className="visually-hidden"> {product.nombre}</span>
-                    </Button>
-                  )}
-                  {can('productos.gestionar') && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setVariants(null);
-                        setEditor(product);
-                      }}
-                    >
-                      {product.nivel_registro === 'avanzado' ? 'Editar modelo' : 'Editar'}
-                      <span className="visually-hidden"> {product.nombre}</span>
-                    </Button>
-                  )}
-                </>
+                <Button variant="ghost" onClick={() => setDetail(product)}>
+                  Ver detalle<span className="visually-hidden"> {product.nombre}</span>
+                </Button>
               ),
             }))}
           />

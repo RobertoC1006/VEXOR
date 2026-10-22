@@ -11,7 +11,7 @@ import { LocalForm } from '../componentes/local-form';
 import type { BusinessLocal } from '../types';
 import { formatLocation } from '../location';
 
-export function LocalsPage() {
+export function LocalsPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { base, access, can, refresh } = useBusiness();
   const resource = useResource(`${base}/locales`, (signal) =>
     listAll<BusinessLocal>(`${base}/locales`, signal),
@@ -27,7 +27,8 @@ export function LocalsPage() {
   return (
     <>
       <PageHeading
-        title="Puestos y almacenes"
+        level={embedded ? 2 : 1}
+        title={embedded ? '2. Puestos y almacenes' : 'Puestos y almacenes'}
         description="Organiza los espacios donde vendes y guardas tu mercadería."
         action={
           access.es_propietario && (

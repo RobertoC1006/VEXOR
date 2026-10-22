@@ -9,7 +9,13 @@ export interface Product {
   precios_pendientes?: number;
   precio_min?: string | null;
   precio_max?: string | null;
-  stock?: { cantidad: number | null; confirmados: number; total: number };
+  stock?: {
+    bajos?: number;
+    minimo?: number | null;
+    cantidad: number | null;
+    confirmados: number;
+    total: number;
+  };
   categoria_id: string | null;
   ejes_variantes: string[];
   nivel_registro: RegistrationLevel;

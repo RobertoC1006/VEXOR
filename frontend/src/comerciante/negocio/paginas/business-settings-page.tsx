@@ -1,112 +1,71 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Save, ShieldCheck } from 'lucide-react';
-import { api } from '../../../compartido/api/api';
-import { useAction } from '../../../compartido/api/use-action';
-import { useWorkspace } from '../../../compartido/acceso/workspace';
-import { Button, Field } from '../../../compartido/componentes/ui';
-import { ActionFeedback, PageHeading } from '../../../compartido/componentes/feedback';
+import { useState } from 'react';
+import { CheckCircle, ChevronLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PageHeading } from '../../../compartido/componentes/feedback';
+import { Button } from '../../../compartido/componentes/ui';
 import { useBusiness } from '../context';
-import type { BusinessDetail } from '../types';
-import { BusinessLocations } from '../../locales/componentes/business-locations';
-
+import { BusinessInfoForm } from '../business-info-form';
+import { PreferencesForm } from '../preferences-form';
+import { LocalsPage } from '../../locales/paginas/locals-page';
+const steps = ['Negocio', 'Puestos', 'Preferencias', 'Listo'];
 export function BusinessSettingsPage() {
-  const { business, base, can, refresh } = useBusiness();
-  const { updateBusiness } = useWorkspace();
-  const action = useAction();
-  const [name, setName] = useState(business.nombre),
-    [rubro, setRubro] = useState(business.rubro ?? '');
-  useEffect(() => {
-    setName(business.nombre);
-    setRubro(business.rubro ?? '');
-  }, [business.nombre, business.rubro]);
-  const editable = can('negocio.editar');
-  async function save(event: FormEvent) {
-    event.preventDefault();
-    if (!editable) return;
-    await action.run(async () => {
-      const result = await api<BusinessDetail>(base, {
-        method: 'PATCH',
-        body: JSON.stringify({ nombre: name.trim(), rubro: rubro.trim() || null }),
-      });
-      updateBusiness(result.id, result.nombre);
-      await refresh();
-    });
-  }
+  const { base, business } = useBusiness();
+  const [step, setStep] = useState(0);
   return (
     <>
       <PageHeading
-        title="Mi negocio"
-        description="Los datos con los que tu equipo reconoce el negocio."
+        title="Configura tu negocio"
+        description="Prepara tu información, tus puestos y la forma de registrar tu mercadería."
       />
-      <div className="settings-columns">
-        <section className="panel settings-panel">
-          <h2>Información del negocio</h2>
-          <p className="muted">Usa el nombre que reconocen las personas que trabajan contigo.</p>
-          <form className="settings-form" onSubmit={save}>
-            <fieldset disabled={!editable || action.busy}>
-              <Field
-                id="business-name"
-                label="Nombre del negocio"
-                value={name}
-                maxLength={160}
-                required
-                onChange={(event) => setName(event.target.value)}
-              />
-              <Field
-                id="business-rubro"
-                label="Rubro del negocio"
-                value={rubro}
-                maxLength={120}
-                list="business-rubros"
-                placeholder="Selecciona o escribe tu rubro"
-                onChange={(event) => setRubro(event.target.value)}
-              />
-              <datalist id="business-rubros">
-                <option value="Lencería" />
-                <option value="Juguetes" />
-                <option value="Abarrotes" />
-                <option value="Ropa y accesorios" />
-                <option value="Flores y regalos" />
-              </datalist>
-              <p className="field-hint">
-                Puedes elegir una sugerencia o escribir otro rubro, también si vendes productos de
-                varios tipos.
-              </p>
-            </fieldset>
-            <ActionFeedback {...action} />
-            {editable ? (
-              <Button
-                type="submit"
-                busy={action.busy}
-                disabled={
-                  !name.trim() ||
-                  (name.trim() === business.nombre &&
-                    (rubro.trim() || null) === (business.rubro ?? null))
-                }
-              >
-                <Save size={17} />
-                Guardar cambios
-              </Button>
-            ) : (
-              <p className="field-hint">
-                Puedes consultar estos datos. Para editarlos necesitas autorización del propietario.
-              </p>
-            )}
-          </form>
-        </section>
-        <aside className="settings-aside">
-          <ShieldCheck size={25} />
-          <h2>Un espacio propio</h2>
-          <p>
-            Estos datos pertenecen a {business.nombre}. Los permisos y locales se configuran dentro
-            de este negocio.
-          </p>
-          <span className="badge success">
-            {business.activo ? 'Servicio activo' : 'Servicio inactivo'}
-          </span>
-        </aside>
+      <nav className="setup-steps" aria-label="Pasos de configuración">
+        {steps.map((label, i) => (
+          <button
+            key={label}
+            type="button"
+            aria-current={step === i ? 'step' : undefined}
+            onClick={() => setStep(i)}
+          >
+            <span>{i + 1}</span>
+            {label}
+          </button>
+        ))}
+      </nav>
+      <div hidden={step !== 0}>
+        <BusinessInfoForm onContinue={() => setStep(1)} />
       </div>
-      <BusinessLocations />
+      {step === 1 && (
+        <>
+          <div className="onboarding-step-note">
+            <p>
+              Indica el <strong>mercado, pabellón y número</strong> de cada puesto. Los almacenes
+              pueden tener otra ubicación.
+            </p>
+          </div>
+          <LocalsPage embedded />
+          <Button onClick={() => setStep(2)}>Siguiente: preferencias</Button>
+        </>
+      )}
+      {step === 2 && <PreferencesForm onContinue={() => setStep(3)} />}
+      {step === 3 && (
+        <section className="panel onboarding-complete">
+          <CheckCircle size={42} />
+          <h2>Revisa tu configuración</h2>
+          <p>{business.nombre}</p>
+          <p className="muted">
+            Los datos se guardan en cada paso. Revisa que tus puestos y preferencias estén completos
+            antes de empezar.
+          </p>
+          <Link className="button primary" to={`${base}/productos`}>
+            Ir al catálogo de productos
+          </Link>
+        </section>
+      )}
+      {step > 0 && (
+        <Button variant="ghost" onClick={() => setStep(step - 1)}>
+          <ChevronLeft size={17} />
+          Volver
+        </Button>
+      )}
     </>
   );
 }

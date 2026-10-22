@@ -41,7 +41,7 @@ export function ProductForm(props: ProductFormProps) {
   return <ProductFields {...props} />;
 }
 function ExistingModelForm(props: ProductFormProps) {
-  const { base } = useBusiness();
+  const { base, business } = useBusiness();
   const url = `${base}/productos/${props.product!.id}/variantes`;
   const resource = useResource(url, (signal) => listAll<Product>(url, signal));
   if (!resource.data) return <ResourceState error={resource.error} retry={resource.refresh} />;
@@ -55,7 +55,7 @@ function ProductFields({
   example = false,
   initialCombinations = [],
 }: ProductFormProps & { initialCombinations?: Product[] }) {
-  const { base } = useBusiness();
+  const { base, business } = useBusiness();
   const categories = useCategories();
   const action = useAction();
   const [values, setValues] = useState({
@@ -68,7 +68,8 @@ function ProductFields({
     activo: product?.activo ?? true,
   });
   const [level, setLevel] = useState<RegistrationLevel>(
-    product?.nivel_registro ?? (example ? 'avanzado' : 'simple'),
+    product?.nivel_registro ??
+      (example ? 'avanzado' : (business?.preferencias?.nivel_registro ?? 'simple')),
   );
   const advanced = !parent && level === 'avanzado';
   const [preparingPhoto, setPreparingPhoto] = useState(false);
@@ -80,7 +81,9 @@ function ProductFields({
       initialCombinations,
       example
         ? ['Talla', 'Copa', 'Color']
-        : categoryDetails(categories.categories, product?.categoria_id ?? ''),
+        : categoryDetails(categories.categories, product?.categoria_id ?? '').length
+          ? categoryDetails(categories.categories, product?.categoria_id ?? '')
+          : (business?.preferencias?.ejes_variantes ?? []),
     ),
   );
   const [rows, setRows] = useState(() => initialCombinations.map((p) => combinationDraft(p)));
@@ -93,7 +96,7 @@ function ProductFields({
           ]
         : (parent
             ? ['Talla', 'Copa', 'Color', 'Diseño']
-            : ['Marca', 'Modelo', 'Talla', 'Color']
+            : (business?.preferencias?.caracteristicas ?? ['Marca', 'Modelo', 'Talla', 'Color'])
           ).map((nombre) => ({ nombre, valor: '' }))),
   );
   async function submit(event: FormEvent) {

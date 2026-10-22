@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Equals, IsInt, Max, Min } from 'class-validator';
+import { Equals, IsInt, Max, Min, ValidateIf } from 'class-validator';
 import { NullableText } from '../../compartido/http/validation.js';
 import { ProductQueryDto } from '../productos/dto.js';
 
@@ -20,4 +20,14 @@ export class CountConfirmDto {
   })
   @Equals(true)
   revision_fisica!: boolean;
+}
+
+export class MinimumSaveDto {
+  @ApiProperty({ nullable: true })
+  @ValidateIf((_o, v) => v !== null)
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  minimo!: number | null;
+  @ApiProperty() @IsInt() @Min(0) @Max(2147483647) version!: number;
 }

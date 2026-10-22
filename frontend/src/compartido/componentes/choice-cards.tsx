@@ -52,8 +52,8 @@ export function ChoiceCards({
       {!filtered.length && (
         <p className="field-hint">
           {options.length
-            ? 'No hay categorías que coincidan. Prueba otro nombre.'
-            : 'Aún no hay categorías. Usa «Nueva categoría» para agregar la primera.'}
+            ? 'No hay opciones que coincidan. Prueba otro nombre.'
+            : 'Aún no hay opciones disponibles.'}
         </p>
       )}
     </div>

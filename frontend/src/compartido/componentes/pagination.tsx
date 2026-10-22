@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Button } from './ui';
 import { SelectField } from './form-controls';
 
-export function usePageState(resetKey = '') {
+export function usePageState(resetKey = '', initialSize = 5) {
   const [offset, setOffset] = useState(0);
-  const [pageSize, setSize] = useState(5);
+  const [pageSize, setSize] = useState(initialSize === 10 ? 10 : 5);
   useEffect(() => {
     setOffset(0);
   }, [resetKey]);

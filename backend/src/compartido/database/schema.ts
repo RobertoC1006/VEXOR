@@ -128,6 +128,19 @@ interface InventarioInicial extends Dated {
   confirmado_por: Generated<string | null>;
 }
 export interface Database {
+  'app.negocio_perfil': {
+    negocio_id: string;
+    descripcion: Generated<string | null>;
+    foto: Generated<string | null>;
+    preferencias: JSONColumnType<Record<string, unknown>>;
+  };
+  'app.stock_minimos': {
+    negocio_id: string;
+    local_id: string;
+    producto_id: string;
+    minimo: number | null;
+    version: Generated<number>;
+  };
   'app.productos_fotos': { negocio_id: string; producto_id: string; imagen: string };
   'app.categorias': {
     ejes_variantes: Generated<string[]>;
