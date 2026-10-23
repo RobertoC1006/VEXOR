@@ -13,14 +13,20 @@ export function LocalForm({
   local,
   onSaved,
   onCancel,
+  defaultSale = false,
+  submitLabel,
+  cancelLabel = 'Cancelar',
 }: {
   local?: BusinessLocal;
   onSaved: () => Promise<unknown>;
   onCancel: () => void;
+  defaultSale?: boolean;
+  submitLabel?: string;
+  cancelLabel?: string;
 }) {
   const { base, access } = useBusiness();
   const [name, setName] = useState(local?.nombre ?? ''),
-    [sale, setSale] = useState(local?.habilitado_venta ?? false),
+    [sale, setSale] = useState(local?.habilitado_venta ?? defaultSale),
     [active, setActive] = useState(local?.activo ?? true),
     [confirm, setConfirm] = useState(false);
   const action = useAction();
@@ -34,7 +40,7 @@ export function LocalForm({
     changedState ||
     JSON.stringify(locationValues(local)) !== JSON.stringify(locationValues(location));
   async function save() {
-    const ok = await action.run(
+    await action.run(
       async () => {
         await api(`${base}/locales${local ? `/${local.id}` : ''}`, {
           method: local ? 'PATCH' : 'POST',
@@ -45,13 +51,11 @@ export function LocalForm({
             ...(access.es_propietario ? { activo: active } : {}),
           }),
         });
+        setConfirm(false);
+        await onSaved();
       },
       local ? 'Local actualizado.' : 'Local creado.',
     );
-    if (ok) {
-      setConfirm(false);
-      await onSaved();
-    } else setConfirm(false);
   }
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -109,10 +113,10 @@ export function LocalForm({
         <ActionFeedback {...action} />
         <div className="form-actions">
           <Button type="button" variant="secondary" onClick={onCancel} disabled={action.busy}>
-            Cancelar
+            {cancelLabel}
           </Button>
           <Button type="submit" busy={action.busy} disabled={!name.trim() || !changed}>
-            {local ? 'Guardar local' : 'Crear local'}
+            {submitLabel ?? (local ? 'Guardar local' : 'Crear local')}
           </Button>
         </div>
       </form>

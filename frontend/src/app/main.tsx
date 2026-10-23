@@ -33,6 +33,7 @@ import { PlatformInvitationsPage } from '../proveedor/invitaciones/paginas/invit
 import { NewBusinessInvitationPage } from '../proveedor/invitaciones/paginas/invitation-form';
 import { BusinessArea } from '../comerciante/area';
 import { BusinessSettingsPage } from '../comerciante/negocio/paginas/business-settings-page';
+import { OnboardingPage } from '../comerciante/negocio/paginas/onboarding-page';
 import { LocalsPage } from '../comerciante/locales/paginas/locals-page';
 import { TeamLayout } from '../comerciante/equipo/layout';
 import { TeamPage } from '../comerciante/equipo/paginas/team-page';
@@ -118,6 +119,7 @@ function App() {
                 <Route path="/negocios/:negocioId" element={<BusinessArea />}>
                   <Route index element={<DashboardPage />} />
                   <Route path="configuracion" element={<BusinessSettingsPage />} />
+                  <Route path="onboarding" element={<OnboardingPage />} />
                   <Route path="locales" element={<LocalsPage />} />
                   <Route path="productos" element={<ProductsPage />} />
                   <Route path="inventario" element={<InventoryPage />} />

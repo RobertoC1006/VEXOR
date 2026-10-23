@@ -1,3 +1,5 @@
+import { testLocalInvitationAuth } from './support/onboarding-auth.ts';
+import { testOnboarding } from './support/onboarding.ts';
 import { testDashboardNavigation } from './support/dashboard-navigation.ts';
 import { testVisualCatalog } from './support/visual-catalog.ts';
 import assert from 'node:assert/strict';
@@ -184,6 +186,9 @@ try {
   await testCategoriesRegistration(request,id,database.admin);
   await testVisualCatalog(request, id, database.admin);
   await testDashboardNavigation(request,id);
+  await testOnboarding(request,newBusiness);
+  await testLocalInvitationAuth(database.admin,id(7));
+  results.push('Invitación local: credenciales ficticias, actualización autenticada y sesión renovable correctas');
 
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','https://malicioso.example').expect(403);results.push('CORS rechaza origen ajeno');
   await api.get('/api/v1/me').set('Authorization',`Bearer ${tokens.get(1)}`).set('Origin','http://localhost:5173').expect('Access-Control-Allow-Origin','http://localhost:5173').expect(200);results.push('CORS acepta origen configurado');

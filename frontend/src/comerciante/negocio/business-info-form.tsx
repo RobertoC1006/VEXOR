@@ -9,7 +9,7 @@ import { PhotoPicker } from '../../compartido/componentes/photo-picker';
 import { useBusiness } from './context';
 import { businessTemplates } from './preferences';
 import type { BusinessDetail } from './types';
-export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
+export function BusinessInfoForm({ onContinue }: { onContinue?: () => Promise<unknown> }) {
   const { business, base, can, refresh } = useBusiness();
   const { updateBusiness } = useWorkspace();
   const action = useAction();
@@ -28,10 +28,14 @@ export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
   return (
     <section className="panel onboarding-panel">
       <div className="onboarding-panel-heading">
-        <span className="step-number">1</span>
+        {onContinue && <span className="step-number">1</span>}
         <div>
-          <h2>Cuéntanos sobre tu negocio</h2>
-          <p className="muted">Elige tu rubro y prepara una plantilla que podrás editar.</p>
+          <h2>{onContinue ? 'Cuéntanos sobre tu negocio' : 'Datos de tu negocio'}</h2>
+          <p className="muted">
+            {onContinue
+              ? 'Empecemos por lo esencial. Después podrás ajustar los detalles.'
+              : 'Actualiza tu información cuando lo necesites.'}
+          </p>
         </div>
       </div>
       <form
@@ -63,6 +67,7 @@ export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
             await refresh();
             setPhoto(undefined);
             setTemplate(null);
+            await onContinue?.();
           }, 'Cambios guardados.');
         }}
       >
@@ -101,6 +106,7 @@ export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
               <Field
                 id="business-rubro"
                 label="Rubro del negocio"
+                required={!!onContinue}
                 maxLength={120}
                 value={rubro}
                 placeholder="Escribe o adapta tu rubro"
@@ -135,8 +141,7 @@ export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
               <p>Datos comunes: {template.attributes.join(', ')}.</p>
               <p>Combinaciones sugeridas: {template.axes.join(', ')}.</p>
               <small>
-                Revísala en Preferencias. Se aplica a las fichas nuevas; no modifica tus productos
-                registrados.
+                Tendrás campos sugeridos para empezar. Más adelante podrás adaptarlos en Mi negocio.
               </small>
             </div>
           )}
@@ -147,21 +152,20 @@ export function BusinessInfoForm({ onContinue }: { onContinue: () => void }) {
             <Button
               type="submit"
               busy={action.busy}
-              disabled={!name.trim() || !changed || preparing}
+              disabled={
+                !name.trim() ||
+                (!!onContinue && !rubro.trim()) ||
+                (!onContinue && !changed) ||
+                preparing
+              }
             >
-              Guardar cambios
+              {onContinue ? 'Siguiente' : 'Guardar cambios'}
             </Button>
           )}
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onContinue}
-            disabled={action.busy || changed}
-          >
-            Siguiente: puestos
-          </Button>
         </div>
-        {changed && <p className="field-hint">Guarda los cambios para continuar.</p>}
+        {onContinue && (
+          <p className="field-hint">Al continuar guardamos este paso para que puedas retomarlo.</p>
+        )}
       </form>
     </section>
   );

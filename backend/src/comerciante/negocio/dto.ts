@@ -60,3 +60,8 @@ export class BusinessPatchDto {
   @TrimmedText(80)
   zona_horaria?: string;
 }
+
+export class OnboardingStepDto {
+  @IsIn([1, 2, 3])
+  paso!: number;
+}

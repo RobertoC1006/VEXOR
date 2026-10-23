@@ -26,24 +26,35 @@ export function LocalsPage({ embedded = false }: { embedded?: boolean } = {}) {
   }
   return (
     <>
-      <PageHeading
-        level={embedded ? 2 : 1}
-        title={embedded ? '2. Puestos y almacenes' : 'Puestos y almacenes'}
-        description="Organiza los espacios donde vendes y guardas tu mercadería."
-        action={
-          access.es_propietario && (
-            <Button onClick={() => setEditor('new')}>
-              <Plus size={17} />
-              Nuevo local
-            </Button>
-          )
-        }
-      />
+      {!embedded && (
+        <PageHeading
+          level={embedded ? 2 : 1}
+          title={embedded ? '2. Puestos y almacenes' : 'Puestos y almacenes'}
+          description="Organiza los espacios donde vendes y guardas tu mercadería."
+          action={
+            access.es_propietario && (
+              <Button onClick={() => setEditor('new')}>
+                <Plus size={17} />
+                Nuevo local
+              </Button>
+            )
+          }
+        />
+      )}
+      {embedded && access.es_propietario && (
+        <div className="onboarding-local-actions">
+          <Button onClick={() => setEditor('new')}>
+            <Plus size={17} />
+            Añadir otro local
+          </Button>
+        </div>
+      )}
       {editor && (
         <Modal label="Datos del local" onClose={() => setEditor(null)}>
           <LocalForm
             key={editor === 'new' ? 'new' : editor.id}
             local={editor === 'new' ? undefined : editor}
+            defaultSale={embedded && !locals.some((l) => l.activo && l.habilitado_venta)}
             onCancel={() => setEditor(null)}
             onSaved={saved}
           />
@@ -101,10 +112,12 @@ export function LocalsPage({ embedded = false }: { embedded?: boolean } = {}) {
           </Empty>
         )}
       </section>
-      <p className="quiet-note">
-        <MapPin size={17} />
-        Los estantes y vitrinas se organizarán dentro de cada local al incorporar el inventario.
-      </p>
+      {!embedded && (
+        <p className="quiet-note">
+          <MapPin size={17} />
+          Los estantes y vitrinas se organizarán dentro de cada local al incorporar el inventario.
+        </p>
+      )}
     </>
   );
 }

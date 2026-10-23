@@ -6,7 +6,7 @@ import { Button, Field } from '../../compartido/componentes/ui';
 import { SelectField } from '../../compartido/componentes/form-controls';
 import { useBusiness } from './context';
 import type { BusinessPreferences } from './preferences';
-export function PreferencesForm({ onContinue }: { onContinue: () => void }) {
+export function PreferencesForm() {
   const { business, base, refresh, can } = useBusiness();
   const prefs = business.preferencias;
   const [level, setLevel] = useState(prefs?.nivel_registro ?? 'simple'),
@@ -23,7 +23,6 @@ export function PreferencesForm({ onContinue }: { onContinue: () => void }) {
       .filter(Boolean);
   return (
     <section className="panel onboarding-panel">
-      <h2>3. Preferencias de registro</h2>
       <p className="muted">
         Tu plantilla es un punto de partida. Cada producto puede usar otros campos o un nivel
         distinto.
@@ -41,7 +40,6 @@ export function PreferencesForm({ onContinue }: { onContinue: () => void }) {
             };
             await api(base, { method: 'PATCH', body: JSON.stringify({ preferencias }) });
             await refresh();
-            onContinue();
           }, 'Preferencias guardadas.');
         }}
       >
@@ -85,11 +83,11 @@ export function PreferencesForm({ onContinue }: { onContinue: () => void }) {
         <ActionFeedback {...action} />
         <div className="form-actions">
           {can('negocio.editar') ? (
-            <Button busy={action.busy}>Guardar preferencias y continuar</Button>
+            <Button busy={action.busy}>Guardar preferencias</Button>
           ) : (
-            <Button type="button" onClick={onContinue}>
-              Continuar
-            </Button>
+            <p className="field-hint">
+              Puedes consultar estas preferencias; el propietario puede modificarlas.
+            </p>
           )}
         </div>
       </form>

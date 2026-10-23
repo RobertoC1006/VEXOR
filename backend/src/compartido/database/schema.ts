@@ -129,6 +129,7 @@ interface InventarioInicial extends Dated {
 }
 export interface Database {
   'app.negocio_perfil': {
+    onboarding_paso: Generated<number>;
     negocio_id: string;
     descripcion: Generated<string | null>;
     foto: Generated<string | null>;

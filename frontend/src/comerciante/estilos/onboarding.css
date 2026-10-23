@@ -1,0 +1,126 @@
+.onboarding-flow {
+  max-width: 1060px;
+  margin: auto;
+}
+.onboarding-step-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  background: var(--light-blue, #edf3ff);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+.onboarding-step-note svg {
+  flex-shrink: 0;
+  color: var(--blue);
+}
+.onboarding-step-note h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.onboarding-step-note small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+}
+.onboarding-flow .setup-steps button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.onboarding-review {
+  padding: 32px;
+}
+.onboarding-review > h2 {
+  font-size: 26px;
+  margin: 16px 0 10px;
+}
+.review-check {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #eaf8f2;
+  color: #16714e;
+  display: grid;
+  place-items: center;
+}
+.review-business {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 24px 0;
+  margin-top: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.review-business > div {
+  flex: 1;
+  min-width: 0;
+}
+.review-business p,
+.review-locals p {
+  line-height: 1.7;
+  margin-top: 6px;
+}
+.review-locals {
+  padding: 24px 0;
+}
+.review-locals article {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.onboarding-review-note {
+  padding: 20px;
+  background: var(--canvas, #f5f7fc);
+  border-radius: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.preferences-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px;
+  margin-top: 24px;
+}
+.preferences-entry h2 {
+  font-size: 20px;
+  margin: 12px 0 8px;
+}
+.preferences-entry p {
+  line-height: 1.7;
+  max-width: 600px;
+}
+@media (max-width: 600px) {
+  .onboarding-review {
+    padding: 20px;
+  }
+  .review-business,
+  .preferences-entry {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .onboarding-flow .setup-steps {
+    gap: 6px;
+  }
+  .onboarding-flow .setup-steps button {
+    font-size: 12px;
+    padding: 12px 6px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .onboarding-step-note {
+    padding: 20px;
+  }
+  .onboarding-review > h2 {
+    font-size: 23px;
+  }
+}
+
+.onboarding-local-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}

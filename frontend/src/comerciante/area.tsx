@@ -1,10 +1,37 @@
-import { NavLink, Outlet, useParams } from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useParams, useLocation } from 'react-router-dom';
 import { Building2, House, MapPin, Users, Package, ClipboardList } from 'lucide-react';
 import { AppLayout } from '../compartido/layouts/app-layout';
 import { BusinessProvider, useBusiness } from './negocio/context';
+import { Notice } from '../compartido/componentes/ui';
 
 function BusinessLayout() {
-  const { base, can } = useBusiness();
+  const { base, can, business, access } = useBusiness();
+  const location = useLocation();
+  if ((business.onboarding_paso ?? 3) < 3) {
+    if (!access.es_propietario)
+      return (
+        <AppLayout navigation={<NavLink to="/negocios">Mis negocios</NavLink>}>
+          <Notice>
+            El propietario está preparando este negocio. Podrás empezar cuando termine su
+            configuración inicial.
+          </Notice>
+        </AppLayout>
+      );
+    if (location.pathname !== `${base}/onboarding`)
+      return <Navigate to={`${base}/onboarding`} replace />;
+    return (
+      <AppLayout
+        navigation={
+          <NavLink to={`${base}/onboarding`}>
+            <Building2 size={19} />
+            Configurar mi negocio
+          </NavLink>
+        }
+      >
+        <Outlet />
+      </AppLayout>
+    );
+  }
   return (
     <AppLayout
       navigation={

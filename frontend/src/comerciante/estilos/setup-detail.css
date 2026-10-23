@@ -73,18 +73,6 @@
 .template-preview small {
   color: var(--muted);
 }
-.onboarding-complete {
-  text-align: center;
-  padding: 48px 24px;
-}
-.onboarding-complete svg {
-  color: #218866;
-  margin-bottom: 18px;
-}
-.onboarding-step-note {
-  line-height: 1.7;
-  margin-bottom: 24px;
-}
 .detail-tabs {
   display: flex;
   gap: 12px;
@@ -236,7 +224,7 @@
   }
   .setup-steps {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .setup-steps button {
     padding: 8px;

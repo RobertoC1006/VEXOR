@@ -22,6 +22,7 @@ const files = [
   '20261021000500_plantillas_categorias.sql',
   '20261021000600_fotos_productos.sql',
   '20261022000100_perfil_minimos.sql',
+  '20261023000100_onboarding.sql',
 ];
 const client = new Client({ connectionString: secureDatabaseUrl(migrationUrl) });
 try {
@@ -53,6 +54,12 @@ try {
       )
     ).rows[0].n;
     if (protection !== 6) throw new Error('No se verificó RLS forzada en las seis tablas');
+    const onboarding = (
+      await client.query(
+        "select count(*)::int as n from information_schema.columns where table_schema='app' and table_name='negocio_perfil' and column_name='onboarding_paso'",
+      )
+    ).rows[0].n;
+    if (onboarding !== 1) throw new Error('No se verificó el estado persistente del onboarding');
     await client.query('commit');
     console.log('Migraciones del bloque aplicadas y registradas; RLS forzada verificada.');
   } else await client.query('rollback');

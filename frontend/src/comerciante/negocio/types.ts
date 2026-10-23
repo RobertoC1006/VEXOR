@@ -1,5 +1,6 @@
 import type { BusinessPreferences } from './preferences';
 export interface BusinessDetail {
+  onboarding_paso?: number | null;
   descripcion?: string | null;
   foto?: string | null;
   preferencias?: BusinessPreferences | null;

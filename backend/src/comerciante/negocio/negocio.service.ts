@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { sql, type Transaction } from 'kysely';
 import type { Database } from '../../compartido/database/database.js';
 import { validateJpeg } from '../../compartido/http/image.js';
 import { DatabaseService, type Actor } from '../../compartido/database/database.service.js';
 import { requirePermission } from '../../compartido/database/database.js';
-import { currentMembership } from '../../compartido/autorizacion/authorization.js';
+import { currentMembership, requireOwner } from '../../compartido/autorizacion/authorization.js';
 import { requirePatch } from '../../compartido/http/input.js';
 import { page } from '../../compartido/http/pagination.js';
 import type { BusinessPatchDto } from './dto.js';
@@ -25,12 +25,51 @@ export class BusinessService {
         'p.descripcion',
         'p.foto',
         'p.preferencias',
+        'p.onboarding_paso',
       ])
       .where('n.id', '=', negocioId)
       .executeTakeFirstOrThrow();
   }
   business(actor: Actor, negocioId: string) {
     return this.database.tenant(actor, negocioId, (tx) => this.detail(tx, negocioId));
+  }
+  advanceOnboarding(actor: Actor, negocioId: string, paso: number) {
+    return this.database.tenant(actor, negocioId, async (tx) => {
+      await requireOwner(tx);
+      const business = await tx
+        .selectFrom('app.negocios')
+        .selectAll()
+        .where('id', '=', negocioId)
+        .forUpdate()
+        .executeTakeFirstOrThrow();
+      const profile = await tx
+        .selectFrom('app.negocio_perfil')
+        .select('onboarding_paso')
+        .where('negocio_id', '=', negocioId)
+        .executeTakeFirst();
+      const current = profile?.onboarding_paso ?? 3;
+      if (current === 3) return this.detail(tx, negocioId);
+      if (paso > current + 1)
+        throw new ConflictException('Completa el paso anterior antes de continuar.');
+      if (!business.nombre.trim() || !business.rubro?.trim())
+        throw new BadRequestException('Completa el nombre y el rubro de tu negocio.');
+      if (paso >= 2) {
+        const local = await tx
+          .selectFrom('app.locales')
+          .select('id')
+          .where('negocio_id', '=', negocioId)
+          .where('activo', '=', true)
+          .where('habilitado_venta', '=', true)
+          .executeTakeFirst();
+        if (!local) throw new BadRequestException('Agrega un puesto activo para empezar a vender.');
+      }
+      await tx
+        .updateTable('app.negocio_perfil')
+        .set({ onboarding_paso: Math.max(current, paso) })
+        .where('negocio_id', '=', negocioId)
+        .execute();
+      return this.detail(tx, negocioId);
+    });
   }
   patchBusiness(actor: Actor, negocioId: string, data: BusinessPatchDto) {
     requirePatch(data);

@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentActor } from '../../compartido/autenticacion/actor.decorator.js';
 import type { Actor } from '../../compartido/database/database.service.js';
 import { BusinessService } from './negocio.service.js';
 
-import { BusinessPatchDto } from './dto.js';
+import { BusinessPatchDto, OnboardingStepDto } from './dto.js';
 import { PaginationDto } from '../../compartido/http/pagination.dto.js';
 import { BusinessId } from '../../compartido/http/resource-params.js';
 @ApiTags('Núcleo del negocio')
@@ -28,5 +28,12 @@ export class BusinessController {
     @Query() p: PaginationDto,
   ) {
     return this.core.access(a, n, p);
+  }
+  @Post('onboarding') onboarding(
+    @CurrentActor() a: Actor,
+    @BusinessId() n: string,
+    @Body() d: OnboardingStepDto,
+  ) {
+    return this.core.advanceOnboarding(a, n, d.paso);
   }
 }
