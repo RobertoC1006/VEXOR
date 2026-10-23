@@ -17,10 +17,20 @@ export async function requireInventoryLocal(
 }
 export async function inventoryRights(tx: Transaction<Database>, localId: string) {
   const rights = (
-    await sql<{ ver: boolean; contar: boolean; confirmar: boolean }>`select
+    await sql<{
+      ver: boolean;
+      contar: boolean;
+      confirmar: boolean;
+      transferir: boolean;
+      recibir: boolean;
+      ajustar: boolean;
+    }>`select
     app_private.puede('inventario.ver', ${localId}::uuid) as ver,
     app_private.puede('inventario.contar', ${localId}::uuid) as contar,
-    app_private.puede('inventario.confirmar', ${localId}::uuid) as confirmar`.execute(tx)
+    app_private.puede('inventario.confirmar', ${localId}::uuid) as confirmar,
+    app_private.puede('inventario.transferir', ${localId}::uuid) as transferir,
+    app_private.puede('inventario.recibir', ${localId}::uuid) as recibir,
+    app_private.puede('inventario.ajustar', ${localId}::uuid) as ajustar`.execute(tx)
   ).rows[0];
   if (!rights.ver && !rights.contar && !rights.confirmar)
     await requirePermission(tx, 'inventario.ver', localId);

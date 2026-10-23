@@ -8,22 +8,26 @@ import { VariantsContent } from './variants-panel';
 import { StockGauge } from '../../inventario/componentes/stock-gauge';
 import { catalogPrice, priceLabel, type Product } from '../types';
 import { useBusiness } from '../../negocio/context';
+import { StockDetail } from '../../inventario/componentes/stock-detail';
 export function ProductDetail({
   product,
   localName,
   localId,
   onClose,
   onEdit,
+  onStockChanged,
 }: {
   product: Product;
   localName?: string;
   localId?: string;
   onClose: () => void;
   onEdit: () => void;
+  onStockChanged?: () => Promise<unknown>;
 }) {
   const tabsId = useId();
   const { can, base } = useBusiness();
   const [tab, setTab] = useState('info');
+  const [stockOpen, setStockOpen] = useState(false);
   return (
     <Modal label={`Detalle de ${product.nombre}`} onClose={onClose}>
       <div className="product-detail-hero">
@@ -88,6 +92,9 @@ export function ProductDetail({
         )}
       </div>
       <section role="tabpanel" id={`${tabsId}-panel`} aria-labelledby={`${tabsId}-${tab}`}>
+        <Button variant="secondary" onClick={() => setStockOpen(true)}>
+          Ver existencias por local
+        </Button>
         {tab === 'combinations' ? (
           <VariantsContent parent={product} localId={localId} onEdit={onEdit} />
         ) : (
@@ -147,6 +154,14 @@ export function ProductDetail({
           </>
         )}
       </section>
+      {stockOpen && (
+        <StockDetail
+          productId={product.id}
+          localId={localId ?? ''}
+          onClose={() => setStockOpen(false)}
+          onChanged={onStockChanged ?? (async () => {})}
+        />
+      )}
     </Modal>
   );
 }

@@ -21,7 +21,7 @@ export class InventoryService {
       const rights = await inventoryRights(tx, localId);
       let query = tx
         .selectFrom('app.productos as p')
-        .leftJoin('app.inventario_inicial as i', (join) =>
+        .leftJoin('app.existencias as i', (join) =>
           join
             .onRef('i.negocio_id', '=', 'p.negocio_id')
             .onRef('i.producto_id', '=', 'p.id')

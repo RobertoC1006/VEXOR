@@ -18,6 +18,8 @@ import { CatalogSearch } from '../../productos/componentes/catalog-controls';
 import { useCatalogPage } from '../../productos/use-catalog-page';
 import { CountForm } from '../componentes/count-form';
 import type { InventoryItem, InventoryPermissions } from '../types';
+import { StockDetail } from '../componentes/stock-detail';
+import { StockActivity } from '../componentes/stock-activity';
 
 export function InventoryPage() {
   const { base, can } = useBusiness();
@@ -45,14 +47,10 @@ function InventoryLocals() {
   return (
     <>
       <PageHeading
-        eyebrow="INCORPORA TU MERCADERÍA"
-        title="Inventario inicial"
-        description="Cuenta producto por producto, sin esperar a terminar todo el local."
+        eyebrow="TU MERCADERÍA POR LOCAL"
+        title="Inventario"
+        description="Consulta existencias, traslada mercadería y revisa el stock de cada puesto o almacén."
       />
-      <Notice tone="info">
-        Los productos pendientes de conteo se venden fuera de VEXOR. Crear la ficha o guardar un
-        borrador no confirma existencias.
-      </Notice>
       {locals.length ? (
         <>
           <LocalTabs locals={locals} value={localId} onChange={setSelected} />
@@ -61,7 +59,11 @@ function InventoryLocals() {
               El local indicado no está disponible para tu cuenta. Elige uno de tus locales.
             </Notice>
           ) : (
-            <LocalInventory key={`${localId}:${params.get('producto') ?? ''}`} localId={localId} />
+            <LocalInventory
+              key={`${localId}:${params.get('producto') ?? ''}`}
+              localId={localId}
+              locals={locals}
+            />
           )}
         </>
       ) : (
@@ -74,12 +76,15 @@ function InventoryLocals() {
     </>
   );
 }
-function LocalInventory({ localId }: { localId: string }) {
+function LocalInventory({ localId, locals }: { localId: string; locals: BusinessLocal[] }) {
   const { base } = useBusiness();
   const [params, setParams] = useSearchParams();
   const productId = params.get('producto') ?? undefined;
   const status = params.get('estado') ?? '';
   const autoCount = params.get('contar') === '1';
+  const counting = autoCount || params.get('vista') === 'conteo';
+  const [detail, setDetail] = useState<string | null>(null);
+  const [transfers, setTransfers] = useState(false);
   const consumed = useRef(false);
   const resource = useCatalogPage<
     InventoryItem,
@@ -113,6 +118,66 @@ function LocalInventory({ localId }: { localId: string }) {
   }
   return (
     <>
+      <div className="inventory-view-switch" role="group" aria-label="Vista del inventario">
+        {[
+          ['existencias', 'Existencias'],
+          ['conteo', 'Conteo inicial'],
+        ].map(([value, label]) => (
+          <button
+            type="button"
+            key={value}
+            aria-pressed={counting === (value === 'conteo')}
+            onClick={() => {
+              const next = new URLSearchParams(params);
+              next.delete('contar');
+              next.set('vista', value);
+              setParams(next);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+        <Button variant="secondary" onClick={() => setTransfers(true)}>
+          Ver traslados
+        </Button>
+      </div>
+      {counting && (
+        <Notice tone="info">
+          Los productos pendientes de conteo se venden fuera de VEXOR. Crear la ficha o guardar un
+          borrador no confirma existencias.
+        </Notice>
+      )}
+      {detail && (
+        <StockDetail
+          productId={detail}
+          localId={localId}
+          onClose={() => setDetail(null)}
+          onChanged={resource.refresh}
+        />
+      )}
+      {transfers && data && (
+        <Modal label="Traslados del local" onClose={() => setTransfers(false)}>
+          <StockActivity
+            local={{
+              ...locals.find((l) => l.id === localId)!,
+              ...data.permisos,
+              transferir: !!data.permisos.transferir,
+              recibir: !!data.permisos.recibir,
+              ajustar: !!data.permisos.ajustar,
+            }}
+            locals={locals.map((l) => ({
+              ...l,
+              ver: false,
+              contar: false,
+              confirmar: false,
+              transferir: false,
+              recibir: false,
+              ajustar: false,
+            }))}
+            onChanged={resource.refresh}
+          />
+        </Modal>
+      )}
       {productId && (
         <section className="inventory-context">
           <div>
@@ -215,6 +280,7 @@ function LocalInventory({ localId }: { localId: string }) {
           <MerchandiseTable
             rows={data.items.map((item) => ({
               id: item.id,
+              onOpen: () => setDetail(item.id),
               name: item.modelo_nombre ?? item.nombre,
               code: item.codigo,
               photoVersion: item.foto_version,
@@ -245,12 +311,16 @@ function LocalInventory({ localId }: { localId: string }) {
               active: item.activo,
               actions: (
                 <>
+                  <Button variant="secondary" onClick={() => setDetail(item.id)}>
+                    Ver existencias<span className="visually-hidden"> {item.nombre}</span>
+                  </Button>
                   {data.permisos.confirmar && (
                     <Button variant="ghost" onClick={() => setMinimum(item)}>
                       Configurar mínimo<span className="visually-hidden"> {item.nombre}</span>
                     </Button>
                   )}
-                  {item.estado !== 'confirmado' &&
+                  {counting &&
+                  item.estado !== 'confirmado' &&
                   (data.permisos.contar ||
                     (item.estado === 'preparacion' && data.permisos.confirmar)) ? (
                     <Button

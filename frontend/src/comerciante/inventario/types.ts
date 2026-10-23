@@ -19,6 +19,9 @@ export interface InventoryItem {
   confirmado_en: string | null;
 }
 export interface InventoryPermissions {
+  transferir?: boolean;
+  recibir?: boolean;
+  ajustar?: boolean;
   ver: boolean;
   contar: boolean;
   confirmar: boolean;

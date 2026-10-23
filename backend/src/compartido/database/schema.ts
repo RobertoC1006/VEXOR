@@ -128,6 +128,22 @@ interface InventarioInicial extends Dated {
   confirmado_por: Generated<string | null>;
 }
 export interface Database {
+  'app.existencias': InventarioInicial;
+  'app.stock_movimientos': {
+    id: Generated<string>;
+    negocio_id: string;
+    operacion_id: string;
+    producto_id: string;
+    local_id: string;
+    destino_id: Generated<string | null>;
+    origen_id: Generated<string | null>;
+    traslado_id: Generated<string | null>;
+    tipo: 'ajuste' | 'salida' | 'recepcion';
+    cantidad: number;
+    motivo: string;
+    actor_id: Generated<string>;
+    creado_en: Timestamp;
+  };
   'app.negocio_perfil': {
     onboarding_paso: Generated<number>;
     negocio_id: string;

@@ -127,6 +127,11 @@ function ProductCatalog() {
           localId={localId || undefined}
           localName={locals.find((l) => l.id === localId)?.nombre}
           onClose={() => setDetail(null)}
+          onStockChanged={async () => {
+            const fresh = await resource.refresh();
+            const updated = fresh?.items.find((p) => p.id === detail.id);
+            if (updated) setDetail(updated);
+          }}
           onEdit={() => {
             setEditor(detail);
             setDetail(null);

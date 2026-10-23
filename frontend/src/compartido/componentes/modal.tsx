@@ -22,6 +22,7 @@ export function Modal({
   closeLabel?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const startedOutside = useRef(false);
   const [pending, setPending] = useState(0);
   const trackPending = useCallback((delta: number) => setPending((n) => n + delta), []);
   const blocked = busy || pending > 0;
@@ -46,6 +47,32 @@ export function Modal({
       className="workspace-dialog"
       aria-label={label}
       aria-modal="true"
+      onPointerDown={(e) => {
+        const bounds = e.currentTarget.getBoundingClientRect();
+        startedOutside.current =
+          e.target === e.currentTarget &&
+          (e.clientX < bounds.left ||
+            e.clientX > bounds.right ||
+            e.clientY < bounds.top ||
+            e.clientY > bounds.bottom);
+      }}
+      onClick={(e) => {
+        const outside = startedOutside.current;
+        startedOutside.current = false;
+        const bounds = e.currentTarget.getBoundingClientRect();
+        if (
+          outside &&
+          e.target === e.currentTarget &&
+          !blocked &&
+          (e.clientX < bounds.left ||
+            e.clientX > bounds.right ||
+            e.clientY < bounds.top ||
+            e.clientY > bounds.bottom)
+        ) {
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       onCancel={(e) => {
         e.preventDefault();
         if (!blocked) onClose();

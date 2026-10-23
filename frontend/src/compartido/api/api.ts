@@ -44,8 +44,10 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     const knownErrors: Record<string, string> = {
       CATEGORIA_DUPLICADA: 'Ya existe una categoría con ese nombre en este grupo.',
       CATEGORIA_CIRCULAR: 'Una categoría no puede estar dentro de una de sus subcategorías.',
-      PRODUCTO_CON_CONTEO: 'Este producto ya tiene un conteo. Cambiar su desglose requiere distribuir explícitamente las existencias; conserva su configuración actual.',
-      PRODUCTO_CON_VARIANTES: 'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
+      PRODUCTO_CON_CONTEO:
+        'Este producto ya tiene un conteo. Cambiar su desglose requiere distribuir explícitamente las existencias; conserva su configuración actual.',
+      PRODUCTO_CON_VARIANTES:
+        'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
       VARIANTE_DUPLICADA: 'Ya existe una variante con esas características.',
       CODIGO_PRODUCTO_DUPLICADO: 'Ese código ya identifica un producto de este negocio.',
       LIMITE_PUESTOS_ACTIVOS: 'El plan básico permite un solo puesto activo para venta.',
@@ -54,6 +56,9 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     throw new ApiError(
       response.status,
       knownErrors[body?.error?.code] ??
+        (body?.error?.code === 'HTTP_409' && typeof body?.error?.message === 'string'
+          ? body.error.message
+          : undefined) ??
         messages[response.status] ??
         'No se pudo completar la solicitud. Vuelve a intentar.',
       body?.requestId,

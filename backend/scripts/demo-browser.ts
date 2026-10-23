@@ -7,6 +7,18 @@ import { startAuthServer } from '../tests/support/auth-server.ts';
 // Entirely local fixture: PostgreSQL, signed Auth JWTs and the real Nest/PWA.
 // It never loads .env credentials into the backend or writes to vexor-dev.
 const db = await startTestDatabase();
+const webPort = Number(process.env.VEXOR_DEMO_WEB_PORT ?? 5174);
+const apiPort = Number(process.env.VEXOR_DEMO_API_PORT ?? 3001);
+if (
+  !Number.isInteger(webPort) ||
+  !Number.isInteger(apiPort) ||
+  webPort < 1024 ||
+  apiPort < 1024 ||
+  webPort > 65535 ||
+  apiPort > 65535
+)
+  throw new Error('Puertos de demo inválidos');
+const webOrigin = `http://localhost:${webPort}`;
 const id = (n: number) => `de000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 await db.admin
   .query(`insert into auth.users(id) values('${id(1)}'),('${id(2)}'),('${id(3)}'),('${id(5)}');
@@ -50,6 +62,7 @@ const auth = await startAuthServer(
     { id: id(5), email: 'nuevo.mercado@example.test', confirmed: false },
   ],
   'Vexor-demo-local-2026',
+  webOrigin,
 );
 const { createApp } = await import(pathToFileURL(resolve('dist/backend/app.factory.js')).href);
 const app = await createApp(
@@ -59,18 +72,22 @@ const app = await createApp(
     supabaseUrl: auth.url,
     supabaseKey: 'test-publishable',
     supabaseSecretKey: 'test-secret',
-    invitationRedirectUrl: 'http://localhost:5174/auth/callback',
-    port: 3001,
+    invitationRedirectUrl: `${webOrigin}/auth/callback`,
+    port: apiPort,
     host: '127.0.0.1',
-    origins: ['http://localhost:5174'],
+    origins: [webOrigin],
     production: false,
   },
   true,
 );
-await app.listen(3001, '127.0.0.1');
+await app.listen(apiPort, '127.0.0.1');
+if (process.argv.includes('--stock-qa')) {
+  const { seedStockDemo } = await import('./demo-stock.ts');
+  await seedStockDemo(`http://127.0.0.1:${apiPort}/api/v1`, await auth.token(id(4)), id(23));
+}
 process.env.SUPABASE_URL = auth.url;
 process.env.SUPABASE_PUBLISHABLE_KEY = 'test-publishable';
-process.env.VEXOR_DEV_API_TARGET = 'http://127.0.0.1:3001';
+process.env.VEXOR_DEV_API_TARGET = `http://127.0.0.1:${apiPort}`;
 const vite = await createServer({
   plugins: [
     {
@@ -81,7 +98,7 @@ const vite = await createServer({
     },
   ],
   configFile: 'frontend/vite.config.ts',
-  server: { port: 5174, strictPort: true },
+  server: { port: webPort, strictPort: true },
 });
 // Simulated mailbox, mounted only by this isolated development script.
 function installMailbox(vite: ViteDevServer) {
@@ -101,9 +118,9 @@ function installMailbox(vite: ViteDevServer) {
 }
 await vite.listen();
 console.log(
-  'Demo LOCAL aislada: http://localhost:5174. Usuarios: propietario@example.test, trabajador@example.test, invitado@example.test, qa.mercado@example.test. Contraseña ficticia: Vexor-demo-local-2026. No usar en vexor-dev.',
+  `Demo LOCAL aislada: ${webOrigin}. Usuarios: propietario@example.test, trabajador@example.test, invitado@example.test, qa.mercado@example.test. Contraseña ficticia: Vexor-demo-local-2026. No usar en vexor-dev.`,
 );
-console.log('Invitación ficticia lista para probar: http://localhost:5174/demo');
+console.log(`Invitación ficticia lista para probar: ${webOrigin}/demo`);
 let closed = false;
 async function close() {
   if (closed) return;

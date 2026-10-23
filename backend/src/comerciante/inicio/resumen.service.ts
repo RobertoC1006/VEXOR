@@ -61,7 +61,7 @@ export class SummaryService {
     count(p.id) filter(where i.confirmado_en is not null and m.minimo is null)::int as sin_minimo
     from app.locales l left join app.productos p on p.negocio_id=l.negocio_id and p.activo and p.nivel_registro<>'avanzado'
     and (p.producto_padre_id is null or exists(select 1 from app.productos raiz where raiz.negocio_id=p.negocio_id and raiz.id=p.producto_padre_id and raiz.activo))
-    left join app.inventario_inicial i on i.negocio_id=p.negocio_id and i.producto_id=p.id and i.local_id=l.id
+    left join app.existencias i on i.negocio_id=p.negocio_id and i.producto_id=p.id and i.local_id=l.id
     left join app.stock_minimos m on m.negocio_id=p.negocio_id and m.producto_id=p.id and m.local_id=l.id
     where l.negocio_id=${negocioId}::uuid and l.activo and app_private.accede_local(l.id) and
     (app_private.puede('inventario.ver',l.id) or app_private.puede('inventario.contar',l.id) or app_private.puede('inventario.confirmar',l.id))
@@ -71,7 +71,7 @@ export class SummaryService {
       const alertas = localIds.length
         ? (
             await sql<AlertSummary>`select p.id,p.nombre,raiz.nombre as modelo_nombre,l.id as local_id,l.nombre as local_nombre,i.cantidad,m.minimo,coalesce(raiz.foto_version,p.foto_version) as foto_version
-    from app.productos p join app.inventario_inicial i on i.negocio_id=p.negocio_id and i.producto_id=p.id
+    from app.productos p join app.existencias i on i.negocio_id=p.negocio_id and i.producto_id=p.id
     join app.locales l on l.negocio_id=p.negocio_id and l.id=i.local_id
     join app.stock_minimos m on m.negocio_id=p.negocio_id and m.producto_id=p.id and m.local_id=l.id
     left join app.productos raiz on raiz.negocio_id=p.negocio_id and raiz.id=p.producto_padre_id
@@ -84,7 +84,7 @@ export class SummaryService {
     select 'producto'::text as tipo,p.id,p.nombre,null::uuid as local_id,null::text as local_nombre,p.actualizado_en as fecha
     from app.productos p where p.negocio_id=${negocioId}::uuid and p.producto_padre_id is null
     union all select 'conteo'::text,p.id,coalesce(raiz.nombre || ' · ','') || p.nombre,l.id,l.nombre,i.confirmado_en
-    from app.inventario_inicial i join app.productos p on p.negocio_id=i.negocio_id and p.id=i.producto_id
+    from app.existencias i join app.productos p on p.negocio_id=i.negocio_id and p.id=i.producto_id
     left join app.productos raiz on raiz.negocio_id=p.negocio_id and raiz.id=p.producto_padre_id
     join app.locales l on l.negocio_id=i.negocio_id and l.id=i.local_id
     where i.negocio_id=${negocioId}::uuid and i.confirmado_en is not null and l.id=any(${localIds}::uuid[])

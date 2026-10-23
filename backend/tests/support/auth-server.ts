@@ -14,6 +14,7 @@ export async function startAuthServer(
   database: Client,
   initial: TestUser[],
   browserPassword?: string,
+  browserOrigin = 'http://localhost:5174',
 ) {
   const users = new Map(initial.map((u) => [u.id, u]));
   const delivered: { email: string; kind: string }[] = [];
@@ -27,7 +28,7 @@ export async function startAuthServer(
     user.confirmed = true;
     const refresh = randomUUID();
     refreshes.set(refresh, id);
-    return `http://localhost:5174/auth/callback#${new URLSearchParams({ access_token: await token(id), refresh_token: refresh, type: 'invite' })}`;
+    return `${browserOrigin}/auth/callback#${new URLSearchParams({ access_token: await token(id), refresh_token: refresh, type: 'invite' })}`;
   }
   const keys = await generateKeyPair('RS256');
   const otherKeys = await generateKeyPair('RS256');
@@ -42,7 +43,7 @@ export async function startAuthServer(
   // Optional browser-only fixture support. Never mounted by the application.
   if (browserPassword) {
     api.use((_req, res, next) => {
-      res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+      res.setHeader('Access-Control-Allow-Origin', browserOrigin);
       res.setHeader(
         'Access-Control-Allow-Headers',
         'authorization,apikey,content-type,x-client-info,x-supabase-api-version',
@@ -75,13 +76,11 @@ export async function startAuthServer(
                 req.body.password === (passwords.get(u.id) ?? browserPassword),
             );
       if (!user) {
-        res
-          .status(400)
-          .json({
-            code: 'invalid_credentials',
-            error_code: 'invalid_credentials',
-            msg: 'Invalid credentials',
-          });
+        res.status(400).json({
+          code: 'invalid_credentials',
+          error_code: 'invalid_credentials',
+          msg: 'Invalid credentials',
+        });
         return;
       }
       const refresh = randomUUID();

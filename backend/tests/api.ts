@@ -1,3 +1,4 @@
+import { testStockMovements } from './support/stock-movements.ts';
 import { testLocalInvitationAuth } from './support/onboarding-auth.ts';
 import { testOnboarding } from './support/onboarding.ts';
 import { testDashboardNavigation } from './support/dashboard-navigation.ts';
@@ -186,6 +187,7 @@ try {
   await testCategoriesRegistration(request,id,database.admin);
   await testVisualCatalog(request, id, database.admin);
   await testDashboardNavigation(request,id);
+  await testStockMovements(request,id,database.admin);
   await testOnboarding(request,newBusiness);
   await testLocalInvitationAuth(database.admin,id(7));
   results.push('Invitación local: credenciales ficticias, actualización autenticada y sesión renovable correctas');

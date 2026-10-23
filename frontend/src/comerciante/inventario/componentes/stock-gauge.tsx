@@ -12,11 +12,13 @@ export function StockGauge({
   minimum,
   hint,
   lowCount = 0,
+  compact = false,
 }: {
   lowCount?: number;
   quantity: number | null;
   minimum: number | null;
   hint?: string;
+  compact?: boolean;
 }) {
   const status =
     lowCount > 0
@@ -28,7 +30,7 @@ export function StockGauge({
   const filled = monitored ? Math.min(1, quantity / minimum!) : 0;
   return (
     <div
-      className={`stock-gauge ${color}`}
+      className={`stock-gauge ${color}${compact ? ' compact' : ''}`}
       aria-label={`${quantity === null ? 'Cantidad pendiente' : quantity + ' unidades'}. ${status}${minimum === null ? '' : '. Mínimo ' + minimum}`}
     >
       {monitored && (
@@ -49,12 +51,14 @@ export function StockGauge({
           })}
         </svg>
       )}
-      <strong className="stock-number">
-        {quantity === null ? '—' : quantity}
-        <span className="stock-unit"> unid.</span>
-      </strong>
+      {!compact && (
+        <strong className="stock-number">
+          {quantity === null ? '—' : quantity}
+          <span className="stock-unit"> unid.</span>
+        </strong>
+      )}
       <small>{status}</small>
-      {minimum !== null && <small>Mínimo: {minimum}</small>}
+      {!compact && minimum !== null && <small>Mínimo: {minimum}</small>}
       {hint && <small>{hint}</small>}
     </div>
   );

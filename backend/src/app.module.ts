@@ -1,3 +1,5 @@
+import { MovementsController } from './comerciante/inventario/movimientos.controller.js';
+import { MovementsService } from './comerciante/inventario/movimientos.service.js';
 import { SummaryController } from './comerciante/inicio/resumen.controller.js';
 import { SummaryService } from './comerciante/inicio/resumen.service.js';
 import { Module, type DynamicModule } from '@nestjs/common';
@@ -37,6 +39,7 @@ export class AppModule {
         HealthController,
         ProductsController,
         InventoryController,
+        MovementsController,
         CategoriesController,
         MeController,
         BusinessController,
@@ -53,6 +56,7 @@ export class AppModule {
         ProductsService,
         ProductRegistrationService,
         InventoryService,
+        MovementsService,
         CategoriesService,
         AuthService,
         BusinessService,
