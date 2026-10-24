@@ -8,6 +8,7 @@ export function ConfirmationDialog({
   busy,
   onConfirm,
   onCancel,
+  size = 'standard',
 }: {
   title: string;
   description: string;
@@ -15,9 +16,10 @@ export function ConfirmationDialog({
   busy: boolean;
   onConfirm: () => unknown;
   onCancel: () => void;
+  size?: 'standard' | 'compact';
 }) {
   return (
-    <Modal label={title} onClose={onCancel} busy={busy}>
+    <Modal label={title} onClose={onCancel} busy={busy} size={size}>
       <h2>{title}</h2>
       <p className="field-hint">{description}</p>
       <div className="form-actions">

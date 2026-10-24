@@ -14,12 +14,14 @@ export function Modal({
   busy = false,
   children,
   closeLabel,
+  size = 'standard',
 }: {
   label: string;
   onClose: () => void;
   busy?: boolean;
   children: ReactNode;
   closeLabel?: string;
+  size?: 'standard' | 'compact';
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const startedOutside = useRef(false);
@@ -44,7 +46,7 @@ export function Modal({
   return createPortal(
     <dialog
       ref={ref}
-      className="workspace-dialog"
+      className={`workspace-dialog${size === 'compact' ? ' dialog-compact' : ''}`}
       aria-label={label}
       aria-modal="true"
       onPointerDown={(e) => {

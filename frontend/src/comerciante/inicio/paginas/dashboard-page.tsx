@@ -299,7 +299,7 @@ export function DashboardPage() {
               </div>
               <small>
                 {access.es_propietario ? 'Propietario del negocio' : 'Acceso según tus permisos'} ·
-                Ventas y ticket promedio se incorporarán al módulo de ventas.
+                Las ventas registradas están disponibles en el punto de venta.
               </small>
             </section>
           </div>

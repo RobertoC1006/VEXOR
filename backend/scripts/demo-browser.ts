@@ -81,7 +81,18 @@ const app = await createApp(
   true,
 );
 await app.listen(apiPort, '127.0.0.1');
-if (process.argv.includes('--stock-qa')) {
+if (process.argv.includes('--pos-qa')) {
+  const { seedPosDemo } = await import('./demo-pos.ts');
+  await seedPosDemo(`http://127.0.0.1:${apiPort}/api/v1`, await auth.token(id(4)), id(23));
+  await db.admin.query(`begin;
+    select set_config('vexor.actor_id','${id(4)}',true),set_config('vexor.negocio_id','${id(23)}',true);
+    insert into app.miembros_negocio(id,negocio_id,usuario_id,es_propietario) values('${id(52)}','${id(23)}','${id(12)}',false);
+    insert into app.miembros_locales(negocio_id,miembro_id,local_id) select '${id(23)}','${id(52)}',id from app.locales where negocio_id='${id(23)}' and habilitado_venta;
+    insert into app.roles(id,negocio_id,nombre) values('${id(53)}','${id(23)}','Vendedor POS demo');
+    insert into app.roles_permisos(negocio_id,rol_id,permiso_codigo) values('${id(23)}','${id(53)}','ventas.cobrar'),('${id(23)}','${id(53)}','ventas.descontar');
+    insert into app.miembros_roles(negocio_id,miembro_id,rol_id) values('${id(23)}','${id(52)}','${id(53)}');
+    commit;`);
+} else if (process.argv.includes('--stock-qa')) {
   const { seedStockDemo } = await import('./demo-stock.ts');
   await seedStockDemo(`http://127.0.0.1:${apiPort}/api/v1`, await auth.token(id(4)), id(23));
 }

@@ -123,7 +123,7 @@ export class BusinessService {
           alcance: string;
           permitido: boolean | null;
         }>`select codigo,alcance,
-        case when alcance='negocio' then app_private.puede(codigo) else null end as permitido from app.permisos order by codigo`.execute(
+        case when p.alcance='negocio' then app_private.puede(p.codigo) else exists(select 1 from app.locales l where l.negocio_id=${negocioId}::uuid and l.activo and app_private.puede(p.codigo,l.id)) end as permitido from app.permisos p order by codigo`.execute(
           tx,
         )
       ).rows;

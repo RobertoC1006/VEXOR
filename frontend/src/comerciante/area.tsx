@@ -1,5 +1,13 @@
 import { Navigate, NavLink, Outlet, useParams, useLocation } from 'react-router-dom';
-import { Building2, House, MapPin, Users, Package, ClipboardList } from 'lucide-react';
+import {
+  Building2,
+  House,
+  MapPin,
+  Users,
+  Package,
+  ClipboardList,
+  ShoppingCart,
+} from 'lucide-react';
 import { AppLayout } from '../compartido/layouts/app-layout';
 import { BusinessProvider, useBusiness } from './negocio/context';
 import { Notice } from '../compartido/componentes/ui';
@@ -40,6 +48,13 @@ function BusinessLayout() {
             <House size={19} />
             Inicio
           </NavLink>
+          {can('ventas.cobrar') && (
+            <NavLink to={`${base}/pos`} aria-label="Punto de venta">
+              <ShoppingCart size={19} />
+              <span className="nav-label-desktop">Punto de venta</span>
+              <span className="nav-label-mobile">POS</span>
+            </NavLink>
+          )}
           <NavLink to={`${base}/configuracion`}>
             <Building2 size={19} />
             Mi negocio

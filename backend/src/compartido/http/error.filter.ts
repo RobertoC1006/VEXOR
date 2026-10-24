@@ -33,6 +33,10 @@ const uniqueConflicts: Record<string, { code: string; message: string }> = {
     code: 'VARIANTE_DUPLICADA',
     message: 'Ya existe una variante con esas características',
   },
+  presentaciones_codigo: {
+    code: 'CODIGO_PRESENTACION_DUPLICADO',
+    message: 'Ese código ya identifica un producto, combinación o presentación de este negocio',
+  },
   productos_codigo: {
     code: 'CODIGO_PRODUCTO_DUPLICADO',
     message: 'Ese código ya identifica un producto de este negocio',

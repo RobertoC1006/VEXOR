@@ -24,6 +24,8 @@ const files = [
   '20261022000100_perfil_minimos.sql',
   '20261023000100_onboarding.sql',
   '20261023000200_movimientos_stock.sql',
+  '20261023000300_ventas_pos.sql',
+  '20261023000400_carritos_espera.sql',
 ];
 const client = new Client({ connectionString: secureDatabaseUrl(migrationUrl) });
 try {
@@ -51,10 +53,10 @@ try {
     }
     const protection = (
       await client.query(
-        "select count(*)::int as n from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='app' and c.relname in ('productos','inventario_inicial','categorias','productos_fotos','negocio_perfil','stock_minimos','stock_movimientos') and c.relrowsecurity and c.relforcerowsecurity",
+        "select count(*)::int as n from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='app' and c.relname in ('productos','inventario_inicial','categorias','productos_fotos','negocio_perfil','stock_minimos','stock_movimientos','ventas_politicas','presentaciones','ventas','ventas_lineas','ventas_carritos') and c.relrowsecurity and c.relforcerowsecurity",
       )
     ).rows[0].n;
-    if (protection !== 7) throw new Error('No se verificó RLS forzada en las siete tablas');
+    if (protection !== 12) throw new Error('No se verificó RLS forzada en las doce tablas');
     const onboarding = (
       await client.query(
         "select count(*)::int as n from information_schema.columns where table_schema='app' and table_name='negocio_perfil' and column_name='onboarding_paso'",

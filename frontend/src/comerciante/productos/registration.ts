@@ -1,3 +1,5 @@
+import { moneyValue } from '../../compartido/dinero/money';
+export { moneyValue } from '../../compartido/dinero/money';
 import type { Attribute, Product } from './types';
 
 export interface CombinationDraft {
@@ -14,11 +16,6 @@ export const cleanAttributes = (attributes: Attribute[]) =>
   attributes
     .filter((a) => a.nombre.trim() && a.valor.trim())
     .map((a) => ({ nombre: a.nombre.trim(), valor: a.valor.trim() }));
-export function moneyValue(value: string) {
-  if (!value.trim()) return null;
-  const [whole, decimal] = value.trim().replace(',', '.').split('.');
-  return `${whole.replace(/^0+(?=\d)/, '')}${decimal === undefined ? '' : `.${decimal}`}`;
-}
 export function initialAxes(
   product?: Product,
   combinations: Product[] = [],

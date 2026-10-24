@@ -133,7 +133,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - **Campañas de alta afluencia:** el sistema debe ayudar durante estos picos sin convertir el registro en una demora que haga perder ventas. Su uso y configuración se adaptan al negocio, rubro y forma real de trabajo; una fecha o rubro no obliga a cambiar la venta habitual.
 - La vendedora no tiene que registrar cada producto que muestra al cliente. Registra lo que se decide comprar.
 - Habrá venta directa y carritos en espera para atender simultáneamente a varios clientes.
-- Agregar un producto a un carrito no descuenta existencias. El descuento ocurre al completar la venta y registrar su pago; falta precisar el tratamiento de cobros parciales.
+- Agregar un producto a un carrito no descuenta existencias. El descuento ocurre al completar la venta y registrar su pago; no se admiten abonos, crédito ni cobros parciales: la venta se completa con el total cubierto en una sola operación, incluso con pagos mixtos.
 - La venta habitual no debe exigir identificar al comprador.
 - Debe permitir seleccionar productos y escanear códigos. Comprar un lector externo no será obligatorio.
 - Los productos sin código deben poder registrarse y encontrarse con nombres que reconozcan los comerciantes.
@@ -176,7 +176,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - El usuario aceptó como recorrido recomendado elegir puesto, preparar ubicaciones, registrar productos, asociar códigos, definir presentaciones y contar existencias iniciales. Debe adaptarse a la incorporación gradual y al rubro.
 - **Inventario inicial por etapas:** cada producto empieza a descontar existencias cuando se confirma su conteo, sin esperar a terminar todo el puesto.
 - **Un artículo sin registrar o con ficha creada pero conteo inicial sin confirmar se vende fuera de VEXOR, sin registrar esa venta en el sistema.** No se exige contar primero para realizar la venta física. El usuario lo trata igual que un producto aún no creado; no introducir una venta libre ni inventar existencias para registrarlo.
-- **Existencia confirmada en cero con una unidad física disponible:** venderla en VEXOR o corregir esa diferencia requiere autorización del propietario o de un rol con los permisos correspondientes. El flujo concreto de corrección queda por detallar.
+- **Existencia confirmada en cero o insuficiente:** bloquear el cobro; el propietario o alguien con permiso de ajustar inventario corrige primero la diferencia mediante el ajuste existente. No se permiten saldos negativos.
 - **Dos modos de ubicación configurables:** por defecto, total por puesto con ubicaciones de referencia; el negocio puede activar cantidades exactas por ubicación.
 
 ### Almacenes y traslados
@@ -185,6 +185,15 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - El traslado tiene dos momentos: registrar la salida en el origen y confirmar la entrada en el destino cuando llega la mercadería. La salida no equivale a recepción automática.
 - Ejemplo del usuario: enviar un producto del puesto B al puesto A y registrar su entrada en A solo al llegar.
 
+### Reglas de Ventas/POS confirmadas
+
+- Pago completo en una sola operación; sin crédito, abonos ni saldo pendiente.
+- Cobro con pago único (efectivo, Yape o Plin) o mixto combinando esos tres medios; sin transferencia. Mostrar total, asignación y faltante antes de un único botón “Cobrar venta”. En pago mixto bastan los importes aportados; no repetir efectivo asignado ni exigir efectivo recibido. Ofrecer “Calcular vuelto” opcional; sin usarlo, registrar efectivo recibido igual al aporte, sin vuelto. En pago único en efectivo conservar recibido y vuelto. Resumen del carrito visible al lado en computadora y desplegable en celular; sin pantalla adicional de confirmación previa. Tras registrar, modal breve con total, medios, vuelto si hay efectivo y “Nueva venta”.
+- Descuento sobre el total, con límite en soles configurable por el propietario para vendedores; el propietario puede superarlo en su propia venta. En el POS se negocia con un único campo “Dejar total en S/”, mostrando la rebaja resultante.
+- Un precio pendiente se registra primero en el catálogo por alguien con permiso para cambiar precios; no se vende sin precio ni se convierte en cero.
+- Presentaciones por producto/combinación, con equivalencia configurable en unidades base y precio propio.
+- Stock confirmado insuficiente: bloquear cobro, sin saldos negativos; quien tenga permiso corrige mediante el ajuste existente antes de vender.
+
 ### Clientes frecuentes y descuentos
 
 - La venta sigue sin exigir identificar al comprador. Se quiere una ficha opcional para clientes recurrentes, con nombre y teléfono, sin exigir DNI; este puede añadirse si el cliente lo brinda voluntariamente. Los campos mínimos exactos quedan por definir.
@@ -192,7 +201,7 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 - Los descuentos deben poder aplicarse a cualquier comprador, nuevo o frecuente, sin obligarlo a registrarse.
 - El propietario configura las políticas y límites de descuento.
 - Una excepción de descuento se aplica únicamente a la venta concreta; no concede al vendedor permiso para cambiar el límite general de descuentos.
-- En la venta se debe poder negociar indicando el total final o el descuento en soles: tres productos de S/18 suman S/54; cobrar S/50 equivale a descontar S/4. La interfaz concreta queda por diseñar y debe ser amigable.
+- En la venta se negocia indicando el total final: tres productos de S/18 suman S/54; cobrar S/50 equivale a descontar S/4. El carrito muestra el campo directamente y tarjetas de totales cercanos redondeados hacia abajo (S/68 → S/65 o S/60; S/105 → S/100 o S/95), sujetos al límite autorizado. El vendedor elige una tarjeta o escribe otro monto; nunca se aplica automáticamente.
 - Las recomendaciones de productos a partir del historial, especialmente mediante IA, quedan como idea para explorar después. No se ha aprobado su implementación ni elegido proveedor o modelo para esta función; esto no revoca la ayuda básica con IA ya solicitada.
 
 ### Equipo, control e IA
@@ -257,9 +266,9 @@ Las instrucciones posteriores del usuario prevalecen. Mantener este documento al
 
 - En la venta, ofrecer “Agregar cliente” como acción opcional, con búsqueda de fichas existentes antes de crear otra. Considerar nombre o apodo y teléfono opcional; no asumir que el nombre identifica de forma única ni que un teléfono no pueda compartirse.
 - Consultar el historial desde la ficha del cliente dentro del negocio, según permisos del personal.
-- Mostrar una acción “Aplicar descuento” con dos entradas alternativas: “Dejar total en” y “Descontar S/”. Calcular ambas sobre el mismo descuento y mostrar subtotal, descuento y total final, sin acumular dos rebajas por usar las dos entradas.
+- Mostrar “Dejar total en S/” dentro del carrito, sin modal ni selector de tipo de descuento; reutilizar el mismo cálculo de rebaja para el total escrito o sugerido y mostrar subtotal, descuento y total final.
 - Empezar por descuento sobre el total de la venta; el descuento por producto, porcentajes y promociones automáticas aún no están definidos.
-- Conservar precios originales, descuento, total cobrado y trabajador responsable en el registro de venta. Proponer permisos de descuento por rol, límites por venta y autorización del propietario para excepciones; el comportamiento offline requiere definición.
+- Conservar precios originales, descuento, total cobrado y trabajador responsable. Regla confirmada: permiso para aplicar descuentos, límite por venta en soles configurable por el propietario y posibilidad del propietario de superarlo en su propia venta; el comportamiento offline requiere definición.
 - Mostrar productos comprados anteriormente o con mayor frecuencia sin necesitar IA. No conceder descuentos automáticos por ser cliente frecuente ni interpretar el historial como autorización para enviar mensajes.
 
 ## Mapa de módulos propuesto

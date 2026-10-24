@@ -1,18 +1,8 @@
+import { localDemoClient } from './demo-client.ts';
 import { randomUUID } from 'node:crypto';
 /** Seeds only the disposable local server started by demo-browser; never a remote URL. */
 export async function seedStockDemo(base: string, token: string, businessId: string) {
-  if (new URL(base).hostname !== '127.0.0.1')
-    throw new Error('La prueba de stock requiere la demo local');
-  async function request(path: string, body?: object, method = 'POST'): Promise<any> {
-    const response = await fetch(`${base}/negocios/${businessId}${path}`, {
-      method: body ? method : 'GET',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
-    if (!response.ok)
-      throw new Error(`Falló preparar la demo de stock: ${response.status} ${path}`);
-    return response.json();
-  }
+  const request = localDemoClient(base, token, businessId);
   const locals = (await request('/locales?limit=100')).items;
   const warehouse = locals.find((l: any) => !l.habilitado_venta);
   const shop = locals.find((l: any) => l.habilitado_venta);

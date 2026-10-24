@@ -8,6 +8,7 @@
   "scripts": {
     "build": "npm run build:api && npm run build:web",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.runtime dist/backend/main.js",
+    "test:ventas": "npm run build:api && node --import tsx backend/tests/ventas.ts",
     "test:api": "npm run build:api && node --import tsx backend/tests/api.ts",
     "db:provision-runtime": "node --env-file-if-exists=.env --import tsx backend/scripts/provision-runtime.ts",
     "db:bootstrap-admin": "node --env-file-if-exists=.env --import tsx backend/scripts/bootstrap-platform-admin.ts",

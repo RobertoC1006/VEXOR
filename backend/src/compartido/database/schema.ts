@@ -138,7 +138,7 @@ export interface Database {
     destino_id: Generated<string | null>;
     origen_id: Generated<string | null>;
     traslado_id: Generated<string | null>;
-    tipo: 'ajuste' | 'salida' | 'recepcion';
+    tipo: 'ajuste' | 'salida' | 'recepcion' | 'venta';
     cantidad: number;
     motivo: string;
     actor_id: Generated<string>;

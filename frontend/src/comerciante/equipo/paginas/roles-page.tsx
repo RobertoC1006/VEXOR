@@ -62,9 +62,9 @@ export function RolesPage() {
       />
       <ActionFeedback {...action} />
       <p className="field-hint">
-        El listado es el mismo para todos los roles; lo que cambia es qué acciones marcas. Por ahora
-        incluye la configuración del negocio, los locales y la consulta del equipo. Los permisos de
-        ventas, inventario, caja y comprobantes se incorporarán con esos módulos.
+        El listado es el mismo para todos los roles; lo que cambia es qué acciones marcas. Incluye
+        las acciones disponibles de configuración, locales, equipo, productos, inventario y ventas.
+        Los permisos de otros módulos se incorporarán cuando estén disponibles.
       </p>
       {creating && (
         <Modal label="Nuevo rol" onClose={() => setCreating(false)}>

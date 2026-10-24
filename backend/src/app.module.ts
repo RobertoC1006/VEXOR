@@ -1,3 +1,6 @@
+import { CartsService } from './comerciante/ventas/carritos.service.js';
+import { SalesController } from './comerciante/ventas/ventas.controller.js';
+import { SalesService } from './comerciante/ventas/ventas.service.js';
 import { MovementsController } from './comerciante/inventario/movimientos.controller.js';
 import { MovementsService } from './comerciante/inventario/movimientos.service.js';
 import { SummaryController } from './comerciante/inicio/resumen.controller.js';
@@ -35,6 +38,7 @@ export class AppModule {
     return {
       module: AppModule,
       controllers: [
+        SalesController,
         SummaryController,
         HealthController,
         ProductsController,
@@ -50,6 +54,8 @@ export class AppModule {
         PlatformInvitationsController,
       ],
       providers: [
+        CartsService,
+        SalesService,
         { provide: CONFIG, useValue: config },
         SummaryService,
         DatabaseService,

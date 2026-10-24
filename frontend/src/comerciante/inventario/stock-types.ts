@@ -25,7 +25,7 @@ export interface StockDetail {
 }
 export interface Movement {
   id: string;
-  tipo: 'ajuste' | 'salida' | 'recepcion';
+  tipo: 'ajuste' | 'salida' | 'recepcion' | 'venta';
   local_id: string;
   destino_id: string | null;
   producto_id: string;

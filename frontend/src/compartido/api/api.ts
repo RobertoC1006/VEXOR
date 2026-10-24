@@ -49,6 +49,8 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       PRODUCTO_CON_VARIANTES:
         'Este producto tiene variantes. Conserva el nivel avanzado para mantener sus registros.',
       VARIANTE_DUPLICADA: 'Ya existe una variante con esas características.',
+      CODIGO_PRESENTACION_DUPLICADO:
+        'Ese código ya identifica un producto, combinación o presentación de este negocio.',
       CODIGO_PRODUCTO_DUPLICADO: 'Ese código ya identifica un producto de este negocio.',
       LIMITE_PUESTOS_ACTIVOS: 'El plan básico permite un solo puesto activo para venta.',
       NOMBRE_ROL_DUPLICADO: 'Ya existe un rol con ese nombre en este negocio.',

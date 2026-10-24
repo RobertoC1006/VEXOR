@@ -309,10 +309,6 @@ nav a > .count {
   white-space: nowrap;
 }
 
-
-
-
-
 .welcome-panel {
   display: flex;
   align-items: center;
@@ -490,6 +486,15 @@ nav a > .count {
   color: #7d8ba1;
 }
 .bottom-nav,
+.nav-label-mobile {
+  display: none;
+}
+.bottom-nav .nav-label-desktop {
+  display: none;
+}
+.bottom-nav .nav-label-mobile {
+  display: inline;
+}
 .mobile-account {
   display: none;
 }

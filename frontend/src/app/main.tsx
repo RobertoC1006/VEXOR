@@ -1,3 +1,4 @@
+import { PosPage } from '../comerciante/ventas/paginas/pos-page';
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -121,6 +122,7 @@ function App() {
                   <Route path="configuracion" element={<BusinessSettingsPage />} />
                   <Route path="onboarding" element={<OnboardingPage />} />
                   <Route path="locales" element={<LocalsPage />} />
+                  <Route path="pos" element={<PosPage />} />
                   <Route path="productos" element={<ProductsPage />} />
                   <Route path="inventario" element={<InventoryPage />} />
                   <Route path="equipo" element={<TeamLayout />}>

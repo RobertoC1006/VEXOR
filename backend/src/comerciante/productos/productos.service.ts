@@ -203,7 +203,14 @@ export class ProductsService {
   }
   photo(actor: Actor, negocioId: string, id: string) {
     return this.database.tenant(actor, negocioId, async (tx) => {
-      await requireProductRead(tx);
+      const access = (
+        await sql<{
+          ok: boolean;
+        }>`select app_private.puede('productos.ver') or app_private.puede('productos.gestionar') or exists(select 1 from app.locales l where l.negocio_id=${negocioId}::uuid and l.activo and l.habilitado_venta and app_private.puede('ventas.cobrar',l.id)) as ok`.execute(
+          tx,
+        )
+      ).rows[0];
+      if (!access.ok) await requirePermission(tx, 'productos.ver');
       return tx
         .selectFrom('app.productos as p')
         .leftJoin('app.productos_fotos as f', (join) =>

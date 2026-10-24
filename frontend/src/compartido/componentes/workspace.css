@@ -13,6 +13,9 @@
 .workspace-dialog::backdrop {
   background: #101b3c80;
 }
+.workspace-dialog.dialog-compact {
+  width: min(560px, calc(100% - 32px));
+}
 .dialog-navigation {
   min-height: 68px;
   position: sticky;

@@ -116,7 +116,7 @@ export function AppLayout({
   const mobileLinks = flatten(links).filter((node, index) => {
     if (!navigation) return index < 3;
     if (!isValidElement<{ to?: string }>(node)) return false;
-    return index === 0 || /\/(productos|inventario)$/.test(node.props.to ?? '');
+    return index === 0 || /\/(pos|productos|inventario)$/.test(node.props.to ?? '');
   });
   return (
     <div className="app-shell">

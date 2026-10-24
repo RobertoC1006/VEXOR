@@ -66,7 +66,9 @@ export function StockActivity({
                       ? `${locals.find((l) => l.id === m.local_id)?.nombre ?? 'Origen'} → ${locals.find((l) => l.id === m.destino_id)?.nombre ?? 'Destino'}`
                       : m.tipo === 'ajuste'
                         ? 'Ajuste de existencias'
-                        : 'Recepción de traslado'}
+                        : m.tipo === 'venta'
+                          ? 'Venta POS'
+                          : 'Recepción de traslado'}
                   </p>
                   <small>
                     {new Date(m.creado_en).toLocaleString('es-PE')} · {m.motivo}
@@ -74,7 +76,11 @@ export function StockActivity({
                 </div>
                 <div className="movement-quantity">
                   <strong>
-                    {m.tipo === 'ajuste' && m.cantidad > 0 ? '+' : ''}
+                    {m.tipo === 'ajuste' && m.cantidad > 0
+                      ? '+'
+                      : m.tipo === 'venta' || m.tipo === 'salida'
+                        ? '−'
+                        : ''}
                     {m.cantidad} unid.
                   </strong>
                   {m.tipo === 'salida' && (
