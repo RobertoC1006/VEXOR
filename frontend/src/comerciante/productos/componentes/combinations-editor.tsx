@@ -1,3 +1,4 @@
+import { MoneyField } from '../../../compartido/dinero/money-field';
 import { useClientPage, ClientPager } from '../../../compartido/componentes/pagination';
 import { DifferencesEditor } from './differences-editor';
 import { Button, Field } from '../../../compartido/componentes/ui';
@@ -125,7 +126,7 @@ export function CombinationsEditor({
             />
             <div className="form-grid">
               {(['precio', 'costo'] as const).map((key) => (
-                <Field
+                <MoneyField
                   key={key}
                   id={`${row.key}-${key}`}
                   label={
@@ -133,7 +134,7 @@ export function CombinationsEditor({
                       ? 'Precio de esta combinación (S/, opcional)'
                       : 'Costo de esta combinación (S/, opcional)'
                   }
-                  inputMode="decimal"
+
                   pattern="[0-9]{1,12}([.,][0-9]{1,2})?"
                   value={row[key]}
                   placeholder="Pendiente"

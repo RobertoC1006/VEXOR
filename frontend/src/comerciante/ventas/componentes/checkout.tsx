@@ -1,10 +1,11 @@
+import { MoneyField } from '../../../compartido/dinero/money-field';
 import { useAction } from '../../../compartido/api/use-action';
 import { useRef, useState } from 'react';
 import { Layers, Wallet } from 'lucide-react';
 import { CheckoutCart } from './checkout-cart';
 import { PaymentBadge, paymentMethods } from './payment-detail';
 import { Modal } from '../../../compartido/componentes/modal';
-import { Button, Field, Notice } from '../../../compartido/componentes/ui';
+import { Button, Notice } from '../../../compartido/componentes/ui';
 import { api, ApiError } from '../../../compartido/api/api';
 import { useBusiness } from '../../negocio/context';
 import { cents, decimal, payment, soles } from '../amounts';
@@ -146,10 +147,10 @@ export function Checkout({
                 {paymentMethods.map((method) => (
                   <div className="pos-payment-row" key={method.id}>
                     <PaymentBadge method={method} />
-                    <Field
+                    <MoneyField
                       id={`pos-${method.id}`}
                       label={`${method.label} (S/)`}
-                      inputMode="decimal"
+
                       value={amounts[method.id]}
                       onChange={(e) => {
                         const setters = { efectivo: setCash, yape: setYape, plin: setPlin };
@@ -166,10 +167,10 @@ export function Checkout({
                   <span>Parte de la venta en efectivo</span>
                   <strong>{soles(total)}</strong>
                 </div>
-                <Field
+                <MoneyField
                   id="pos-received"
                   label="Efectivo recibido (S/)"
-                  inputMode="decimal"
+
                   value={received}
                   onChange={(e) => setReceived(e.target.value)}
                 />

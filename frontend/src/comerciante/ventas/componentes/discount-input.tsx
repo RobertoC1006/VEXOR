@@ -1,5 +1,6 @@
+import { MoneyField } from '../../../compartido/dinero/money-field';
 import { useEffect, useState } from 'react';
-import { Button, Field } from '../../../compartido/componentes/ui';
+import { Button } from '../../../compartido/componentes/ui';
 import { cents, decimal, soles, suggestedTotals } from '../amounts';
 
 export function DiscountInput({
@@ -42,10 +43,10 @@ export function DiscountInput({
 
   return (
     <section className="pos-discount" aria-label="Descuento de la venta">
-      <Field
+      <MoneyField
         id="pos-discount"
         label="Dejar total en S/"
-        inputMode="decimal"
+
         value={value}
         disabled={disabled}
         aria-invalid={!valid}

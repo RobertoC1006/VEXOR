@@ -1,3 +1,4 @@
+import { MoneyField } from '../../../compartido/dinero/money-field';
 import { ProductPhotoField } from './product-photo';
 import { useState, type FormEvent } from 'react';
 import { api, listAll } from '../../../compartido/api/api';
@@ -268,7 +269,7 @@ function ProductFields({
             <>
               <div className="form-grid">
                 {(['precio', 'costo'] as const).map((key) => (
-                  <Field
+                  <MoneyField
                     key={key}
                     id={`product-${key}`}
                     label={
@@ -276,7 +277,7 @@ function ProductFields({
                         ? 'Precio por unidad (S/, opcional)'
                         : 'Costo por unidad (S/, opcional)'
                     }
-                    inputMode="decimal"
+
                     pattern="[0-9]{1,12}([.,][0-9]{1,2})?"
                     placeholder="Pendiente"
                     value={values[key]}

@@ -1,3 +1,4 @@
+import { MoneyField } from '../../../compartido/dinero/money-field';
 import { useAction } from '../../../compartido/api/use-action';
 import { useState } from 'react';
 import { CodeField } from '../../../compartido/escaneo/code-field';
@@ -41,10 +42,10 @@ export function PolicyForm({
           Máximo por venta para trabajadores con permiso de aplicar descuentos. El propietario puede
           superar este límite en su propia venta.
         </p>
-        <Field
+        <MoneyField
           id="discount-limit"
           label="Límite en soles"
-          inputMode="decimal"
+
           value={limit}
           onChange={(e) => setLimit(e.target.value)}
         />
@@ -134,10 +135,10 @@ export function PresentationForm({
           value={units}
           onChange={(e) => setUnits(e.target.value)}
         />
-        <Field
+        <MoneyField
           id="presentation-price"
           label="Precio de la presentación (S/)"
-          inputMode="decimal"
+
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />

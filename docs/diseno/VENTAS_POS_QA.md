@@ -11,6 +11,9 @@ Publicación autorizada por el usuario el 24/10/2026 en main, Vercel y Render.
 - Comprador general, sin registro obligatorio.
 - Negociación directa mediante “Dejar total en S/”, tarjetas de totales cercanos,
   descuento visible y opción de quitarlo. Sin porcentajes ni aplicación automática.
+- Campos de monto compartidos para pagos, negociación, límites, precios y costos:
+  el cero inicial se reemplaza al escribir; se eliminan ceros sobrantes al pegar
+  y se conservan separadores decimales e importes como `0.50`. No afecta códigos.
 - Pago único: efectivo, Yape o Plin. Pago mixto: importes por esos tres medios.
   La suma debe cubrir todo el total; sin crédito, abonos ni transferencia.
 - En mixto el campo efectivo es el dinero recibido. El vuelto se calcula automáticamente:
@@ -44,7 +47,7 @@ migraciones durante el arranque ni el despliegue del servidor.
 ## Verificación
 
 - Typecheck y compilación de frontend/backend correctos.
-- 102 pruebas de interfaz; 521 comprobaciones HTTP/integración.
+- 105 pruebas de interfaz; 521 comprobaciones HTTP/integración.
 - Migraciones desde cero: 71 comprobaciones del núcleo, 23 de invitaciones
   y limpieza del contexto al reutilizar conexiones.
 - Pruebas POS con PostgreSQL temporal: pagos, vuelto, descuentos, presentaciones,
