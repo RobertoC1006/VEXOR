@@ -36,29 +36,22 @@ export function Checkout({
   });
   const [yape, setYape] = useState(request.current?.pagos.yape ?? '0'),
     [plin, setPlin] = useState(request.current?.pagos.plin ?? '0'),
-    [cash, setCash] = useState(request.current?.pagos.efectivo ?? decimal(total)),
+    [cash, setCash] = useState(request.current?.efectivo_recibido ?? decimal(total)),
     [received, setReceived] = useState(request.current?.efectivo_recibido ?? '');
   const action = useAction();
   const { busy, error } = action;
   const [uncertain, setUncertain] = useState(!!request.current);
-  const [calculateChange, setCalculateChange] = useState(
-    () =>
-      (cents(request.current?.efectivo_recibido ?? '0') ?? 0) >
-      (cents(request.current?.pagos.efectivo ?? '0') ?? 0),
-  );
-  const hasCash = (cents(cash) ?? 0) > 0;
-  const receivedValue = mode === 'mixto' && (!calculateChange || !hasCash) ? cash : received;
+  const receivedValue = mode === 'mixto' ? cash : received;
   const values = payment(total, yape, plin, receivedValue || '0');
   const amounts = { efectivo: cash, yape, plin };
-  const parsed = [cents(cash), cents(yape), cents(plin)];
-  const assigned = parsed.some((value) => value === null)
+  const parsed = [cents(receivedValue || '0'), cents(yape), cents(plin)];
+  const collected = parsed.some((value) => value === null)
     ? null
     : parsed.reduce<number>((sum, value) => sum + value!, 0);
-  const complete = assigned === total && !!values && values.remaining === 0;
+  const complete = !!values && values.remaining === 0;
   const locked = busy || uncertain;
   function choose(value: string) {
     setMode(value);
-    setCalculateChange(false);
     setCash(value === 'efectivo' ? decimal(total) : '0');
     setYape(value === 'yape' ? decimal(total) : '0');
     setPlin(value === 'plin' ? decimal(total) : '0');
@@ -146,7 +139,10 @@ export function Checkout({
           <fieldset disabled={locked} className="pos-payment-fields">
             {mode === 'mixto' && (
               <>
-                <p>Distribuye el total entre efectivo, Yape y Plin.</p>
+                <p>
+                  Ingresa lo recibido en efectivo, Yape y Plin. El vuelto se calcula
+                  automáticamente.
+                </p>
                 {paymentMethods.map((method) => (
                   <div className="pos-payment-row" key={method.id}>
                     <PaymentBadge method={method} />
@@ -158,36 +154,18 @@ export function Checkout({
                       onChange={(e) => {
                         const setters = { efectivo: setCash, yape: setYape, plin: setPlin };
                         setters[method.id](e.target.value);
-                        if (method.id === 'efectivo' && cents(e.target.value) === 0) {
-                          setReceived('0');
-                          setCalculateChange(false);
-                        }
                       }}
                     />
                   </div>
                 ))}
               </>
             )}
-            {hasCash && mode === 'mixto' && (
-              <Button
-                variant="ghost"
-                aria-expanded={calculateChange}
-                onClick={() => {
-                  if (!calculateChange) setReceived(decimal(cents(cash)!));
-                  setCalculateChange(!calculateChange);
-                }}
-              >
-                {calculateChange ? 'No calcular vuelto' : 'Calcular vuelto'}
-              </Button>
-            )}
-            {hasCash && (mode !== 'mixto' || calculateChange) && (
+            {mode === 'efectivo' && (
               <div className="pos-cash-detail">
-                {mode !== 'mixto' && (
-                  <div>
-                    <span>Asignado en efectivo</span>
-                    <strong>{soles(cents(cash)!)}</strong>
-                  </div>
-                )}
+                <div>
+                  <span>Parte de la venta en efectivo</span>
+                  <strong>{soles(total)}</strong>
+                </div>
                 <Field
                   id="pos-received"
                   label="Efectivo recibido (S/)"
@@ -195,14 +173,10 @@ export function Checkout({
                   value={received}
                   onChange={(e) => setReceived(e.target.value)}
                 />
-                <Button variant="secondary" onClick={() => setReceived(decimal(cents(cash)!))}>
+                <Button variant="secondary" onClick={() => setReceived(decimal(total))}>
                   Importe exacto
                 </Button>
-                <div>
-                  <span>Vuelto</span>
-                  <strong>{soles(Math.max(0, (cents(received) ?? 0) - (cents(cash) ?? 0)))}</strong>
-                </div>
-                {(cents(received || '0') ?? 0) < (cents(cash) ?? 0) && (
+                {(cents(received || '0') ?? 0) < total && (
                   <p className="pos-warning">Falta recibir efectivo para cubrir esta parte.</p>
                 )}
               </div>
@@ -214,20 +188,28 @@ export function Checkout({
               <dd>{soles(total)}</dd>
             </div>
             <div>
-              <dt>Monto asignado</dt>
-              <dd>{assigned === null ? 'Revisa los importes' : soles(assigned)}</dd>
+              <dt>Monto recibido</dt>
+              <dd>{collected === null ? 'Revisa los importes' : soles(collected)}</dd>
             </div>
             <div>
-              <dt>{assigned !== null && assigned > total ? 'Exceso asignado' : 'Faltante'}</dt>
-              <dd>{assigned === null ? '—' : soles(Math.abs(total - assigned))}</dd>
+              <dt>Faltante</dt>
+              <dd>{values ? soles(values.remaining) : '—'}</dd>
             </div>
           </dl>
-          {(assigned === null ||
-            assigned > total ||
-            (hasCash && cents(receivedValue || '0') === null)) && (
+          {values && (
+            <div className="pos-checkout-total" aria-live="polite">
+              <span>Vuelto a entregar</span>
+              <strong>{soles(values.change)}</strong>
+            </div>
+          )}
+          {!values && (
             <Notice>
-              Revisa los importes: la suma debe coincidir con el total. El vuelto corresponde solo
-              al efectivo recibido.
+              {(cents(yape) ?? 0) + (cents(plin) ?? 0) > total
+                ? 'Yape y Plin superan el total de la venta. Revisa esos importes; el vuelto se entrega solo del efectivo recibido.'
+                : (cents(yape) ?? 0) + (cents(plin) ?? 0) === total &&
+                    (cents(receivedValue) ?? 0) > 0
+                  ? 'Yape y Plin ya cubren el total. Retira el efectivo de este pago.'
+                  : 'Introduce importes válidos para calcular el pago y el vuelto.'}
             </Notice>
           )}
           {complete && (

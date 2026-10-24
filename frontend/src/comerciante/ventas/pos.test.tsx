@@ -85,11 +85,9 @@ it('impide completar un cobro incompleto y registra pagos mixtos con vuelto', as
   render(<Checkout body={body} total={5000} onClose={() => {}} onSuccess={success} />);
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(true);
   fireEvent.click(screen.getByRole('button', { name: 'Pago mixto' }));
-  fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '10' } });
+  fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '20' } });
   fireEvent.change(screen.getByLabelText('Yape (S/)'), { target: { value: '25' } });
   fireEvent.change(screen.getByLabelText('Plin (S/)'), { target: { value: '15' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Calcular vuelto' }));
-  fireEvent.change(screen.getByLabelText('Efectivo recibido (S/)'), { target: { value: '20' } });
   fireEvent.click(screen.getByRole('button', { name: 'Cobrar venta' }));
   await waitFor(() => expect(success).toHaveBeenCalledOnce());
   expect(JSON.parse(mock.api.mock.calls[0][1].body)).toMatchObject({
@@ -172,41 +170,51 @@ it('asigna todo a un método único y no solicita efectivo para Yape o Plin', as
     plin: '50.00',
   });
 });
-it('bloquea asignación incompleta, excesiva y efectivo insuficiente en pago mixto', () => {
+it('bloquea pagos incompletos o exceso electrónico, y calcula el vuelto con efectivo', () => {
   render(<Checkout body={body} total={5000} onClose={() => {}} onSuccess={() => {}} />);
   fireEvent.click(screen.getByRole('button', { name: 'Pago mixto' }));
   fireEvent.change(screen.getByLabelText('Yape (S/)'), { target: { value: '30' } });
   fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '10' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Calcular vuelto' }));
-  fireEvent.change(screen.getByLabelText('Efectivo recibido (S/)'), { target: { value: '100' } });
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(true);
-  fireEvent.change(screen.getByLabelText('Plin (S/)'), { target: { value: '20' } });
-  expect(screen.getByText('Exceso asignado')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('Plin (S/)'), { target: { value: '25' } });
+  expect(screen.getByText(/Yape y Plin superan el total/)).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(true);
   fireEvent.change(screen.getByLabelText('Plin (S/)'), { target: { value: '10' } });
-  fireEvent.change(screen.getByLabelText('Efectivo recibido (S/)'), { target: { value: '5' } });
+  fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '5' } });
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(true);
-  fireEvent.click(screen.getByRole('button', { name: 'Importe exacto' }));
+  fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '20' } });
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(false);
 });
-
-it('cobra mixto sin pedir efectivo recibido y permite cerrar el cálculo opcional', async () => {
+it('calcula automáticamente vuelto 6 de recibido 30 para venta 24 y registra efectivo neto 4', async () => {
   mock.api.mockResolvedValue({ id: 'venta-mixta' });
-  render(<Checkout body={body} total={4000} onClose={() => {}} onSuccess={() => {}} />);
+  render(<Checkout body={body} total={2400} onClose={() => {}} onSuccess={() => {}} />);
   fireEvent.click(screen.getByRole('button', { name: 'Pago mixto' }));
   fireEvent.change(screen.getByLabelText('Efectivo (S/)'), { target: { value: '10' } });
-  fireEvent.change(screen.getByLabelText('Yape (S/)'), { target: { value: '30' } });
+  fireEvent.change(screen.getByLabelText('Yape (S/)'), { target: { value: '020' } });
   expect(screen.queryByLabelText('Efectivo recibido (S/)')).toBeNull();
-  expect(screen.queryByText('Asignado en efectivo')).toBeNull();
+  expect(screen.queryByText('Exceso asignado')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Calcular vuelto' })).toBeNull();
+  expect(screen.getByText(/S.*6[.,]00/)).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Cobrar venta' }).hasAttribute('disabled')).toBe(false);
-  fireEvent.click(screen.getByRole('button', { name: 'Calcular vuelto' }));
-  fireEvent.change(screen.getByLabelText('Efectivo recibido (S/)'), { target: { value: '20' } });
-  fireEvent.click(screen.getByRole('button', { name: 'No calcular vuelto' }));
-  expect(screen.queryByLabelText('Efectivo recibido (S/)')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Cobrar venta' }));
   await waitFor(() => expect(mock.api).toHaveBeenCalledOnce());
   expect(JSON.parse(mock.api.mock.calls[0][1].body)).toMatchObject({
-    pagos: { efectivo: '10.00', yape: '30.00', plin: '0.00' },
+    pagos: { efectivo: '4.00', yape: '20.00', plin: '0.00' },
     efectivo_recibido: '10.00',
   });
+});
+it('recupera un pago mixto incierto conservando efectivo recibido y la solicitud original', async () => {
+  const pending = {
+    ...body,
+    operacion_id: 'operacion-mixta',
+    pagos: { efectivo: '4.00', yape: '20.00', plin: '0.00' },
+    efectivo_recibido: '10.00',
+  };
+  sessionStorage.setItem(chargeStorageKey('m', '/negocios/A'), JSON.stringify(pending));
+  mock.api.mockResolvedValue({ id: 'venta-recuperada' });
+  render(<Checkout body={body} total={2400} onClose={() => {}} onSuccess={() => {}} />);
+  expect((screen.getByLabelText('Efectivo (S/)') as HTMLInputElement).value).toBe('10.00');
+  fireEvent.click(screen.getByRole('button', { name: 'Reintentar mismo cobro' }));
+  await waitFor(() => expect(mock.api).toHaveBeenCalledOnce());
+  expect(JSON.parse(mock.api.mock.calls[0][1].body)).toEqual(pending);
 });

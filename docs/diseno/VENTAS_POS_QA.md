@@ -13,8 +13,10 @@ Publicación autorizada por el usuario el 24/10/2026 en main, Vercel y Render.
   descuento visible y opción de quitarlo. Sin porcentajes ni aplicación automática.
 - Pago único: efectivo, Yape o Plin. Pago mixto: importes por esos tres medios.
   La suma debe cubrir todo el total; sin crédito, abonos ni transferencia.
-- En mixto basta el efectivo aportado. “Calcular vuelto” es opcional; al omitirlo
-  se registra recibido igual al aporte. En pago único en efectivo se exige recibido.
+- En mixto el campo efectivo es el dinero recibido. El vuelto se calcula automáticamente:
+  total S/24, efectivo S/10 y Yape S/20 implica vuelto S/6 y efectivo neto S/4.
+  No se exige un campo repetido ni una acción de cálculo. El exceso electrónico se bloquea.
+  En pago único en efectivo se conserva el campo recibido.
 - Resumen lateral en computadora, desplegable en celular y confirmación breve
   después del registro, con métodos, total, recibido/vuelto y nueva venta.
 - Permisos por puesto `ventas.cobrar` y `ventas.descontar`, integrados en Equipo.
@@ -42,7 +44,7 @@ migraciones durante el arranque ni el despliegue del servidor.
 ## Verificación
 
 - Typecheck y compilación de frontend/backend correctos.
-- 101 pruebas de interfaz; 521 comprobaciones HTTP/integración.
+- 102 pruebas de interfaz; 521 comprobaciones HTTP/integración.
 - Migraciones desde cero: 71 comprobaciones del núcleo, 23 de invitaciones
   y limpieza del contexto al reutilizar conexiones.
 - Pruebas POS con PostgreSQL temporal: pagos, vuelto, descuentos, presentaciones,
